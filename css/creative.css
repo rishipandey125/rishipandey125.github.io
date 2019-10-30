@@ -9668,7 +9668,7 @@ header.masthead {
 
 header.masthead h1 {
   /* font-size: 2.25rem; */
-  font-size: 5.0rem;
+  font-size: 10.0rem;
 }
 
 @media (min-width: 992px) {
@@ -9679,18 +9679,18 @@ header.masthead h1 {
     padding-bottom: 0;
   }
   header.masthead p {
-    font-size: 4.0rem;
+    font-size: 3.0rem;
     /* font-size: 1.15rem; */
   }
   header.masthead h1 {
-    font-size: 5.0rem;
+    font-size: 10.0rem;
     /* font-size: 3rem; */
   }
 }
 
 @media (min-width: 1200px) {
   header.masthead h1 {
-    font-size: 5.0rem;
+    font-size: 10.0rem;
     /* font-size: 3.5rem; */
   }
 }
