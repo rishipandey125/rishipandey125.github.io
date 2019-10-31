@@ -4114,8 +4114,8 @@ input[type="button"].btn-block {
     display: none;
   }
 }
-
-@media (max-width: 991.98px) {
+/* changed width */
+@media (max-width: 100%) {
   .navbar-expand-lg > .container,
   .navbar-expand-lg > .container-fluid {
     padding-right: 0;
