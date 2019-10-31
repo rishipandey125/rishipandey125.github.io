@@ -9677,7 +9677,7 @@ header.masthead {
   background-attachment: scroll;
   background-size: cover;
 }
-/* new test*/
+/* new test2*/
 header.masthead video {
   position: absolute;
   top: 50%;
@@ -9715,8 +9715,9 @@ header.masthead .overlay {
 
 @media (min-width:992px) {
   header.masthead {
+    width: 100vw;
     height: 100vh;
-    min-height: 40rem;
+    min-height: 100%;
     padding-top: 72px;
     padding-bottom: 0;
   }
