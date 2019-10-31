@@ -9725,9 +9725,9 @@ header.masthead h1 {
     font-size: 5.0rem;
   }
 
-  /* header video {
+  header.masthead video {
    display: none;
- } */
+ }
 }
 
 @media (min-width: 1200px) {
