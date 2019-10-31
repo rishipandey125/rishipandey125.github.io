@@ -9676,7 +9676,7 @@ header.masthead {
   background-attachment: scroll;
   background-size: cover;
 }
-/*VIDEOWORK3*/
+
 header.masthead video {
   position: absolute;
   top: 50%;
@@ -9711,11 +9711,13 @@ header.masthead .overlay {
   opacity: 0.5;
   z-index: 1;
 }
-
-@media (min-width:992px) {
+/* this is the problem */
+@media (min-aspect-ratio: 16/9) {
   header.masthead {
-    height: 100vh;
-    min-height: 40rem;
+    width: 100%;
+    height: auto;
+    /* height: 100vh;
+    min-height: 40rem; */
     padding-top: 72px;
     padding-bottom: 0;
   }
