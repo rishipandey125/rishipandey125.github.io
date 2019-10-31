@@ -9677,17 +9677,12 @@ header.masthead {
   background-attachment: scroll;
   background-size: cover;
 }
-/* newversion6*/
+/* videotest*/
 header.masthead video {
   position: absolute;
   width: 100%;
   height: 100vh;
   z-index: 10;
-  object-fit: cover;
-  -ms-transform: translateX(-50%) translateY(-50%);
-  -moz-transform: translateX(-50%) translateY(-50%);
-  -webkit-transform: translateX(-50%) translateY(-50%);
-  transform: translateX(-50%) translateY(-50%);
 }
 
 header.masthead .container {
