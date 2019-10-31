@@ -9725,7 +9725,7 @@ header.masthead h1 {
     font-size: 5.0rem;
   }
 
-  header.masthead video {
+  header video {
    display: none;
  }
 }
