@@ -9711,7 +9711,7 @@ header.masthead .overlay {
   opacity: 0.5;
   z-index: 1;
 }
-/* this is the problem */
+/* videopls */
 @media (min-aspect-ratio: 16/9) {
   header.masthead {
     width: 100%;
@@ -9733,11 +9733,11 @@ header.masthead .overlay {
   }
 }
 
-@media (min-width: 1200px) {
+/* @media (min-width: 1200px) {
   header.masthead h1 {
     font-size: 5.0rem;
   }
-}
+} */
 
 #portfolio .container-fluid {
   max-width: 1920px;
