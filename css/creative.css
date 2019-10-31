@@ -9711,7 +9711,6 @@ header.masthead .overlay {
   opacity: 0.5;
   z-index: 1;
 }
-/* videopls3 */
 /* @media (min-width: 992px) {
   header.masthead {
     width: 100%;
@@ -9730,8 +9729,15 @@ header.masthead .overlay {
     display: none;
   }
 } */
-
+/* 1media */
 @media (min-width: 1200px) {
+  header.masthead {
+    width: 100%;
+    height: 100%;
+    padding-top: 72px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
   header.masthead h1 {
     font-size: 5.0rem;
   }
