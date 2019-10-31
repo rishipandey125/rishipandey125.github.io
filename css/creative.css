@@ -9671,6 +9671,7 @@ header.masthead {
   padding-bottom: calc(10rem - 72px);
   background: url("../img/bg.mp4");
   overflow: hidden;
+  background-color: black;
   background-position: center;
   background-repeat: repeat;
   background-attachment: scroll;
@@ -9729,7 +9730,7 @@ header.masthead .overlay {
     display: none;
   }
 } */
-/* 2media */
+/* 3media */
 @media (min-width: 1200px) {
   header.masthead {
     min-width: 100%;
