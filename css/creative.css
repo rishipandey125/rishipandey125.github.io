@@ -9712,11 +9712,14 @@ header.masthead .overlay {
   z-index: 1;
 }
 /* videopls */
-@media (min-width: 992px) {
+@media (min-width: 0px) {
+  /* changing 992to0 */
   header.masthead {
     width: 100%;
-    height: auto;
-    padding-top: 72px;
+    height: 100%;
+    /* height: auto; */
+    /* padding-top: 72px; */
+    padding-top: 0;
     padding-bottom: 0;
   }
   header.masthead p {
@@ -9731,10 +9734,10 @@ header.masthead .overlay {
   }
 }
 
-@media (min-width: 1200px) {
+/* @media (min-width: 1200px) {
   header.masthead h1 {
     font-size: 5.0rem;
-  }
+  } */
 }
 
 #portfolio .container-fluid {
