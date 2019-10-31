@@ -9691,6 +9691,21 @@ header.masthead video {
   transform: translateX(-50%) translateY(-50%);
 }
 
+header.masthead .container {
+  position: relative;
+  z-index: 2;
+}
+
+header.masthead .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: black;
+  opacity: 0.5;
+  z-index: 1;
+}
 
 header.masthead h1 {
   font-size: 4.5rem;
@@ -9710,6 +9725,10 @@ header.masthead h1 {
   header.masthead h1 {
     font-size: 5.0rem;
   }
+  
+  header video {
+   display: none;
+ }
 }
 
 @media (min-width: 1200px) {
