@@ -9670,7 +9670,6 @@ header.masthead {
   padding-top: 10rem;
   padding-bottom: calc(10rem - 72px);
   background: url("../img/bg.mp4");
-  /* background-image: url("../img/BG.png"); */
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: scroll;
@@ -9726,9 +9725,9 @@ header.masthead h1 {
     font-size: 5.0rem;
   }
 
-  header video {
+  /* header video {
    display: none;
- }
+ } */
 }
 
 @media (min-width: 1200px) {
