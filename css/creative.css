@@ -9694,7 +9694,7 @@ header.masthead video {
 }
 
 header.masthead .container {
-  position: relative;
+  position: absolute;
   z-index: 2;
 }
 
