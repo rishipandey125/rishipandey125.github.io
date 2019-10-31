@@ -9677,12 +9677,13 @@ header.masthead {
   background-attachment: scroll;
   background-size: cover;
 }
-/* newversion3*/
+/* newversion4*/
 header.masthead video {
   position: absolute;
   top: 50%;
   left: 50%;
-  min-width: 100%;
+  /* min-width: 100%; */
+  width: 100%;
   min-height: 100vh;
   width: auto;
   height: auto;
