@@ -9676,11 +9676,9 @@ header.masthead {
   background-size: cover;
 }
 header.masthead video {
-  position: fixed;
+  position: absolute;
   right: 0;
   bottom: 0;
-  min-width: 100%;
-  min-height: 100%;
   width: auto;
   height: auto;
   z-index: 0;
@@ -9695,7 +9693,7 @@ header.masthead .container {
   z-index: 2;
 }
 
-/* header.masthead .overlay {
+header.masthead .overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -9704,7 +9702,7 @@ header.masthead .container {
   background-color: black;
   opacity: 0.5;
   z-index: 1;
-} */
+}
 
 header.masthead h1 {
   font-size: 4.5rem;
