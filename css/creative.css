@@ -9714,7 +9714,6 @@ header.masthead .overlay {
 
 @media (min-width:992px) {
   header.masthead {
-    width: 100vw;
     height: 100vh;
     min-height: 40rem;
     padding-top: 72px;
@@ -9727,9 +9726,9 @@ header.masthead .overlay {
   header.masthead h1 {
     font-size: 5.0rem;
   }
-  /* header.masthead video {
+  header.masthead video {
     display: none;
-  } */
+  }
 }
 
 @media (min-width: 1200px) {
