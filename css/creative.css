@@ -9669,14 +9669,14 @@ hr.light {
 header.masthead {
   padding-top: 10rem;
   padding-bottom: calc(10rem - 72px);
-  background: url("../img/bg.mp4");
+  /* background: url("../img/bg.mp4"); */
   background-position: center;
-  background-repeat: no-repeat;
+  background-repeat: repeat;
   background-attachment: scroll;
   background-size: cover;
 }
 header.masthead video {
-  position: absolute;
+  /* position: absolute;
   top: 50%;
   left: 50%;
   min-width: 100%;
@@ -9687,7 +9687,19 @@ header.masthead video {
   -ms-transform: translateX(-50%) translateY(-50%);
   -moz-transform: translateX(-50%) translateY(-50%);
   -webkit-transform: translateX(-50%) translateY(-50%);
-  transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%); */
+  position: fixed;
+  top: 0;
+  left: 50%;
+  /*min-width: 100%;*/
+  /*min-height: 100%;*/
+  -ms-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  z-index: -100;
+  background: url("../img/bg.mp4") no-repeat;
+  background-size: cover;
 }
 
 header.masthead .container {
