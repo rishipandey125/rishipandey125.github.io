@@ -9677,12 +9677,12 @@ header.masthead {
   background-attachment: scroll;
   background-size: cover;
 }
-/* newversion4*/
-header.masthead video {
+/* newversion5*/
+/* header.masthead video {
   position: absolute;
   top: 50%;
   left: 50%;
-  /* min-width: 100%; */
+  min-width: 100%;
   width: 100%;
   min-height: 100vh;
   width: auto;
@@ -9692,7 +9692,7 @@ header.masthead video {
   -moz-transform: translateX(-50%) translateY(-50%);
   -webkit-transform: translateX(-50%) translateY(-50%);
   transform: translateX(-50%) translateY(-50%);
-}
+} */
 
 header.masthead .container {
   position: relative;
@@ -9728,9 +9728,9 @@ header.masthead .overlay {
   header.masthead h1 {
     font-size: 5.0rem;
   }
-  header.masthead video {
+  /* header.masthead video {
     display: none;
-  }
+  } */
 }
 
 @media (min-width: 1200px) {
