@@ -9669,7 +9669,7 @@ hr.light {
 header.masthead {
   padding-top: 10rem;
   padding-bottom: calc(10rem - 72px);
-  background: url("../img/vid.mp4");
+  background: url("../img/bg.mp4");
   /* background-image: url("../img/BG.png"); */
   background-position: center;
   background-repeat: no-repeat;
@@ -9725,7 +9725,7 @@ header.masthead h1 {
   header.masthead h1 {
     font-size: 5.0rem;
   }
-  
+
   header video {
    display: none;
  }
