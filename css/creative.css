@@ -9670,14 +9670,13 @@ header.masthead {
   padding-top: 10rem;
   padding-bottom: calc(10rem - 72px);
   background: url("../img/bg.mp4");
-  width: 100%;
   overflow: hidden;
   background-position: center;
   background-repeat: repeat;
   background-attachment: scroll;
   background-size: cover;
 }
-/*VIDEOWORK*/
+/*VIDEOWORK2*/
 header.masthead video {
   position: absolute;
   top: 50%;
