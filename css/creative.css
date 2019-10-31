@@ -9711,7 +9711,7 @@ header.masthead h1 {
   font-size: 4.5rem;
 }
 
-@media (min-width: 100%) {
+@media (min-width: 992px) {
   header.masthead {
     height: 100vh;
     min-height: 40rem;
