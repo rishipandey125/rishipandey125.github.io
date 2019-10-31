@@ -9712,25 +9712,7 @@ header.masthead .overlay {
   opacity: 0.5;
   z-index: 1;
 }
-/* @media (min-width: 992px) {
-  header.masthead {
-    width: 100%;
-    height: auto;
-    padding-top: 72px;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  header.masthead p {
-    font-size: 3.0rem;
-  }
-  header.masthead h1 {
-    font-size: 5.0rem;
-  }
-  header.masthead video {
-    display: none;
-  }
-} */
-/* 3media */
+
 @media (min-width: 1200px) {
   header.masthead {
     min-width: 100%;
