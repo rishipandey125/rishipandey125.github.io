@@ -9669,7 +9669,7 @@ hr.light {
 header.masthead {
   padding-top: 10rem;
   padding-bottom: calc(10rem - 72px);
-  background: url("../img/bg.mp4");
+  /* background: url("../img/bg.mp4"); */
   width: 100%;
   overflow: hidden;
   background-position: center;
@@ -9677,7 +9677,7 @@ header.masthead {
   background-attachment: scroll;
   background-size: cover;
 }
-/* videotest1*/
+/* videotest2*/
 header.masthead video {
   position: absolute;
   top: 50%;
