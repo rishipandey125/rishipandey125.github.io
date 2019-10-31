@@ -9711,8 +9711,8 @@ header.masthead .overlay {
   opacity: 0.5;
   z-index: 1;
 }
-/* videopls */
-@media (min-width: 992px) {
+/* videopls3 */
+/* @media (min-width: 992px) {
   header.masthead {
     width: 100%;
     height: auto;
@@ -9729,7 +9729,7 @@ header.masthead .overlay {
   header.masthead video {
     display: none;
   }
-}
+} */
 
 @media (min-width: 1200px) {
   header.masthead h1 {
