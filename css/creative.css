@@ -9680,9 +9680,17 @@ header.masthead {
 /* videotest*/
 header.masthead video {
   position: absolute;
-  width: 100%;
-  height: 100vh;
-  z-index: 10;
+  top: 50%;
+  left: 50%;
+  /* min-width: 100%;
+  min-height: 100%; */
+  width: auto;
+  height: auto;
+  z-index: 0;
+  -ms-transform: translateX(-50%) translateY(-50%);
+  -moz-transform: translateX(-50%) translateY(-50%);
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
 }
 
 header.masthead .container {
