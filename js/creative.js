@@ -38,6 +38,36 @@
   navbarCollapse();
   // Collapse the navbar when page is scrolled
   $(window).scroll(navbarCollapse);
+  //Scroll Collapsables
+  $('#RayTracer').on('shown.bs.collapse', function () {
+      $('html, body').animate({
+         scrollTop: $("#RayTracer").offset().top - 64
+      }, 800);
+  });
+
+  $('#ML').on('shown.bs.collapse', function () {
+      $('html, body').animate({
+         scrollTop: $("#ML").offset().top - 64
+      }, 800);
+  });
+
+  $('#VP').on('shown.bs.collapse', function () {
+      $('html, body').animate({
+         scrollTop: $("#VP").offset().top - 64
+      }, 800);
+  });
+
+  $('#GLSL').on('shown.bs.collapse', function () {
+      $('html, body').animate({
+         scrollTop: $("#GLSL").offset().top - 64
+      }, 800);
+  });
+
+  $('#Forest').on('shown.bs.collapse', function () {
+      $('html, body').animate({
+         scrollTop: $("#Forest").offset().top - 64
+      }, 800);
+  });
 
   $('#SHOT').on('shown.bs.collapse', function () {
       $('html, body').animate({
