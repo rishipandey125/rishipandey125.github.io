@@ -39,6 +39,12 @@
   // Collapse the navbar when page is scrolled
   $(window).scroll(navbarCollapse);
 
+  $('#SHOT').on('shown.bs.collapse', function () {
+      $('html, body').animate({
+         scrollTop: $("#SHOT").offset().top - 64
+      }, 800);
+  });
+
   // Magnific popup calls
   $('#portfolio').magnificPopup({
     delegate: 'a',
