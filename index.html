@@ -314,21 +314,30 @@
       </p>
       <p class="text-white font-weight-light" align="center">
         <font size="+1">
-          The first plot represents the actual species of certain flowers in the dataset, while the second is the Machine Learning predicted species. The model predicted species correctly 58 times and incorrectly 3 times in this example.
-        </font>
+          The program accepts a video input and uses the pose estimation model to predict joint locations. The prototxt and caffemodel files used for the neural network are very large, and therefore kept locally.
+
+          After predicting joint locations, the program goes through two key processes to improve accuracy.
+
+          The first improvement is joint swapping. Often times the model incorrectly predicts corresponding joints, swapping the right and left knee, elbow, etc. In the initial analysis of the video, after joints have been predicted, the function checks to see first if that joint has a corresponding joint (left knee corresponds with right knee), if it does then it checks if they are horizontally mismatched. If both these conditions are satisfied, typically a swap is in order and the joints are swapped.
+
+          The second improvement is smoothing. The pose-estimation data is accurate, yet very jittery. Human's naturally move with more grace. To accomplish capturing smoother motion data, I used a Savgol smoothing filter to remove noise and jitter.        </font>
       </p>
       <div class="my-3"> </div>
       <p class="text-white font-weight-bold" align="center">
         <font size="+2">
-          Example 2: ML Model with 96.72% Accuracy
+          Future Improvements
         </font>
       </p>
       <p class="text-white font-weight-light" align="center">
         <font size="+1">
-          The model predicted species correctly 59 times and incorrectly 2 times in this example.
-        </font>
+          To leverage computer vision pose estimation for motion capture, two key features must be added to this project. The first would be 3D reconstruction. Using a mathematical method 3D pose data must be reconstructed to transfer over to motion capture/animation data. With the inclusion of depth sensors on future mobile devices this process may be easier in the future, but for the time being mathematical reconstruction can be explored.
+
+          From scavenging the web, this paper explained the process of 3D reconstruction of 2D points best for me. https://www.researchgate.net/publication/258220500_Reconstructing_The_Missing_Dimension_From_2D_To_3D_Human_Pose_Estimation
+
+          I am currently working on implementing its explanation into this project.
+
+          The second key improvement would be writing 3D reconstructed pose data to FBX animation files, to complete the mobile performance capture pipeline. My plan after 3D reconstruction, is to use the FBX SDK provided by Autodesk to write the data to animation files. This process would also include tweaking the data to correctly fit a characters animation rig.        </font>
       </p>
-      <img width="60%" class="img-fluid" src="img/ML/iris_test2.png" alt="" align="center">
       <div class="my-3"> </div>
       <a class="btn btn-primary" href="https://github.com/rishipandey125/2D-Pose-Estimation">GitHub Code</a>
       <a class="btn btn-primary js-scroll-trigger" href="#projects">Back to Projects</a>
