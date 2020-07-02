@@ -45,6 +45,12 @@
       }, 800);
   });
 
+  $('#computervision').on('shown.bs.collapse', function () {
+      $('html, body').animate({
+         scrollTop: $("#computervision").offset().top - 64
+      }, 800);
+  });
+
   $('#ML').on('shown.bs.collapse', function () {
       $('html, body').animate({
          scrollTop: $("#ML").offset().top - 64
