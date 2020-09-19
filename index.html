@@ -146,7 +146,7 @@
           <a href="#RayTracer" data-toggle="collapse" aria-expanded="false">
           <img src="../img/raytracer-imgs/cover.png" class="card-img-top" alt="...">
           <div class="card-body">
-            <h3 class="text-uppercase text-black font-weight-light">Simple Ray Tracer (C++)</h3>
+            <h3 class="text-uppercase text-black font-weight-light">Ray Tracer (C++)</h3>
             </a>
           </div>
         </div>
@@ -238,9 +238,50 @@
       <div class="my-3"> </div>
       <p class="text-white font-weight-bold" align="center">
         <font size="+2">
-          Core Features (Materials and Simple Cinematography System)
+          Core Features: Materials and Simple Cinematography System
         </font>
       </p>
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          This initial render has three spheres of the same size, one orange diffuse sphere, a metallic sphere with little roughness, and a hollow glass.
+      </p>
+      <img width="60%" class="img-fluid" src="img/raytracer-imgs/initial.png" alt="" align="center">
+
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          By placing the red sphere behind the hollow glass sphere you can clearly see the refraction and reflection taking place using Schlick's approximation and Fresnel equations.
+      </p>
+      <img width="60%" class="img-fluid" src="img/raytracer-imgs/dielectric.png" alt="" align="center">
+
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          This next image demonstrates how the roughness and color of metal can be changed to represent different metallic materials. In this example the roughness constant was increased and the RGB color was modified to represent a rougher gold material.
+      </p>
+      <img width="60%" class="img-fluid" src="img/raytracer-imgs/metal.png" alt="" align="center">
+
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          The camera can move in the 3D space as well, allowing for new angles of the scene.
+      </p>
+      <img width="60%" class="img-fluid" src="img/raytracer-imgs/move.png" alt="" align="center">
+
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          At any position the vertical field of view can be changed to zoom in or out on the subject.
+      </p>
+      <img width="60%" class="img-fluid" src="img/raytracer-imgs/fov.png" alt="" align="center">
+
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          Lastly, the size of the aperture can be increased or decreased for simulating depth of field. This example increases the aperture for a higher depth of field effect.
+      </p>
+      <img width="60%" class="img-fluid" src="img/raytracer-imgs/dof.png" alt="" align="center">
+
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          I had a ton of fun creating this project! I am excited to learn more about building render engines and am currently starting Peter Shirley’s second Ray Tracing book. Checkout the GitHub repository for this project. 
+      </p>
+
       <a class="btn btn-primary" href="https://github.com/rishipandey125/RayTracer">GitHub Code</a>
       <a class="btn btn-primary js-scroll-trigger" href="#projects">Back to Projects</a>
     </div>
