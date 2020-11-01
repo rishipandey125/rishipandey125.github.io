@@ -549,37 +549,64 @@
       <h2 class="text-uppercase text-white font-weight-light">Texture Synthesis (Python)</h2>
       <p class="text-white font-weight-light" align="center">
         <font size="+1">
-          Separate layers plugin created for Photoshop-Shotgun integration. Project for my internship with ZERO VFX.
-          Plugin created to streamline matte-painting artist workflow. Integration with tk-config files required within artist schema.
-          Validates and publishes the layers of a .psd file to Shotgun.
+          Texture synthesis implementation based on the 2001 SIGGRAPH paper titled "Image Quilting for Texture Synthesis and Transfer". Project for my Computational Photography class (CS 445).
+          Implemented seam finding (minimum error boundary cut) to mathematically determine the best place to cut and place a new patch for texture synthesis. Code for this project not provided according to school policy to prevent academic dishonesty.
         </font>
       </p>
       <p class="text-white font-weight-bold" align="center">
         <font size="+2">
-          Plugin Integrated with Shotgun Publish Button
+          Example 1: Brick Texture
         </font>
       </p>
       <p class="text-white font-weight-light" align="center">
         <font size="+1">
-          The plugin integrates fully with the Shotgun Publish Button.
-          This allows artists to publish all their work to Shotgun along with the separate layers generated, ensuring a streamlined workflow.
+          Original Sample
         </font>
       </p>
-      <img width="60%" class="img-fluid" src="img/shot/publish.png" alt="" align="center">
+      <img width="60%" class="img-fluid" src="img/tex/brick_small.jpg" alt="" align="center">
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          Synthesized Brick Texture
+        </font>
+      </p>
+      <img width="60%" class="img-fluid" src="img/tex/brick_synth.png" alt="" align="center">
       <div class="my-3"> </div>
       <p class="text-white font-weight-bold" align="center">
         <font size="+2">
-          Plugin Integrated with Shotgun File Validation
+          Example 2: Denim Texture
         </font>
       </p>
       <p class="text-white font-weight-light" align="center">
         <font size="+1">
-          The plugin integrates with Shotgun's file validation system, allowing artists to know when errors may occur in their workflow.
+          Original Sample
         </font>
       </p>
-      <img width="60%" class="img-fluid" src="img/shot/validate.png" alt="" align="center">
+      <img width="60%" class="img-fluid" src="img/tex/denim_texture.jpg" alt="" align="center">
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          Synthesized Denim Texture
+        </font>
+      </p>
+      <img width="60%" class="img-fluid" src="img/tex/synth_denim.png" alt="" align="center">
       <div class="my-3"> </div>
-      <a class="btn btn-primary" href="https://github.com/rishipandey125/Shotgun-PS-Plugin-SeparateLayers">GitHub Code</a>
+      <p class="text-white font-weight-bold" align="center">
+        <font size="+2">
+          Example 3: Water Texture
+        </font>
+      </p>
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          Original Sample
+        </font>
+      </p>
+      <img width="60%" class="img-fluid" src="img/tex/water_texture.jpg" alt="" align="center">
+      <p class="text-white font-weight-light" align="center">
+        <font size="+1">
+          Synthesized Water Texture
+        </font>
+      </p>
+      <img width="60%" class="img-fluid" src="img/tex/synth_water.png" alt="" align="center">
+      <div class="my-3"> </div>
       <a class="btn btn-primary js-scroll-trigger" href="#projects">Back to Projects</a>
     </div>
   </section>
