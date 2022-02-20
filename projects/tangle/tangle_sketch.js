@@ -1,7 +1,10 @@
 var canvas; //setup the canvas for rendering
 var button; //button for save
+var buttonReset; //button for reset
+
 //key colors for color palette
 var keyColors = []
+let numKeyColors = 5
 
 //stroke properties
 var strokeSizeMin; //min thickness
@@ -37,7 +40,6 @@ function setup() {
   //set the background color of the canvas
   colorMode(HSB) //use hsb color space
   // generate key colors
-  let numKeyColors = 5
   for (let i = 0; i < numKeyColors; i++) {
     keyColors.push(randomColor()) // 5 random colors
   }
@@ -50,10 +52,16 @@ function setup() {
   strokeSizeMax = 12
 
   //save button position and action
-  button = createButton('save');
+  button = createButton('download');
   button.style('font-size', '15px');
   button.position((windowWidth - width)/2,10);
   button.mousePressed(saveImage);
+
+  //reset button position and action
+  buttonReset = createButton('reset canvas');
+  buttonReset.style('font-size', '15px');
+  buttonReset.position((windowWidth - width)/2 + (width/5),10);
+  buttonReset.mousePressed(resetSketch);
 }
 
 //rendering canvas
@@ -129,6 +137,21 @@ function enforceBoundaryConditions() {
     }
 }
 
+function resetSketch() {
+  //clear canvas
+  sketch = false
+  clear();
+  //clear colors list and update with new palette
+  keyColors = []
+  for (let i = 0; i < numKeyColors; i++) {
+    keyColors.push(randomColor()) // 5 random colors
+  }
+  //generate a color in the palette for the background
+  background(randomColorInPalette()) //set the background
+  //set background
+  //handle canvas click
+}
+
 //save the sketch as a png
 function saveImage(){
   save("tangle.png");
@@ -138,5 +161,6 @@ function saveImage(){
 //move the save button as the window is resized
 function windowResized() {
   button.position((windowWidth - width)/2,10);
+  buttonReset.position((windowWidth - width)/2 + (width/5),10);
 }
 
