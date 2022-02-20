@@ -17,8 +17,14 @@ let sketch;
 function setup() {
   //setup canvas with correct aspect ratio
   let aspectRatio = 2/3
-  let canvasHeight = 800 * 0.8
+  let canvasHeight = 700
   let canvasWidth = canvasHeight*aspectRatio
+  //enforce conditions for mobile friendly canvas
+  if (windowWidth < canvasWidth) {
+    //make canvas mobile friendly
+    canvasWidth = 0.8*windowWidth;
+    canvasHeight = canvasWidth * (1/aspectRatio);
+  }
   canvas = createCanvas(canvasWidth,canvasHeight)
   //position canvas in webpage
   let canvasXPosition = (windowWidth - canvasWidth)/2
