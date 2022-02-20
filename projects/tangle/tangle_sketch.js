@@ -52,7 +52,7 @@ function setup() {
   strokeSizeMax = 12
 
   //save button position and action
-  buttonSave = createButton('download');
+  buttonSave = createButton('save');
   buttonSave.style('font-size', '15px');
   buttonSave.position((windowWidth - width)/2,10);
   buttonSave.mousePressed(saveImage);
@@ -60,7 +60,7 @@ function setup() {
   //reset button position and action
   buttonReset = createButton('reset');
   buttonReset.style('font-size', '15px');
-  buttonReset.position((windowWidth - width)/2 + (width/3),10);
+  buttonReset.position((windowWidth - width)/2 + (width/5),10);
   buttonReset.mousePressed(resetSketch);
 }
 
@@ -162,6 +162,6 @@ function saveImage(){
 //move the save button as the window is resized
 function windowResized() {
   buttonSave.position((windowWidth - width)/2,10);
-  buttonReset.position((windowWidth - width)/2 + (width/3),10);
+  buttonReset.position((windowWidth - width)/2 + (width/5),10);
 }
 
