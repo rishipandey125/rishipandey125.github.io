@@ -1,7 +1,6 @@
 var canvas; //setup the canvas for rendering
 var buttonSave; //button for save
 var buttonReset; //button for reset
-
 //key colors for color palette
 var keyColors = []
 let numKeyColors = 5
@@ -22,6 +21,7 @@ function setup() {
   let aspectRatio = 2/3
   let canvasHeight = 700
   let canvasWidth = canvasHeight*aspectRatio
+
   //enforce conditions for mobile friendly canvas
   if (windowWidth < canvasWidth) {
     //make canvas mobile friendly
@@ -60,7 +60,7 @@ function setup() {
   //reset button position and action
   buttonReset = createButton('reset');
   buttonReset.style('font-size', '15px');
-  buttonReset.position((windowWidth - width)/2 + (width/5),10);
+  buttonReset.position((windowWidth - width)/2,50);
   buttonReset.mousePressed(resetSketch);
 }
 
@@ -162,6 +162,6 @@ function saveImage(){
 //move the save button as the window is resized
 function windowResized() {
   buttonSave.position((windowWidth - width)/2,10);
-  buttonReset.position((windowWidth - width)/2 + (width/5),10);
+  buttonReset.position((windowWidth - width)/2,50);
 }
 
