@@ -1,0 +1,136 @@
+var canvas; //setup the canvas for rendering
+var button; //button for save
+//key colors for color palette
+var keyColors = []
+
+//stroke properties
+var strokeSizeMin; //min thickness
+var strokeSizeMax; //max thickness
+var strokeColor; //stroke color
+var x,y; //next xy of the stroke
+var px,py; //previous xy of the stroke
+
+//control whether to sketch or not
+let sketch;
+
+//setup the sketch -- runs on start
+function setup() {
+  //setup canvas with correct aspect ratio
+  let aspectRatio = 2/3
+  let canvasHeight = 800 * 0.8
+  let canvasWidth = canvasHeight*aspectRatio
+  canvas = createCanvas(canvasWidth,canvasHeight)
+  //position canvas in webpage
+  let canvasXPosition = (windowWidth - canvasWidth)/2
+  let canvasYPosition = (windowHeight - canvasHeight)/2
+  canvas.parent('sketch') //parent the canvas to sketch
+
+  //handle canvas click
+  canvas.mouseClicked(createNewStroke)
+
+  //set the background color of the canvas
+  colorMode(HSB) //use hsb color space
+  // generate key colors
+  let numKeyColors = 5
+  for (let i = 0; i < numKeyColors; i++) {
+    keyColors.push(randomColor()) // 5 random colors
+  }
+
+  //generate a color in the palette for the background
+  background(randomColorInPalette()) //set the background
+
+  //set the canvas stroke min & max thickness
+  strokeSizeMin = 1
+  strokeSizeMax = 12
+
+  //save button position and action
+  button = createButton('save');
+  button.style('font-size', '15px');
+  button.position((windowWidth - width)/2,10);
+  button.mousePressed(saveImage);
+}
+
+//rendering canvas
+function draw() {
+  if (sketch) { //if a noodle should be drawn
+    //noise is between 0 - 1 
+    //subtract 0.5 to have the value move up and down or left and right
+    //multiply by offset 10 -> offset between (-5 and 5)
+    x += (noise(frameCount * 0.01) - 0.5) * 6;
+    y += (noise(frameCount * 0.02) - 0.5) * 6;
+    
+    //enforce boundary conditions
+    enforceBoundaryConditions()
+    //draw the line
+    line(px, py, x, y);
+    //update the previous point
+    px = x;
+    py = y;
+  }
+}
+
+//creates a new stroke
+function createNewStroke() {
+  //flip sketch state
+  if (sketch) {
+    sketch = false
+  } else {
+    //set the strokes color
+    strokeColor = randomColorInPalette()
+    stroke(strokeColor)
+    //set stroke thickness
+    let strokeThickness = random(strokeSizeMin,strokeSizeMax)
+    strokeWeight(strokeThickness)
+    //start position is where the user clicked
+    x = mouseX
+    y = mouseY
+    //initialize previous points
+    px = x;
+    py = y;
+    //set sketch to true
+    sketch = true
+  }
+}
+//generate random hsb color
+function randomColor() {
+  return color(random(0,360),random(0,100),random(0,100))
+}
+
+//generate a random color in the palette based on the key colors
+function randomColorInPalette() {
+  shuffle(keyColors,true) //eliminate bias in color area by shuffling color vertices for sampling space
+  let endColor = keyColors[0] //initialize end color
+  for (let i = 1; i < keyColors.length; i++) { //loop through colors to sample from restricted color space
+    endColor = lerpColor(endColor,keyColors[i],random(0,1))
+  }
+  return endColor; //return sampled color
+}
+
+//enforces canvas boundary conditions
+function enforceBoundaryConditions() {
+    //enforce modular boundary
+    if (x > width) {
+      px = x = 0;
+    }
+    if (x < 0) {
+      px = x = width;
+    }
+    if (y > height) {
+      py = y = 0;
+    }
+    if (y < 0) {
+      py = y = height;
+    }
+}
+
+//save the sketch as a png
+function saveImage(){
+  save("tangle.png");
+  sketch = false
+}
+
+//move the save button as the window is resized
+function windowResized() {
+  button.position((windowWidth - width)/2,10);
+}
+
