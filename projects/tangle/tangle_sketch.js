@@ -1,5 +1,5 @@
 var canvas; //setup the canvas for rendering
-var button; //button for save
+var buttonSave; //button for save
 var buttonReset; //button for reset
 
 //key colors for color palette
@@ -52,15 +52,15 @@ function setup() {
   strokeSizeMax = 12
 
   //save button position and action
-  button = createButton('download');
-  button.style('font-size', '15px');
-  button.position((windowWidth - width)/2,10);
-  button.mousePressed(saveImage);
+  buttonSave = createButton('download');
+  buttonSave.style('font-size', '15px');
+  buttonSave.position((windowWidth - width)/2,10);
+  buttonSave.mousePressed(saveImage);
 
   //reset button position and action
-  buttonReset = createButton('reset canvas');
+  buttonReset = createButton('reset');
   buttonReset.style('font-size', '15px');
-  buttonReset.position((windowWidth - width)/2 + (width/5),10);
+  buttonReset.position((windowWidth - width)/2 + (width/3),10);
   buttonReset.mousePressed(resetSketch);
 }
 
@@ -137,6 +137,7 @@ function enforceBoundaryConditions() {
     }
 }
 
+//reset the sketch when the button is clicked
 function resetSketch() {
   //clear canvas
   sketch = false
@@ -160,7 +161,7 @@ function saveImage(){
 
 //move the save button as the window is resized
 function windowResized() {
-  button.position((windowWidth - width)/2,10);
-  buttonReset.position((windowWidth - width)/2 + (width/5),10);
+  buttonSave.position((windowWidth - width)/2,10);
+  buttonReset.position((windowWidth - width)/2 + (width/3),10);
 }
 
