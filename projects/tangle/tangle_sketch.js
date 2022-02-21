@@ -54,13 +54,13 @@ function setup() {
   //save button position and action
   buttonSave = createButton('save');
   buttonSave.style('font-size', '15px');
-  buttonSave.position((windowWidth - width)/2,10);
+  buttonSave.position(((windowWidth - width)/2),10);
   buttonSave.mousePressed(saveImage);
 
   //reset button position and action
   buttonReset = createButton('reset');
   buttonReset.style('font-size', '15px');
-  buttonReset.position((windowWidth - width)/2,50);
+  buttonReset.position(((windowWidth - width)/2),50);
   buttonReset.mousePressed(resetSketch);
 }
 
