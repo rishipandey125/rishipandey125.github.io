@@ -70,8 +70,8 @@ function draw() {
     //noise is between 0 - 1 
     //subtract 0.5 to have the value move up and down or left and right
     //multiply by offset 10 -> offset between (-5 and 5)
-    x += (noise(frameCount * 0.01) - 0.5) * 6;
-    y += (noise(frameCount * 0.02) - 0.5) * 6;
+    x += (noise(frameCount * 0.01) - 0.5) * 10;
+    y += (noise(frameCount * 0.02) - 0.5) * 10;
     
     //enforce boundary conditions
     enforceBoundaryConditions()
