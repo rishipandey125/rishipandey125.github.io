@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.min.js"></script>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> -->
+    <title>tangle!</title>
+
+    <!-- load bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- load robot mono -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+    
+    <style>
+
+      html {
+        background-color: #ffffff;
+      }
+
+      body {
+        background-color: #ffffff;
+        font-family: 'Roboto Mono', monospace;
+      }
+    </style> 
+  </head>
+  <body>
+    <!-- top title -->
+    <div class="container-fluid mt-5">
+      <div class="row justify-content-md-center align-items-center">
+        <div class="col col-lg-4">
+          <!-- space at top! -->
+        </div>
+        <div class="col col-lg-4 hidden-lg-up" align="center" >
+        </div>
+      </div>
+    </div>
+
+
+    <div class="container" align="center">
+      <p>&nbsp;</p> 
+      <h1>tangle!</h1>
+      <p>&nbsp;</p> 
+
+      <div class="row justify-content-center mb-3s">
+        <div class="col-sm-12 col-md-8 col-lg-10">
+          <p class="">an interactive generative art experiment created by 
+            <a href="https://twitter.com/wookiepandey25" target="_blank">rishi pandey</a>
+          </p>
+          <p class="">tap/click the canvas to create a noodle at that location
+          </p>
+          <p class="">tap/click again to stop the noodle
+          </p>
+          <p class="">repeat this process to tangle your noodles and create your own generative art - unique to only you
+          </p>
+          <p class="">tap/click <i>save</i> to download/share your art! <a href="https://twitter.com/search?q=tangleart&src=typed_query&f=live" target="_blank">#tangleart</a>
+          </p>
+        </div>
+      </div>
+      <p>&nbsp;</p> 
+
+
+      <div class="row justify-content-center mb-3">
+        <div class="col-sm-12 col-md-8 col-lg-8">
+          <div id="sketch"></div>
+          <script src="tangle_sketch.js"></script> 
+        </div>
+      </div> 
+      <p>&nbsp;</p> 
+  
+      <div class="row justify-content-center mb-3s">
+        <div class="col-sm-12 col-md-8 col-lg-10">
+          <p class="">tap/click <i>reset</i> to clear the canvas and generate a new color palette
+          </p>
+          <p>&nbsp;</p> 
+        </div>
+      </div>
+
+    </div>
+
+
+  </body>
+</html>
+
+
