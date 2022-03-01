@@ -45,7 +45,8 @@ function setup() {
   }
 
   //generate a color in the palette for the background
-  background(randomColorInPalette()) //set the background
+  background(color(0,0,100))
+  // background(randomColorInPalette()) //set the background
 
   //set the canvas stroke min & max thickness
   strokeSizeMin = 1
