@@ -1,4 +1,4 @@
-const { Perlin, FBM } = THREE_Noise;
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js';
 
 var renderer, camera, scene;//gl renderer, camera and the scene
 var geometry, line; //geometry and line
@@ -21,7 +21,7 @@ function init() {
   const material = new THREE.LineBasicMaterial( { color: "rgb(255,255,255)" } ); // create a material for the lines
   const points = []; //create a list of points for the line
 
-  const perlin = new Perlin(Math.random())
+  // const perlin = new Perlin(Math.random())
 
 
   for (let i = 0; i < 50; i++) {
