@@ -18,6 +18,11 @@
 			var renderer, camera, scene;//gl renderer, camera and the scene
 			var geometry, line; //geometry and line
 			var rotation = 0; //initial rotation
+			var points = []; //create a list of points for the line
+
+			var count = 0;
+			var numPoints = 1000;
+			var perlin = new Perlin(Math.random())
 
 			init();
 			animate();
@@ -39,20 +44,7 @@
 				scene = new THREE.Scene(); //create a scene : stores items (geometry/lights/etc.)
 				
 				const material = new THREE.LineBasicMaterial( { color: "rgb(255,255,255)" } ); // create a material for the lines
-				const points = []; //create a list of points for the line
-
-				// const perlin = new Perlin(Math.random())
-
-
-				for (let i = 0; i < 100; i++) {
-					// let point = new THREE.Vector3(,i,i)
-					// let point = new THREE.Vector3(getRandomNumber(0,20),getRandomNumber(0,20),getRandomNumber(0,20));
-					// let noise = perlin.get3(point);
-					// let noiseY = perlin.get2(new THREE.Vector2(i,0))*10;
-					// console.log(noise)
-					// points.push(new THREE.Vector3(noise,noiseY,0));
-					points.push(new THREE.Vector3(getRandomNumber(-20,20),getRandomNumber(-20,20),getRandomNumber(-20,20))) // push a random point
-				}
+				
 				geometry = new THREE.BufferGeometry().setFromPoints( points ); //turn the points into geometry by storing in a buffer geo
 
 				line = new THREE.Line( geometry, material ); //create a line based on that buffer geo and the material
@@ -63,13 +55,35 @@
 				return Math.random() * (max - min) + min;
 			}
 
+			function noise(x) {
+				let pi = Math.PI;
+				return Math.sin(2*x) + Math.sin(pi * x);
+			}
+			
 			//animate function onUpdate
 			function animate() {
 				requestAnimationFrame( animate ); //animate function
+				if (count < numPoints) {
+					scene.remove(line);
+					let xNoise = noise(renderer.info.render.frame*0.01);
+					let yNoise = noise(renderer.info.render.frame*0.02);
+					let zNoise = noise(renderer.info.render.frame*0.03);
+					let xVal = ((20 - (-20)) + (-20))*xNoise;
+					let yVal = ((20 - (-20)) + (-20))*yNoise;
+					let zVal = ((20 - (-20)) + (-20))*zNoise;
+					points.push(new THREE.Vector3(xVal,yVal,zVal))
+					// points.push(new THREE.Vector3(getRandomNumber(-20,20),getRandomNumber(-20,20),getRandomNumber(-20,20))) // push a random point
+					geometry.setFromPoints(points);
+					line.geometry = geometry;
+					scene.add(line)
+					count += 1
+				}
 				//rotate line
 				rotation += 0.001
-				line.rotation.y = rotation;
-
+				// line.rotation.y = rotation;
+				// let noise = perlin.get2(new THREE.Vector2(renderer.info.render.frame,renderer.info.render.frame))*10;
+				// console.log(noise(renderer.info.render.frame))
+				// console.log(renderer.info.render.frame)
 				renderer.render( scene, camera );
 			}
 		</script>
