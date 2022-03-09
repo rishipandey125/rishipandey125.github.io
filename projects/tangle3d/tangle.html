@@ -8,8 +8,10 @@
 		</style>
 	</head>
 	<body>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
+		<script src="./js/three-noise.js"></script>
 		<script type="module">
-			import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js';
+			const { Perlin } = THREE_Noise;
 			import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 
 
@@ -42,7 +44,7 @@
 				// const perlin = new Perlin(Math.random())
 
 
-				for (let i = 0; i < 50; i++) {
+				for (let i = 0; i < 100; i++) {
 					// let point = new THREE.Vector3(,i,i)
 					// let point = new THREE.Vector3(getRandomNumber(0,20),getRandomNumber(0,20),getRandomNumber(0,20));
 					// let noise = perlin.get3(point);
