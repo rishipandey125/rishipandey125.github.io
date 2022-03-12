@@ -9,20 +9,20 @@
 	</head>
 	<body>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
-		<script src="./js/three-noise.js"></script>
+		<!-- <script src="./js/three-noise.js"></script> -->
 		<script type="module">
-			const { Perlin } = THREE_Noise;
+			// import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js';
+
 			import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 
 
 			var renderer, camera, scene;//gl renderer, camera and the scene
 			var geometry, line; //geometry and line
 			var rotation = 0; //initial rotation
-			var points = []; //create a list of points for the line
+			var points = [new THREE.Vector3(0,0,0)]; //create a list of points for the line
 
 			var count = 0;
 			var numPoints = 1000;
-			var perlin = new Perlin(Math.random())
 
 			init();
 			animate();
@@ -59,7 +59,29 @@
 				let pi = Math.PI;
 				return Math.sin(2*x) + Math.sin(pi * x);
 			}
-			
+			function enforceBoundaryConditions(x,y,z) {
+				let a = x;
+				let b = y;
+				let c = z;
+				if (a > 20) {
+					a = -20;
+				} else if (a < -20) {
+					a = 20;
+				}
+
+				if (b > 20) {
+					b = -20;
+				} else if (b < -20) {
+					b = 20;
+				}
+
+				if (c > 20) {
+					c = -20;
+				} else if (c < -20) {
+					c = 20;
+				}
+				return new THREE.Vector3(a,b,c);
+			}
 			//animate function onUpdate
 			function animate() {
 				requestAnimationFrame( animate ); //animate function
@@ -68,22 +90,25 @@
 					let xNoise = noise(renderer.info.render.frame*0.01);
 					let yNoise = noise(renderer.info.render.frame*0.02);
 					let zNoise = noise(renderer.info.render.frame*0.03);
-					let xVal = ((20 - (-20)) + (-20))*xNoise;
-					let yVal = ((20 - (-20)) + (-20))*yNoise;
-					let zVal = ((20 - (-20)) + (-20))*zNoise;
-					points.push(new THREE.Vector3(xVal,yVal,zVal))
-					// points.push(new THREE.Vector3(getRandomNumber(-20,20),getRandomNumber(-20,20),getRandomNumber(-20,20))) // push a random point
+					let xOffset = ((20 - (-20)) + (-20))*xNoise;
+					let yOffset = ((20 - (-20)) + (-20))*yNoise;
+					let zOffset = ((20 - (-20)) + (-20))*zNoise;
+
+					//get current x y z values, and add noise to them to update
+					let previousPoint = points[points.length-1];
+					let x = previousPoint.x + xOffset;
+					let y = previousPoint.y + yOffset;
+					let z = previousPoint.z + zOffset;
+					points.push(enforceBoundaryConditions(xOffset,yOffset,zOffset))
+					// points.push(enforceBoundaryConditions(x,y,z))
 					geometry.setFromPoints(points);
 					line.geometry = geometry;
 					scene.add(line)
 					count += 1
 				}
 				//rotate line
-				rotation += 0.001
+				// rotation += 0.001
 				// line.rotation.y = rotation;
-				// let noise = perlin.get2(new THREE.Vector2(renderer.info.render.frame,renderer.info.render.frame))*10;
-				// console.log(noise(renderer.info.render.frame))
-				// console.log(renderer.info.render.frame)
 				renderer.render( scene, camera );
 			}
 		</script>
