@@ -14,7 +14,7 @@
 			// import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js';
 
 			import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
-
+			import { ImprovedNoise } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/math/ImprovedNoise.js';
 
 			var renderer, camera, scene;//gl renderer, camera and the scene
 			var geometry, line; //geometry and line
@@ -22,7 +22,9 @@
 			var points = [new THREE.Vector3(0,0,0)]; //create a list of points for the line
 
 			var count = 0;
-			var numPoints = 1000;
+			var numPoints = 100;
+
+			var noiseObject = new ImprovedNoise();
 
 			init();
 			animate();
@@ -36,7 +38,6 @@
 				
 				const controls = new OrbitControls( camera, renderer.domElement );
 
-				
 				camera.position.set( 0, 0, 100 ); //set the camera location
 				camera.lookAt( 0, 0, 0 ); //set camera lookat 
 				controls.update();
@@ -55,10 +56,12 @@
 				return Math.random() * (max - min) + min;
 			}
 
+			//returns between -1 and 1
 			function noise(x) {
 				let pi = Math.PI;
 				return Math.sin(2*x) + Math.sin(pi * x);
 			}
+
 			function enforceBoundaryConditions(x,y,z) {
 				let a = x;
 				let b = y;
@@ -84,31 +87,39 @@
 			}
 			//animate function onUpdate
 			function animate() {
+
 				requestAnimationFrame( animate ); //animate function
 				if (count < numPoints) {
 					scene.remove(line);
-					let xNoise = noise(renderer.info.render.frame*0.01);
-					let yNoise = noise(renderer.info.render.frame*0.02);
-					let zNoise = noise(renderer.info.render.frame*0.03);
-					let xOffset = ((20 - (-20)) + (-20))*xNoise;
-					let yOffset = ((20 - (-20)) + (-20))*yNoise;
-					let zOffset = ((20 - (-20)) + (-20))*zNoise;
+					// let xNoise = noise(renderer.info.render.frame*0.01);
+					// let yNoise = noise(renderer.info.render.frame*0.02);
+					// let zNoise = noise(renderer.info.render.frame*0.03);
+					let frame = renderer.info.render.frame;
 
+					let xNoise = noiseObject.noise(frame*0.01,frame*0.02,frame*0.03);
+					let yNoise = noiseObject.noise(frame*0.04,frame*0.05,frame*0.06);
+					let zNoise = noiseObject.noise(frame*0.07,frame*0.08,frame*0.09);
+					let xOffset = xNoise * 7;
+					let yOffset = yNoise * 7;
+					let zOffset = zNoise * 7;
+					// console.log(ns)
 					//get current x y z values, and add noise to them to update
 					let previousPoint = points[points.length-1];
 					let x = previousPoint.x + xOffset;
 					let y = previousPoint.y + yOffset;
 					let z = previousPoint.z + zOffset;
-					points.push(enforceBoundaryConditions(xOffset,yOffset,zOffset))
-					// points.push(enforceBoundaryConditions(x,y,z))
+					// points.push(enforceBoundaryConditions(xOffset,yOffset,zOffset))
+					points.push(new THREE.Vector3(x,y,z));
+					// points.push(enforceBoundaryConditions(xNoise,0,0));
+					console.log([xNoise,yNoise,zNoise])
 					geometry.setFromPoints(points);
 					line.geometry = geometry;
 					scene.add(line)
 					count += 1
 				}
 				//rotate line
-				// rotation += 0.001
-				// line.rotation.y = rotation;
+				rotation += 0.001
+				line.rotation.y = rotation;
 				renderer.render( scene, camera );
 			}
 		</script>
