@@ -87,7 +87,7 @@
 			}
 			//animate function onUpdate
 			function animate() {
-
+				// var noiseObject = new ImprovedNoise();
 				requestAnimationFrame( animate ); //animate function
 				if (count < numPoints) {
 					scene.remove(line);
@@ -95,10 +95,12 @@
 					// let yNoise = noise(renderer.info.render.frame*0.02);
 					// let zNoise = noise(renderer.info.render.frame*0.03);
 					let frame = renderer.info.render.frame;
-
-					let xNoise = noiseObject.noise(frame*0.01,frame*0.02,frame*0.03);
-					let yNoise = noiseObject.noise(frame*0.04,frame*0.05,frame*0.06);
-					let zNoise = noiseObject.noise(frame*0.07,frame*0.08,frame*0.09);
+					// let xNoise = noiseObject.noise(Math.random()*10000,Math.random()*10000,Math.random()*10000);
+					let xNoise = noiseObject.noise(frame*0.01,frame*0.01,frame*0.01);
+					// let yNoise = noiseObject.noise(Math.random()*10000,Math.random()*10000,Math.random()*10000);
+					let yNoise = noiseObject.noise(frame*0.02,frame*0.02,frame*0.02);
+					// let zNoise = noiseObject.noise(Math.random()*10000,Math.random()*10000,Math.random()*10000);
+					let zNoise = noiseObject.noise(frame*0.03,frame*0.03,frame*0.03);
 					let xOffset = xNoise * 7;
 					let yOffset = yNoise * 7;
 					let zOffset = zNoise * 7;
@@ -108,7 +110,7 @@
 					let x = previousPoint.x + xOffset;
 					let y = previousPoint.y + yOffset;
 					let z = previousPoint.z + zOffset;
-					// points.push(enforceBoundaryConditions(xOffset,yOffset,zOffset))
+					// points.push(enforceBoundaryConditions(x,y,z))
 					points.push(new THREE.Vector3(x,y,z));
 					// points.push(enforceBoundaryConditions(xNoise,0,0));
 					console.log([xNoise,yNoise,zNoise])
@@ -119,7 +121,7 @@
 				}
 				//rotate line
 				rotation += 0.001
-				line.rotation.y = rotation;
+				// line.rotation.y = rotation;
 				renderer.render( scene, camera );
 			}
 		</script>
