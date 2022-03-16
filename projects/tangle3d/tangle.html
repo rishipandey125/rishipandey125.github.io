@@ -21,8 +21,9 @@
 			var rotation = 0; //initial rotation
 			var points = [new THREE.Vector3(0,0,0)]; //create a list of points for the line
 
+			var seed = Math.random()
 			var count = 0;
-			var numPoints = 100;
+			var numPoints = 1000;
 
 			var noiseObject = new ImprovedNoise();
 
@@ -96,11 +97,11 @@
 					// let zNoise = noise(renderer.info.render.frame*0.03);
 					let frame = renderer.info.render.frame;
 					// let xNoise = noiseObject.noise(Math.random()*10000,Math.random()*10000,Math.random()*10000);
-					let xNoise = noiseObject.noise(frame*0.01,frame*0.01,frame*0.01);
+					let xNoise = noiseObject.noise(frame*0.01,1,seed);
 					// let yNoise = noiseObject.noise(Math.random()*10000,Math.random()*10000,Math.random()*10000);
-					let yNoise = noiseObject.noise(frame*0.02,frame*0.02,frame*0.02);
+					let yNoise = noiseObject.noise(seed,frame*0.02,1);
 					// let zNoise = noiseObject.noise(Math.random()*10000,Math.random()*10000,Math.random()*10000);
-					let zNoise = noiseObject.noise(frame*0.03,frame*0.03,frame*0.03);
+					let zNoise = noiseObject.noise(1,seed,frame*0.03);
 					let xOffset = xNoise * 7;
 					let yOffset = yNoise * 7;
 					let zOffset = zNoise * 7;
