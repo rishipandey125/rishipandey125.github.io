@@ -9,21 +9,21 @@
 	</head>
 	<body>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
-		<!-- <script src="./js/three-noise.js"></script> -->
+		<script src="THREE.MeshLine.js"></script>
 		<script type="module">
-			// import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js';
 
 			import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 			import { ImprovedNoise } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/math/ImprovedNoise.js';
 
 			var renderer, camera, scene;//gl renderer, camera and the scene
 			var geometry, line; //geometry and line
+			var mesh;
 			var rotation = 0; //initial rotation
 			var points = [new THREE.Vector3(0,0,0)]; //create a list of points for the line
 
 			var seed = Math.random()
 			var count = 0;
-			var numPoints = 1000;
+			var numPoints = 10000;
 
 			var noiseObject = new ImprovedNoise();
 
@@ -47,12 +47,18 @@
 
 				scene = new THREE.Scene(); //create a scene : stores items (geometry/lights/etc.)
 				
-				const material = new THREE.LineBasicMaterial( { color: "rgb(255,255,255)" } ); // create a material for the lines
+				// const material = new THREE.LineBasicMaterial( { color: "rgb(255,255,255)"} ); // create a material for the lines
 				
-				geometry = new THREE.BufferGeometry().setFromPoints( points ); //turn the points into geometry by storing in a buffer geo
+				// geometry = new THREE.BufferGeometry().setFromPoints( points ); //turn the points into geometry by storing in a buffer geo
 
-				line = new THREE.Line( geometry, material ); //create a line based on that buffer geo and the material
-				scene.add(line);
+				line = new MeshLine();
+				line.setPoints(points.flat())
+
+				var material = new MeshLineMaterial();
+				mesh = new THREE.Mesh(line,material);
+				// line.setGeometry(geometry)
+				// line = new THREE.Line( geometry, material ); //create a line based on that buffer geo and the material
+				scene.add(mesh);
 			}
 
 			function getRandomNumber(min, max) {
@@ -88,21 +94,15 @@
 				// var noiseObject = new ImprovedNoise();
 				requestAnimationFrame( animate ); //animate function
 				if (count < numPoints) {
-					scene.remove(line);
-					// let xNoise = noise(renderer.info.render.frame*0.01);
-					// let yNoise = noise(renderer.info.render.frame*0.02);
-					// let zNoise = noise(renderer.info.render.frame*0.03);
+					scene.remove(mesh);
 					let frame = renderer.info.render.frame;
-					// let xNoise = noiseObject.noise(Math.random()*10000,Math.random()*10000,Math.random()*10000);
 					let xNoise = noiseObject.noise(frame*0.01,seed,seed);
-					// let yNoise = noiseObject.noise(Math.random()*10000,Math.random()*10000,Math.random()*10000);
 					let yNoise = noiseObject.noise(seed,frame*0.02,seed);
-					// let zNoise = noiseObject.noise(Math.random()*10000,Math.random()*10000,Math.random()*10000);
 					let zNoise = noiseObject.noise(seed,seed,frame*0.03);
-					let xOffset = xNoise * 7;
-					let yOffset = yNoise * 7;
-					let zOffset = zNoise * 7;
-					// console.log(ns)
+					
+					let xOffset = xNoise * 1;
+					let yOffset = yNoise * 1;
+					let zOffset = zNoise * 1;
 					//get current x y z values, and add noise to them to update
 					let previousPoint = points[points.length-1];
 					let x = previousPoint.x + xOffset;
@@ -110,16 +110,17 @@
 					let z = previousPoint.z + zOffset;
 					// points.push(enforceBoundaryConditions(x,y,z))
 					points.push(new THREE.Vector3(x,y,z));
-					// points.push(enforceBoundaryConditions(xNoise,0,0));
-					console.log([xNoise,yNoise,zNoise])
-					geometry.setFromPoints(points);
-					line.geometry = geometry;
-					scene.add(line)
+					// geometry.setFromPoints(points);
+
+					// line.geometry = geometry;
+					line.setPoints(points.flat())
+					mesh.geometry = line;
+					scene.add(mesh)
 					count += 1
 				}
 				//rotate line
 				rotation += 0.001
-				// line.rotation.y = rotation;
+				mesh.rotation.y = rotation;
 				renderer.render( scene, camera );
 			}
 		</script>
