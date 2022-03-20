@@ -3,9 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script> -->
-		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.min.js"></script> -->
-		<!-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<title>tangle!</title>
 	
 		<!-- load bootstrap -->
@@ -126,8 +124,9 @@
 		
 		
 						PARAMS = {
-						thickness: 10,
-						color: '#0f0'
+							thickness: 10,
+							color: '#ffffff',
+							bg_color: '#000000'
 						};
 		
 						const pane = new Tweakpane.Pane({
@@ -135,16 +134,21 @@
 										expanded: true,
 										});
 						
-						pane.addBlade({
-							view: 'slider',
-							label: 'thickness',
-							min: 1,
-							max: 100,
-							value: 10,
-						});
-						// pane.addInput(PARAMS, 'thickness');
+						// pane.addBlade({
+						// 	view: 'slider',
+						// 	label: 'thickness',
+						// 	min: 1,
+						// 	max: 100,
+						// 	value: 10,
+						// });
+						pane.addInput(PARAMS, 'thickness',{
+										min: 1,
+										max: 100
+										}
+									);
 						pane.addInput(PARAMS, 'color');
-		
+						pane.addInput(PARAMS, 'bg_color');
+										
 					}
 		
 					function getRandomNumber(min, max) {
@@ -154,6 +158,8 @@
 					//animate function onUpdate
 					function animate() {
 						requestAnimationFrame( animate ); //animate function
+						renderer.setClearColor (PARAMS.bg_color, 1);
+						// scene.background = new THREE.color(PARAMS.bg_color)
 						if (count < numPoints) {
 							scene.remove(mesh);
 							let frame = renderer.info.render.frame;
@@ -161,9 +167,9 @@
 							let yNoise = noiseObject.noise(frame*0.02,seed,seed);
 							let zNoise = noiseObject.noise(frame*0.03,seed,seed);
 							
-							let xOffset = xNoise * 5;
-							let yOffset = yNoise * 5;
-							let zOffset = zNoise * 5;
+							let xOffset = xNoise * 10;
+							let yOffset = yNoise * 10;
+							let zOffset = zNoise * 10;
 							//get current x y z values, and add noise to them to update
 							let previousPoint = points[points.length-1];
 							let x = previousPoint.x + xOffset;
@@ -173,14 +179,15 @@
 		
 							line.setPoints(points)
 							mesh.geometry = line;
-							console.log(PARAMS.color)
+							// console.log(PARAMS.color)
+							mesh.material.lineWidth = PARAMS.thickness
 							mesh.material.color = new THREE.Color(PARAMS.color)
 							scene.add(mesh)
 							count += 1
 						}
 						//rotate line
 						rotation += 0.001
-						// mesh.rotation.y = rotation;
+						mesh.rotation.y = rotation;
 						renderer.render( scene, camera );
 					}
 				</script>
