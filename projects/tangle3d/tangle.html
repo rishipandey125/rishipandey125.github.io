@@ -101,8 +101,7 @@
 						}
 						
 						renderer.setSize( canvasWidth, canvasHeight ); //set the render size
-						document.getElementById('sketch').appendChild( renderer.domElement );
-						// document.body.appendChild( renderer.domElement ); //adds a canvas element to html so that we can view the rendered scene
+						document.getElementById('sketch').appendChild( renderer.domElement ); //parent to sketch id 
 						
 						camera = new THREE.PerspectiveCamera( 45, canvasWidth / canvasHeight, 1, 10000 ); // create a camera with (fov, aspect ratio, near, far)
 						
