@@ -60,7 +60,7 @@
 	  
 			<div class="row justify-content-center mb-3">
 			  <div class="col-sm-12 col-md-8 col-lg-8">
-				<div id="sketch"></div>
+
 				<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
 				<script src="THREE.MeshLine.js"></script>
 				<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
@@ -73,6 +73,7 @@
 					var renderer, camera, scene;//gl renderer, camera and the scene
 					var mesh, line; //mesh and line
 					var rotation = 0; //initial rotation
+					var lines = []
 					var points = [new THREE.Vector3(0,0,0)]; //create a list of points for the line
 		
 					var seed = Math.random()
@@ -128,12 +129,12 @@
 							line: '#ffffff',
 							background: '#000000'
 						};
-		
+						
 						const pane = new Tweakpane.Pane({
+										container: document.getElementById('UI'),
 										title: 'line setttings',
 										expanded: true,
 										});
-						
 						// pane.addBlade({
 						// 	view: 'slider',
 						// 	label: 'thickness',
@@ -154,7 +155,11 @@
 					function getRandomNumber(min, max) {
 						return Math.random() * (max - min) + min;
 					}
-		
+					
+					function createNewLine() {
+
+					}
+
 					//animate function onUpdate
 					function animate() {
 						requestAnimationFrame( animate ); //animate function
@@ -190,17 +195,13 @@
 						renderer.render( scene, camera );
 					}
 				</script>
+				<div id="UI"></div>
+				<p>&nbsp;</p> 
+				<div id="sketch"></div>
 			  </div>
 			</div> 
 			<p>&nbsp;</p> 
-		
-			<div class="row justify-content-center mb-3s">
-			  <div class="col-sm-12 col-md-8 col-lg-10">
-				<p class="">tap/click <i>reset</i> to clear the canvas and generate a new color palette
-				</p>
-				<p>&nbsp;</p> 
-			  </div>
-			</div>
+	
 	  
 		</div>
 		  
