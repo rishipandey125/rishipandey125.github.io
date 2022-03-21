@@ -125,8 +125,8 @@
 		
 						PARAMS = {
 							thickness: 10,
-							color: '#ffffff',
-							bg_color: '#000000'
+							line: '#ffffff',
+							background: '#000000'
 						};
 		
 						const pane = new Tweakpane.Pane({
@@ -146,8 +146,8 @@
 										max: 100
 										}
 									);
-						pane.addInput(PARAMS, 'color');
-						pane.addInput(PARAMS, 'bg_color');
+						pane.addInput(PARAMS, 'line');
+						pane.addInput(PARAMS, 'background');
 										
 					}
 		
@@ -158,8 +158,7 @@
 					//animate function onUpdate
 					function animate() {
 						requestAnimationFrame( animate ); //animate function
-						renderer.setClearColor (PARAMS.bg_color, 1);
-						// scene.background = new THREE.color(PARAMS.bg_color)
+						renderer.setClearColor (PARAMS.background, 1); //set the bg color
 						if (count < numPoints) {
 							scene.remove(mesh);
 							let frame = renderer.info.render.frame;
@@ -181,7 +180,7 @@
 							mesh.geometry = line;
 							// console.log(PARAMS.color)
 							mesh.material.lineWidth = PARAMS.thickness
-							mesh.material.color = new THREE.Color(PARAMS.color)
+							mesh.material.color = new THREE.Color(PARAMS.line)
 							scene.add(mesh)
 							count += 1
 						}
