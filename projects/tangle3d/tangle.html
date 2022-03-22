@@ -70,10 +70,13 @@
 					import { ImprovedNoise } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/math/ImprovedNoise.js';
 		
 					var renderer, camera, scene;//gl renderer, camera and the scene
-					var mesh, line; //mesh and line
+					// var mesh, line; //mesh and line
 					var rotation = 0; //initial rotation
-					var lines = [];
+					var strokePoints = [];
+					var strokeMeshes = [];
 					var points = [getSpawnPoint()];
+
+					//
 					// var points = [new THREE.Vector3(0,0,0)]; //create a list of points for the line
 					var controls; 
 					var seed = Math.random()
@@ -116,15 +119,15 @@
 		
 						scene = new THREE.Scene(); //create a scene : stores items (geometry/lights/etc.)
 									
+						// line = new MeshLine(); //create the line
+						// line.setPoints(points) // set the line to be the points
 		
-						line = new MeshLine(); //create the line
-						line.setPoints(points) // set the line to be the points
-		
-						var material = new MeshLineMaterial({color: new THREE.Color("rgb(255, 0, 0)"), lineWidth: 10}); //create a material for the line 
-						mesh = new THREE.Mesh(line,material); //set the mesh to be the meshline and material
-						scene.add(mesh); //add the mesh to the scene
+						// var material = new MeshLineMaterial({color: new THREE.Color("rgb(255, 0, 0)"), lineWidth: 10}); //create a material for the line 
+						// mesh = new THREE.Mesh(line,material); //set the mesh to be the meshline and material
+						// scene.add(mesh); //add the mesh to the scene
 						setupUI()
-		
+						newStroke()
+
 										
 					}
 		
@@ -185,13 +188,23 @@
 
 						//handle buttons
 						clearBtn.on('click', () => {
-							points = [getSpawnPoint()];
+							strokePoints = [];
+							strokeMeshes = [];
+							newStroke()
 							renderLine = false;
 						});
 						
 						newLineBtn.on('click', () => {
 							renderLine = true;
+							newStroke();
 						});
+
+						delPrevBtn.on('click', () => {
+							renderLine = false;
+							strokePoints.pop();
+							strokeMeshes.pop();
+						});
+
 						startBtn.on('click', () => {
 							renderLine = true;
 						});
@@ -201,13 +214,26 @@
 						});
 					}
 
+					function newStroke() {
+						//stroke has a set of points
+						let points = [getSpawnPoint()];
+						//material and line and mesh
+						let stroke  = new MeshLine(); //create the line
+						stroke.setPoints(points) // set the line to be the points
+		
+						let material = new MeshLineMaterial({color: new THREE.Color(PARAMS.line) , lineWidth: PARAMS.thickness}); //create a material for the line 
+						let mesh = new THREE.Mesh(stroke,material); //set the mesh to be the meshline and material					
+						strokePoints.push(points);
+						strokeMeshes.push(mesh);
+					}
+
 					//animate function onUpdate
 					function animate() {
 						requestAnimationFrame( animate ); //animate function
 						controls.minDistance = 1000;
 						renderer.setClearColor (PARAMS.background, 1); //set the bg color
 						if (renderLine) {
-							scene.remove(mesh);
+							// scene.remove(mesh);
 							let frame = renderer.info.render.frame;
 							let xNoise = noiseObject.noise(frame*0.01,seed,seed);
 							let yNoise = noiseObject.noise(frame*0.02,seed,seed);
@@ -217,24 +243,26 @@
 							let yOffset = yNoise * 10;
 							let zOffset = zNoise * 10;
 							//get current x y z values, and add noise to them to update]
+							let points = strokePoints[strokePoints.length-1];
 							let previousPoint = points[points.length-1];
 							let x = previousPoint.x + xOffset;
 							let y = previousPoint.y + yOffset;
 							let z = previousPoint.z + zOffset;
-							points.push(new THREE.Vector3(x,y,z));
-	
+							strokePoints[strokePoints.length-1].push(new THREE.Vector3(x,y,z));
 							count += 1
 						}
-						line.setPoints(points)
-						mesh.geometry = line;
+						let stroke  = new MeshLine();
+						stroke.setPoints(strokePoints[strokePoints.length-1])
+						strokeMeshes[strokeMeshes.length-1].geometry = stroke
+						// mesh.geometry = line;
 						// console.log(PARAMS.color)
-						mesh.material.lineWidth = PARAMS.thickness
-						mesh.material.color = new THREE.Color(PARAMS.line)
-						scene.add(mesh)
+						strokeMeshes[strokeMeshes.length-1].material.lineWidth = PARAMS.thickness
+						strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
+						scene.add(strokeMeshes[strokeMeshes.length-1])
 						//rotate line
 						if (PARAMS.rotate) {
 							rotation -= 0.002
-							mesh.rotation.y = rotation;
+							strokeMeshes[strokeMeshes.length-1].rotation.y = rotation;
 						}
 						renderer.render( scene, camera );
 					}
