@@ -68,17 +68,18 @@
 		
 					import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 					import { ImprovedNoise } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/math/ImprovedNoise.js';
-					// import { useControls } from 'leva'
 		
 					var renderer, camera, scene;//gl renderer, camera and the scene
 					var mesh, line; //mesh and line
 					var rotation = 0; //initial rotation
-					var lines = []
-					var points = [new THREE.Vector3(0,0,0)]; //create a list of points for the line
+					var lines = [];
+					var points = [getSpawnPoint()];
+					// var points = [new THREE.Vector3(0,0,0)]; //create a list of points for the line
 					var controls; 
 					var seed = Math.random()
 					var count = 0;
-					var numPoints = 10000;
+					var renderLine = false;
+					// var numPoints = 10000;
 		
 					var noiseObject = new ImprovedNoise();
 					var PARAMS;
@@ -130,12 +131,18 @@
 					function getRandomNumber(min, max) {
 						return Math.random() * (max - min) + min;
 					}
-					
+
+					function getSpawnPoint() {
+						//return vec3 
+						return new THREE.Vector3(getRandomNumber(-1000,1000),getRandomNumber(-1000,1000),getRandomNumber(-1000,1000));
+					}
+
 					function setupUI() {
 						PARAMS = {
-							thickness: 10,
+							thickness: 25,
 							line: '#ffffff',
-							background: '#000000'
+							background: '#000000',
+							rotate: true
 						};
 						
 						const pane = new Tweakpane.Pane({
@@ -161,13 +168,37 @@
 						const clearBtn = canvasControls.addButton({
 										title: 'clear'
 										});
+						canvasControls.addInput(PARAMS, 'rotate');
 						canvasControls.addInput(PARAMS, 'background');
 						strokeControls.addInput(PARAMS, 'thickness',{
 										min: 1,
-										max: 100
+										max: 50
 										}
 									);
 						strokeControls.addInput(PARAMS, 'line');
+						const startBtn = strokeControls.addButton({
+										title: 'start'
+										});
+						const stopBtn = strokeControls.addButton({
+										title: 'stop'
+										});
+
+						//handle buttons
+						clearBtn.on('click', () => {
+							points = [getSpawnPoint()];
+							renderLine = false;
+						});
+						
+						newLineBtn.on('click', () => {
+							renderLine = true;
+						});
+						startBtn.on('click', () => {
+							renderLine = true;
+						});
+
+						stopBtn.on('click', () => {
+							renderLine = false;
+						});
 					}
 
 					//animate function onUpdate
@@ -175,7 +206,7 @@
 						requestAnimationFrame( animate ); //animate function
 						controls.minDistance = 1000;
 						renderer.setClearColor (PARAMS.background, 1); //set the bg color
-						if (count < numPoints) {
+						if (renderLine) {
 							scene.remove(mesh);
 							let frame = renderer.info.render.frame;
 							let xNoise = noiseObject.noise(frame*0.01,seed,seed);
@@ -185,24 +216,26 @@
 							let xOffset = xNoise * 10;
 							let yOffset = yNoise * 10;
 							let zOffset = zNoise * 10;
-							//get current x y z values, and add noise to them to update
+							//get current x y z values, and add noise to them to update]
 							let previousPoint = points[points.length-1];
 							let x = previousPoint.x + xOffset;
 							let y = previousPoint.y + yOffset;
 							let z = previousPoint.z + zOffset;
 							points.push(new THREE.Vector3(x,y,z));
-		
-							line.setPoints(points)
-							mesh.geometry = line;
-							// console.log(PARAMS.color)
-							mesh.material.lineWidth = PARAMS.thickness
-							mesh.material.color = new THREE.Color(PARAMS.line)
-							scene.add(mesh)
+	
 							count += 1
 						}
+						line.setPoints(points)
+						mesh.geometry = line;
+						// console.log(PARAMS.color)
+						mesh.material.lineWidth = PARAMS.thickness
+						mesh.material.color = new THREE.Color(PARAMS.line)
+						scene.add(mesh)
 						//rotate line
-						rotation += 0.001
-						// mesh.rotation.y = rotation;
+						if (PARAMS.rotate) {
+							rotation -= 0.002
+							mesh.rotation.y = rotation;
+						}
 						renderer.render( scene, camera );
 					}
 				</script>
