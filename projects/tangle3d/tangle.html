@@ -79,7 +79,8 @@
 					var renderLine = false; 
 					var noiseObject = new ImprovedNoise(); //improved noise object
 					var PARAMS; //params for UI
-
+					const MIN_THICKNESS = 25;
+					const MAX_THICKNESS = 200;
 					init(); //onStart
 					animate(); //onUpdate
 					
@@ -125,7 +126,7 @@
 					//spawn point in box 2000x2000x2000 centered at origin
 					function getSpawnPoint() {
 						//return vec3 
-						return new THREE.Vector3(getRandomNumber(-500,500),getRandomNumber(-500,500),getRandomNumber(-500,500));
+						return new THREE.Vector3(getRandomNumber(-100,100),getRandomNumber(-100,100),getRandomNumber(-100,100));
 					}
 
 					//setup the UI
@@ -213,42 +214,22 @@
 						});
 
 					}
-
-					function enforceBoundary(offset,previous,boundary) {
-						let o = new THREE.Vector3();
-						let newPoint = previous.add(offset);
-						
-						if (newPoint.x > boundary || newPoint.x < -1 * boundary) {
-							o.x = -1 * offset.x;
-						}
-						if (newPoint.y > boundary || newPoint.y < -1 * boundary) {
-							o.y = -1 * offset.y;
-						}
-						if (newPoint.z > boundary || newPoint.z < -1 * boundary) {
-							o.z = -1 * offset.z;
-						}
-						newPoint = previous.add(o)
-						return newPoint;
-						// console.log(newPoint.distanceTo(ORIGIN))
-						// if (newPoint.distanceTo(ORIGIN) < boundary) {
-						// 	return newPoint;
-						// } else {
-						// 	return previous.sub(offset);
-						// }
-					}
-
 					//generate a new stroke
 					function newStroke() {
 						//stroke has a set of points
-						let points = [getSpawnPoint()];
+						let points = [new THREE.Vector3(0,0,0)];
 						//material and line and mesh
 						let stroke  = new MeshLine(); //create the line
 						stroke.setPoints(points) // set the line to be the points
-						let material = new MeshLineMaterial({color: new THREE.Color(PARAMS.line) , side: THREE.DoubleSide,lineWidth: PARAMS.thickness}); //create a material for the line 
+						let material = new MeshLineMaterial({color: new THREE.Color(PARAMS.line) , side: THREE.DoubleSide,lineWidth: lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)}); //create a material for the line 
 						let mesh = new THREE.Mesh(stroke,material); //set the mesh to be the meshline and material					
 						strokePoints.push(points); //add to the global array
 						strokeMeshes.push(mesh);
 						// renderLine = true; //draw the line
+					}
+					
+					function lerp(min,max,i) {
+						return min + ((max - min) * i);
 					}
 
 					//animate function onUpdate
@@ -259,47 +240,49 @@
 						renderer.setClearColor (PARAMS.background, 1); //set the bg color
 						if (renderLine) {
 							let frame = renderer.info.render.frame;
+							let points = strokePoints[strokePoints.length-1];
+							let previousPoint = points[points.length-1];
+							let boundary = 4000;
 							let xNoise = noiseObject.noise(frame*0.01,seed,seed);
 							let yNoise = noiseObject.noise(seed,frame*0.02,seed);
 							let zNoise = noiseObject.noise(seed,seed,frame*0.03);
-							let xOffset = xNoise * 50;
-							let yOffset = yNoise * 50;
-							let zOffset = zNoise * 50;
+							let xOffset = xNoise * boundary;
+							let yOffset = yNoise * boundary;
+							let zOffset = zNoise * boundary;
+							// console.log(xOffset)
 							// let origin = new THREE.Vector3();
 							//get current x y z values, and add noise to them to update]
-							let points = strokePoints[strokePoints.length-1];
-							let previousPoint = points[points.length-1];
-							let boundary = 3000;
 
-							if (previousPoint.x + xOffset > boundary || previousPoint.x + xOffset < -1 * boundary) {
-								xOffset = xOffset * -1;
-								yOffset = yOffset * -1;
-								zOffset = zOffset * -1;
-							}
-							if (previousPoint.y + yOffset > boundary || previousPoint.y + yOffset < -1 * boundary) {
-								xOffset = xOffset * -1;
-								yOffset = yOffset * -1;
-								zOffset = zOffset * -1;
-							}
-							if (previousPoint.z + zOffset > boundary || previousPoint.z + zOffset < -1 * boundary) {
-								xOffset = xOffset * -1;
-								yOffset = yOffset * -1;
-								zOffset = zOffset * -1;
-							}
+							
+							// if (previousPoint.x + xOffset > boundary || previousPoint.x + xOffset < -1 * boundary) {
+							// 	xOffset *= -1;
+							// 	yOffset *= -1;
+							// 	zOffset *= -1;
+							// }
+							// if (previousPoint.y + yOffset > boundary || previousPoint.y + yOffset < -1 * boundary) {
+							// 	xOffset *= -1;
+							// 	yOffset *= -1;
+							// 	zOffset *= -1;
+							// }
+							// if (previousPoint.z + zOffset > boundary || previousPoint.z + zOffset < -1 * boundary) {
+							// 	xOffset *= -1;
+							// 	yOffset *= -1;
+							// 	zOffset *= -1;
+							// }
 							// let offset = new THREE.Vector3(xOffset,yOffset,zOffset);
 
  							let x = previousPoint.x + xOffset;
 							let y = previousPoint.y + yOffset;
 							let z = previousPoint.z + zOffset;
 							// let nextPoint = previousPoint.add(offset);
-							let nextPoint = new THREE.Vector3(x,y,z);
+							let nextPoint = new THREE.Vector3(xOffset,yOffset,zOffset);
 							// console.log(nextPoint)
 							strokePoints[strokePoints.length-1].push(nextPoint);
 						}
 						let stroke  = new MeshLine();
 						stroke.setPoints(strokePoints[strokePoints.length-1])
 						strokeMeshes[strokeMeshes.length-1].geometry = stroke
-						strokeMeshes[strokeMeshes.length-1].material.lineWidth = PARAMS.thickness
+						strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
 						strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
 						scene.add(strokeMeshes[strokeMeshes.length-1])
 						renderer.render( scene, camera );
