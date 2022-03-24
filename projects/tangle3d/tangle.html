@@ -73,11 +73,10 @@
 					var rotation = 0; //initial rotation
 					var strokePoints = []; //points for every stroke
 					var strokeMeshes = []; //mesh (w/ geo and material) for every stroke
-
+					// const MAX_FRAMES = 18000;
 					var controls; //controls variable
-					var seed = Math.random() //seed for this piece
+					var seed = getRandomNumber(0.3,0.8) //seed for this piece
 					var renderLine = false; 
-		
 					var noiseObject = new ImprovedNoise(); //improved noise object
 					var PARAMS; //params for UI
 
@@ -100,11 +99,11 @@
 						renderer.setSize( canvasWidth, canvasHeight ); //set the render size
 						document.getElementById('sketch').appendChild( renderer.domElement ); //parent to sketch id 	
 						
-						camera = new THREE.PerspectiveCamera(80, canvasWidth / canvasHeight, 1, 1000001 ); // create a camera with (fov, aspect ratio, near, far)
+						camera = new THREE.PerspectiveCamera(80, canvasWidth / canvasHeight, 1, 15000 ); // create a camera with (fov, aspect ratio, near, far)
 						
 						controls = new OrbitControls( camera, renderer.domElement ); //setup orbit controls
-						controls.minDistance = 7000; //start far out
-						controls.maxDistance = 100000; //max distance for orbit controls
+						controls.minDistance = 4000; //start far out
+						controls.maxDistance = 10000; //max distance for orbit controls
 						// camera.position.set( - 40, 0, 60 );
 
 
@@ -126,15 +125,15 @@
 					//spawn point in box 2000x2000x2000 centered at origin
 					function getSpawnPoint() {
 						//return vec3 
-						return new THREE.Vector3(getRandomNumber(-1000,1000),getRandomNumber(-1000,1000),getRandomNumber(-1000,1000));
+						return new THREE.Vector3(getRandomNumber(-500,500),getRandomNumber(-500,500),getRandomNumber(-500,500));
 					}
 
 					//setup the UI
 					function setupUI() {
 						//initial params
 						PARAMS = {
-							thickness: 25,
 							line: '#ffffff',
+							thickness: 25,
 							background: '#000000'
 						};
 						//creation of pane
@@ -163,15 +162,27 @@
 										});
 						//set the bg color of the canvas
 						canvasControls.addInput(PARAMS, 'background');
+
+
+
+			
+
 						//thickness controls for stroke
 						strokeControls.addInput(PARAMS, 'thickness',{
 										min: 1,
-										max: 500
+										max: 100
 										}
 									);
+
 						//color controls for stroke
 						strokeControls.addInput(PARAMS, 'line');
 
+						const startBtn = strokeControls.addButton({
+							title: 'start'
+							});
+						const stopBtn = strokeControls.addButton({
+							title: 'stop'
+							});
 						//handle buttons
 						//clear/reset button
 						clearBtn.on('click', () => {
@@ -191,6 +202,39 @@
 							newStroke();
 						});
 
+						startBtn.on('click', () => {
+							renderLine = true;
+							// newStroke();
+						});
+
+						stopBtn.on('click', () => {
+							renderLine = false;
+							// newStroke();
+						});
+
+					}
+
+					function enforceBoundary(offset,previous,boundary) {
+						let o = new THREE.Vector3();
+						let newPoint = previous.add(offset);
+						
+						if (newPoint.x > boundary || newPoint.x < -1 * boundary) {
+							o.x = -1 * offset.x;
+						}
+						if (newPoint.y > boundary || newPoint.y < -1 * boundary) {
+							o.y = -1 * offset.y;
+						}
+						if (newPoint.z > boundary || newPoint.z < -1 * boundary) {
+							o.z = -1 * offset.z;
+						}
+						newPoint = previous.add(o)
+						return newPoint;
+						// console.log(newPoint.distanceTo(ORIGIN))
+						// if (newPoint.distanceTo(ORIGIN) < boundary) {
+						// 	return newPoint;
+						// } else {
+						// 	return previous.sub(offset);
+						// }
 					}
 
 					//generate a new stroke
@@ -200,7 +244,7 @@
 						//material and line and mesh
 						let stroke  = new MeshLine(); //create the line
 						stroke.setPoints(points) // set the line to be the points
-						let material = new MeshLineMaterial({color: new THREE.Color(PARAMS.line) , lineWidth: PARAMS.thickness}); //create a material for the line 
+						let material = new MeshLineMaterial({color: new THREE.Color(PARAMS.line) , side: THREE.DoubleSide,lineWidth: PARAMS.thickness}); //create a material for the line 
 						let mesh = new THREE.Mesh(stroke,material); //set the mesh to be the meshline and material					
 						strokePoints.push(points); //add to the global array
 						strokeMeshes.push(mesh);
@@ -210,36 +254,47 @@
 					//animate function onUpdate
 					function animate() {
 						requestAnimationFrame( animate ); //animate function
-
+						// console.log(seed)
 						controls.minDistance = 1000; //change the min distance sso onUpdate you can go up close
 						renderer.setClearColor (PARAMS.background, 1); //set the bg color
-						console.log(seed)
 						if (renderLine) {
 							let frame = renderer.info.render.frame;
-							let xNoise = noiseObject.noise(frame*0.01*seed,seed,seed);
-							let yNoise = noiseObject.noise(frame*0.02*seed,seed,seed);
-							let zNoise = noiseObject.noise(frame*0.03*seed,seed,seed);
-							
-							let xOffset = xNoise * 200;
-							let yOffset = yNoise * 200;
-							let zOffset = zNoise * 200;
+							let xNoise = noiseObject.noise(frame*0.01,seed,seed);
+							let yNoise = noiseObject.noise(seed,frame*0.02,seed);
+							let zNoise = noiseObject.noise(seed,seed,frame*0.03);
+							let xOffset = xNoise * 50;
+							let yOffset = yNoise * 50;
+							let zOffset = zNoise * 50;
+							// let origin = new THREE.Vector3();
 							//get current x y z values, and add noise to them to update]
 							let points = strokePoints[strokePoints.length-1];
 							let previousPoint = points[points.length-1];
-							let boundary = 10000;
+							let boundary = 3000;
+
 							if (previousPoint.x + xOffset > boundary || previousPoint.x + xOffset < -1 * boundary) {
 								xOffset = xOffset * -1;
-							}
-							if (previousPoint.y + yOffset > boundary || previousPoint.y + yOffset < -1 * boundary) {
 								yOffset = yOffset * -1;
-							}
-							if (previousPoint.z + zOffset > boundary || previousPoint.z + zOffset < -1 * boundary) {
 								zOffset = zOffset * -1;
 							}
+							if (previousPoint.y + yOffset > boundary || previousPoint.y + yOffset < -1 * boundary) {
+								xOffset = xOffset * -1;
+								yOffset = yOffset * -1;
+								zOffset = zOffset * -1;
+							}
+							if (previousPoint.z + zOffset > boundary || previousPoint.z + zOffset < -1 * boundary) {
+								xOffset = xOffset * -1;
+								yOffset = yOffset * -1;
+								zOffset = zOffset * -1;
+							}
+							// let offset = new THREE.Vector3(xOffset,yOffset,zOffset);
+
  							let x = previousPoint.x + xOffset;
 							let y = previousPoint.y + yOffset;
 							let z = previousPoint.z + zOffset;
-							strokePoints[strokePoints.length-1].push(new THREE.Vector3(x,y,z));
+							// let nextPoint = previousPoint.add(offset);
+							let nextPoint = new THREE.Vector3(x,y,z);
+							// console.log(nextPoint)
+							strokePoints[strokePoints.length-1].push(nextPoint);
 						}
 						let stroke  = new MeshLine();
 						stroke.setPoints(strokePoints[strokePoints.length-1])
