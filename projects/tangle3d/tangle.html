@@ -244,9 +244,9 @@
 							let points = strokePoints[strokePoints.length-1];
 							// let previousPoint  = points[points.length-1];
 							let boundary = 7000;
-							let xNoise = noiseObject.noise(frame*0.01,seed,seed);
-							let yNoise = noiseObject.noise(frame*0.02,seed,seed);
-							let zNoise = noiseObject.noise(frame*0.03,seed,seed);
+							let xNoise = noiseObject.noise(frame*0.0025,seed,seed);
+							let yNoise = noiseObject.noise(frame*0.005,seed,seed);
+							let zNoise = noiseObject.noise(frame*0.0075,seed,seed);
 							let xOffset = xNoise * boundary;
 							let yOffset = yNoise * boundary;
 							let zOffset = zNoise * boundary;
