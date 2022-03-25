@@ -225,6 +225,7 @@
 						let mesh = new THREE.Mesh(stroke,material); //set the mesh to be the meshline and material					
 						strokePoints.push(points); //add to the global array
 						strokeMeshes.push(mesh);
+						seed = Math.random();
 						// renderLine = true; //draw the line
 					}
 					
@@ -254,13 +255,19 @@
 							let nextPoint = new THREE.Vector3(xOffset,yOffset,zOffset);
 							// console.log(nextPoint)
 							strokePoints[strokePoints.length-1].push(nextPoint);
+							let stroke  = new MeshLine();
+							stroke.setPoints(strokePoints[strokePoints.length-1])
+							strokeMeshes[strokeMeshes.length-1].geometry = stroke
+							strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
+							strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
+							scene.add(strokeMeshes[strokeMeshes.length-1])
 						}
-						let stroke  = new MeshLine();
-						stroke.setPoints(strokePoints[strokePoints.length-1])
-						strokeMeshes[strokeMeshes.length-1].geometry = stroke
-						strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
-						strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
-						scene.add(strokeMeshes[strokeMeshes.length-1])
+						// let stroke  = new MeshLine();
+						// stroke.setPoints(strokePoints[strokePoints.length-1])
+						// strokeMeshes[strokeMeshes.length-1].geometry = stroke
+						// strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
+						// strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
+						// scene.add(strokeMeshes[strokeMeshes.length-1])
 						renderer.render( scene, camera );
 					}
 				</script>
