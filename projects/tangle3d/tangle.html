@@ -100,11 +100,11 @@
 						renderer.setSize( canvasWidth, canvasHeight ); //set the render size
 						document.getElementById('sketch').appendChild( renderer.domElement ); //parent to sketch id 	
 						
-						camera = new THREE.PerspectiveCamera(80, canvasWidth / canvasHeight, 1, 15000 ); // create a camera with (fov, aspect ratio, near, far)
+						camera = new THREE.PerspectiveCamera(80, canvasWidth / canvasHeight, 1, 26000 ); // create a camera with (fov, aspect ratio, near, far)
 						
 						controls = new OrbitControls( camera, renderer.domElement ); //setup orbit controls
-						controls.minDistance = 4000; //start far out
-						controls.maxDistance = 10000; //max distance for orbit controls
+						controls.minDistance = 11000; //start far out
+						controls.maxDistance = 13000; //max distance for orbit controls
 						// camera.position.set( - 40, 0, 60 );
 
 
@@ -150,12 +150,12 @@
 									});
 						//stroke controls section
 						const strokeControls = pane.addFolder({
-												title: 'stroke',
+												title: 'noodle',
 												expanded: true,   // optional
 												});
 						//button to generate new stroke
 						const newLineBtn = canvasControls.addButton({
-										title: 'generate stroke'
+										title: 'generate noodle'
 										});
 						//clear the canvas 
 						const clearBtn = canvasControls.addButton({
@@ -217,7 +217,7 @@
 					//generate a new stroke
 					function newStroke() {
 						//stroke has a set of points
-						let points = [new THREE.Vector3(0,0,0)];
+						let points = [];
 						//material and line and mesh
 						let stroke  = new MeshLine(); //create the line
 						stroke.setPoints(points) // set the line to be the points
@@ -241,39 +241,15 @@
 						if (renderLine) {
 							let frame = renderer.info.render.frame;
 							let points = strokePoints[strokePoints.length-1];
-							let previousPoint = points[points.length-1];
-							let boundary = 4000;
+							// let previousPoint  = points[points.length-1];
+							let boundary = 7000;
 							let xNoise = noiseObject.noise(frame*0.01,seed,seed);
-							let yNoise = noiseObject.noise(seed,frame*0.02,seed);
-							let zNoise = noiseObject.noise(seed,seed,frame*0.03);
+							let yNoise = noiseObject.noise(frame*0.02,seed,seed);
+							let zNoise = noiseObject.noise(frame*0.03,seed,seed);
 							let xOffset = xNoise * boundary;
 							let yOffset = yNoise * boundary;
 							let zOffset = zNoise * boundary;
-							// console.log(xOffset)
-							// let origin = new THREE.Vector3();
-							//get current x y z values, and add noise to them to update]
 
-							
-							// if (previousPoint.x + xOffset > boundary || previousPoint.x + xOffset < -1 * boundary) {
-							// 	xOffset *= -1;
-							// 	yOffset *= -1;
-							// 	zOffset *= -1;
-							// }
-							// if (previousPoint.y + yOffset > boundary || previousPoint.y + yOffset < -1 * boundary) {
-							// 	xOffset *= -1;
-							// 	yOffset *= -1;
-							// 	zOffset *= -1;
-							// }
-							// if (previousPoint.z + zOffset > boundary || previousPoint.z + zOffset < -1 * boundary) {
-							// 	xOffset *= -1;
-							// 	yOffset *= -1;
-							// 	zOffset *= -1;
-							// }
-							// let offset = new THREE.Vector3(xOffset,yOffset,zOffset);
-
- 							let x = previousPoint.x + xOffset;
-							let y = previousPoint.y + yOffset;
-							let z = previousPoint.z + zOffset;
 							// let nextPoint = previousPoint.add(offset);
 							let nextPoint = new THREE.Vector3(xOffset,yOffset,zOffset);
 							// console.log(nextPoint)
