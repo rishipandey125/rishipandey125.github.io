@@ -22,6 +22,32 @@
 			font-family: 'Roboto Mono', monospace;
 		  }
 		</style> 
+		<!-- style for tweakpane -->
+		<style> 
+			:root {
+			  --tp-base-background-color: hsla(230, 5%, 90%, 1.00);
+			  --tp-base-shadow-color: hsla(0, 0%, 0%, 0.10);
+			  --tp-button-background-color: hsla(230, 7%, 75%, 1.00);
+			  --tp-button-background-color-active: hsla(230, 7%, 60%, 1.00);
+			  --tp-button-background-color-focus: hsla(230, 7%, 65%, 1.00);
+			  --tp-button-background-color-hover: hsla(230, 7%, 70%, 1.00);
+			  --tp-button-foreground-color: hsla(230, 10%, 30%, 1.00);
+			  --tp-container-background-color: hsla(230, 15%, 30%, 0.20);
+			  --tp-container-background-color-active: hsla(230, 15%, 30%, 0.32);
+			  --tp-container-background-color-focus: hsla(230, 15%, 30%, 0.28);
+			  --tp-container-background-color-hover: hsla(230, 15%, 30%, 0.24);
+			  --tp-container-foreground-color: hsla(230, 10%, 30%, 1.00);
+			  --tp-groove-foreground-color: hsla(230, 15%, 30%, 0.10);
+			  --tp-input-background-color: hsla(230, 15%, 30%, 0.10);
+			  --tp-input-background-color-active: hsla(230, 15%, 30%, 0.22);
+			  --tp-input-background-color-focus: hsla(230, 15%, 30%, 0.18);
+			  --tp-input-background-color-hover: hsla(230, 15%, 30%, 0.14);
+			  --tp-input-foreground-color: hsla(230, 10%, 30%, 1.00);
+			  --tp-label-foreground-color: hsla(230, 10%, 30%, 0.70);
+			  --tp-monitor-background-color: hsla(230, 15%, 30%, 0.10);
+			  --tp-monitor-foreground-color: hsla(230, 10%, 30%, 0.50);
+			}
+			</style>
 	</head>
 	<body>
 		<!-- top title -->
@@ -55,12 +81,12 @@
 				</p>
 			  </div>
 			</div>
+
 			<p>&nbsp;</p> 
 	  
 	  
 			<div class="row justify-content-center mb-3">
-			  <div class="col-sm-12 col-md-8 col-lg-8">
-
+				<div class="col-sm-7 col-md-6 col-lg-4">
 				<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
 				<script src="THREE.MeshLine.js"></script>
 				<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
@@ -140,17 +166,17 @@
 						//creation of pane
 						const pane = new Tweakpane.Pane({
 										container: document.getElementById('UI'),
-										title: 'controls',
+										title: 'CONTROLS',
 										expanded: true,
 										});
 						//canvas controls section
 						const canvasControls = pane.addFolder({
-									title: 'canvas',
+									title: 'CANVAS',
 									expanded: true,   // optional
 									});
 						//stroke controls section
 						const strokeControls = pane.addFolder({
-												title: 'noodle',
+												title: 'NOODLE',
 												expanded: true,   // optional
 												});
 						//button to generate new stroke
@@ -162,7 +188,10 @@
 										title: 'clear'
 										});
 						//set the bg color of the canvas
-						canvasControls.addInput(PARAMS, 'background');
+						canvasControls.addInput(PARAMS, 'background',{
+												picker: 'inline',
+												expanded: true,
+												});
 
 
 
@@ -171,12 +200,16 @@
 						//thickness controls for stroke
 						strokeControls.addInput(PARAMS, 'thickness',{
 										min: 1,
-										max: 100
+										max: 100,
+										step: 1
 										}
 									);
 
 						//color controls for stroke
-						strokeControls.addInput(PARAMS, 'line');
+						strokeControls.addInput(PARAMS, 'line',{
+												picker: 'inline',
+												expanded: true,
+												});
 
 						const startBtn = strokeControls.addButton({
 							title: 'start'
@@ -225,6 +258,7 @@
 						let mesh = new THREE.Mesh(stroke,material); //set the mesh to be the meshline and material					
 						strokePoints.push(points); //add to the global array
 						strokeMeshes.push(mesh);
+						seed = Math.random();
 						// renderLine = true; //draw the line
 					}
 					
@@ -243,9 +277,9 @@
 							let points = strokePoints[strokePoints.length-1];
 							// let previousPoint  = points[points.length-1];
 							let boundary = 7000;
-							let xNoise = noiseObject.noise(frame*0.01,seed,seed);
-							let yNoise = noiseObject.noise(frame*0.02,seed,seed);
-							let zNoise = noiseObject.noise(frame*0.03,seed,seed);
+							let xNoise = noiseObject.noise(frame*0.003,seed,seed);
+							let yNoise = noiseObject.noise(frame*0.006,seed,seed);
+							let zNoise = noiseObject.noise(frame*0.008,seed,seed);
 							let xOffset = xNoise * boundary;
 							let yOffset = yNoise * boundary;
 							let zOffset = zNoise * boundary;
@@ -254,20 +288,26 @@
 							let nextPoint = new THREE.Vector3(xOffset,yOffset,zOffset);
 							// console.log(nextPoint)
 							strokePoints[strokePoints.length-1].push(nextPoint);
+							let stroke  = new MeshLine();
+							stroke.setPoints(strokePoints[strokePoints.length-1])
+							strokeMeshes[strokeMeshes.length-1].geometry = stroke
+							strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
+							strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
+							scene.add(strokeMeshes[strokeMeshes.length-1])
 						}
-						let stroke  = new MeshLine();
-						stroke.setPoints(strokePoints[strokePoints.length-1])
-						strokeMeshes[strokeMeshes.length-1].geometry = stroke
-						strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
-						strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
-						scene.add(strokeMeshes[strokeMeshes.length-1])
 						renderer.render( scene, camera );
 					}
 				</script>
 				<div id="UI"></div>
 				<p>&nbsp;</p> 
-				<div id="sketch"></div>
+				<!-- <div id="sketch"></div> -->
 			  </div>
+			</div> 
+			<div class="row justify-content-center mb-3">
+				<div class="col-sm-12 col-md-8 col-lg-10">
+
+					<div id="sketch"></div>
+				</div>
 			</div> 
 			<p>&nbsp;</p> 
 	
