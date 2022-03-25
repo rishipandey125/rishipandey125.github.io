@@ -140,17 +140,17 @@
 						//creation of pane
 						const pane = new Tweakpane.Pane({
 										container: document.getElementById('UI'),
-										title: 'controls',
+										title: 'CONTROLS',
 										expanded: true,
 										});
 						//canvas controls section
 						const canvasControls = pane.addFolder({
-									title: 'canvas',
+									title: 'CANVAS',
 									expanded: true,   // optional
 									});
 						//stroke controls section
 						const strokeControls = pane.addFolder({
-												title: 'noodle',
+												title: 'NOODLE',
 												expanded: true,   // optional
 												});
 						//button to generate new stroke
@@ -162,7 +162,10 @@
 										title: 'clear'
 										});
 						//set the bg color of the canvas
-						canvasControls.addInput(PARAMS, 'background');
+						canvasControls.addInput(PARAMS, 'background',{
+												picker: 'inline',
+												expanded: true,
+												});
 
 
 
@@ -171,12 +174,16 @@
 						//thickness controls for stroke
 						strokeControls.addInput(PARAMS, 'thickness',{
 										min: 1,
-										max: 100
+										max: 100,
+										step: 1
 										}
 									);
 
 						//color controls for stroke
-						strokeControls.addInput(PARAMS, 'line');
+						strokeControls.addInput(PARAMS, 'line',{
+												picker: 'inline',
+												expanded: true,
+												});
 
 						const startBtn = strokeControls.addButton({
 							title: 'start'
@@ -244,9 +251,9 @@
 							let points = strokePoints[strokePoints.length-1];
 							// let previousPoint  = points[points.length-1];
 							let boundary = 7000;
-							let xNoise = noiseObject.noise(frame*0.0025,seed,seed);
-							let yNoise = noiseObject.noise(frame*0.005,seed,seed);
-							let zNoise = noiseObject.noise(frame*0.0075,seed,seed);
+							let xNoise = noiseObject.noise(frame*0.003,seed,seed);
+							let yNoise = noiseObject.noise(frame*0.006,seed,seed);
+							let zNoise = noiseObject.noise(frame*0.008,seed,seed);
 							let xOffset = xNoise * boundary;
 							let yOffset = yNoise * boundary;
 							let zOffset = zNoise * boundary;
@@ -262,12 +269,6 @@
 							strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
 							scene.add(strokeMeshes[strokeMeshes.length-1])
 						}
-						// let stroke  = new MeshLine();
-						// stroke.setPoints(strokePoints[strokePoints.length-1])
-						// strokeMeshes[strokeMeshes.length-1].geometry = stroke
-						// strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
-						// strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
-						// scene.add(strokeMeshes[strokeMeshes.length-1])
 						renderer.render( scene, camera );
 					}
 				</script>
