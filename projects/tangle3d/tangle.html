@@ -111,7 +111,7 @@
 					animate(); //onUpdate
 					
 					function init() {
-						renderer = new THREE.WebGLRenderer(); //render using webgl
+						renderer = new THREE.WebGLRenderer({antialias: true}); //render using webgl
 						let aspectRatio = 2/3; //canvas aspect ratio
 						let canvasHeight = 700; //height of canvas
 						let canvasWidth = canvasHeight*aspectRatio; //width based on AR
@@ -288,7 +288,7 @@
 							let nextPoint = new THREE.Vector3(xOffset,yOffset,zOffset);
 							// console.log(nextPoint)
 							strokePoints[strokePoints.length-1].push(nextPoint);
-							let stroke  = new MeshLine();
+							let stroke  = strokeMeshes[strokeMeshes.length-1].geometry;
 							stroke.setPoints(strokePoints[strokePoints.length-1])
 							strokeMeshes[strokeMeshes.length-1].geometry = stroke
 							strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
