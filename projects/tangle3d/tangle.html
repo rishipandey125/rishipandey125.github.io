@@ -50,6 +50,8 @@
 			</style>
 	</head>
 	<body>
+		<canvas id="canvas"></canvas><br/><br/>
+
 		<!-- top title -->
 		<div class="container-fluid mt-5">
 			<div class="row justify-content-md-center align-items-center">
@@ -89,6 +91,7 @@
 				<div class="col-sm-7 col-md-6 col-lg-4">
 				<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
 				<script src="THREE.MeshLine.js"></script>
+				<script src="omggif.js"></script>
 				<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
 				<script type="module">
 					
@@ -100,6 +103,7 @@
 					var rotation = 0; //initial rotation
 					var strokePoints = []; //points for every stroke
 					var strokeMeshes = []; //mesh (w/ geo and material) for every stroke
+					const canvas = document.getElementById( 'canvas' );
 
 					var controls; //controls variable
 					var seed;
@@ -112,7 +116,7 @@
 					animate(); //onUpdate
 					
 					function init() {
-						renderer = new THREE.WebGLRenderer({antialias: true}); //render using webgl
+						renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); //render using webgl
 						let aspectRatio = 2/3; //canvas aspect ratio
 						let canvasHeight = 700; //height of canvas
 						let canvasWidth = canvasHeight*aspectRatio; //width based on aspect ratio
@@ -143,11 +147,13 @@
 						newStroke() //generate the first stroke		
 					}
 					
+	
+
 					//random num between bounds
 					function getRandomNumber(min, max) {
 						return Math.random() * (max - min) + min;
 					}	
-
+					
 					//setup the UI
 					function setupUI() {
 						//initial params
@@ -180,6 +186,9 @@
 						const clearBtn = canvasControls.addButton({
 										title: 'clear'
 										});
+						const saveBtn = canvasControls.addButton({
+							title: 'save'
+						});
 						//set the bg color of the canvas
 						canvasControls.addInput(PARAMS, 'background',{
 												picker: 'inline',
@@ -219,8 +228,42 @@
 							newStroke();
 						});
 
+						saveBtn.on('click', () => {
+							startRecording()
+							console.log("Working!")
+						});
+
 					}
 
+					function startRecording() {
+						const chunks = []; // here we will store our recorded media chunks (Blobs)
+						const stream = canvas.captureStream(); // grab our canvas MediaStream
+						const rec = new MediaRecorder(stream); // init the recorder
+						// every time the recorder has new data, we will store it in our array
+						rec.ondataavailable = e => chunks.push(e.data);
+						// only when the recorder stops, we construct a complete Blob from all the chunks
+						rec.onstop = e => exportVid(new Blob(chunks, {type: 'video/webm'}));
+						
+						rec.start();
+						setTimeout(()=>rec.stop(), 3000); // stop recording in 3s
+					}
+
+					function exportVid(blob) {
+						const link = document.createElement( 'a' );
+						link.href = URL.createObjectURL( blob );
+						link.download = 'tangle.webm';
+						link.dispatchEvent( new MouseEvent( 'click' ) );
+						// const vid = document.createElement('video');
+						// vid.src = URL.createObjectURL(blob);
+						// vid.controls = true;
+						// document.body.appendChild(vid);
+						// const a = document.createElement('a');
+						// a.download = 'myvid.webm';
+						// a.href = vid.src;
+						// a.textContent = 'download the video';
+						// document.body.appendChild(a);
+					}
+					
 					//generate a new stroke
 					function newStroke() {
 						//stroke has a set of points
