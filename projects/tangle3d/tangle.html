@@ -252,6 +252,7 @@
 							// start rotation
 							// recording length * num frames (60?) = num frames in recording
 							//interval for rotation = 1/num frames in recording
+							renderLine = false // stop rendering the line
 							startRecording()
 
 							console.log("Working!")
@@ -269,7 +270,7 @@
 								mimeType: 'video/webm',
 								videoBitsPerSecond : 3000000
 							};
-							rec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+							rec = new MediaRecorder(stream, options);
 							// every time the recorder has new data, we will store it in our array
 							rec.ondataavailable = e => chunks.push(e.data);
 							// only when the recorder stops, we construct a complete Blob from all the chunks
@@ -282,7 +283,7 @@
 									videoBitsPerSecond : 3000000
 								};
 								// Fallback for iOS
-								rec = new MediaRecorder(stream, { mimeType: 'video/mp4' });
+								rec = new MediaRecorder(stream, options);
 								// every time the recorder has new data, we will store it in our array
 								rec.ondataavailable = e => chunks.push(e.data);
 								// only when the recorder stops, we construct a complete Blob from all the chunks
