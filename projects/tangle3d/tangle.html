@@ -91,7 +91,8 @@
 				<div class="col-sm-7 col-md-6 col-lg-4">
 				<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
 				<script src="THREE.MeshLine.js"></script>
-				<script src="omggif.js"></script>
+				<script src="CCapture.all.min.js"></script>
+				<!-- <script src="gif.js"></script> -->
 				<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
 				<script type="module">
 					
@@ -104,6 +105,8 @@
 					var strokePoints = []; //points for every stroke
 					var strokeMeshes = []; //mesh (w/ geo and material) for every stroke
 					const canvas = document.getElementById( 'canvas' );
+
+					var capturer; 
 
 					var controls; //controls variable
 					var seed;
@@ -120,7 +123,10 @@
 						let aspectRatio = 2/3; //canvas aspect ratio
 						let canvasHeight = 700; //height of canvas
 						let canvasWidth = canvasHeight*aspectRatio; //width based on aspect ratio
-		
+						
+						// capturer = new CCapture( { format: 'gif', workersPath: 'js/' } );
+						capturer = null;
+						// capturer = new CCapture( {  format: 'webm',  framerate: 30,  name: 'noise_visualization',  quality: 100,} );
 						//enforce conditions for mobile friendly canvas
 						if (window.innerWidth < canvasWidth) {
 							//make canvas mobile friendly
@@ -189,6 +195,15 @@
 						const saveBtn = canvasControls.addButton({
 							title: 'save'
 						});
+
+						const startBtn = strokeControls.addButton({
+							title: 'start'
+						});
+
+						const stopBtn = strokeControls.addButton({
+							title: 'stop'
+						});
+
 						//set the bg color of the canvas
 						canvasControls.addInput(PARAMS, 'background',{
 												picker: 'inline',
@@ -228,8 +243,25 @@
 							newStroke();
 						});
 
+						startBtn.on('click', () => {
+							// capturer = new CCapture( {  format: 'webm',  framerate: 30,  name: 'noise_visualization',  quality: 100,} );
+							// capturer.start();
+							renderLine = true;
+						});
+
+						stopBtn.on('click', () => {
+							// capturer.stop()
+							// capturer.save();
+							renderLine = false;
+						});
+
+
 						saveBtn.on('click', () => {
+							// start rotation
+							// recording length * num frames (60?) = num frames in recording
+							//interval for rotation = 1/num frames in recording
 							startRecording()
+
 							console.log("Working!")
 						});
 
@@ -238,14 +270,19 @@
 					function startRecording() {
 						const chunks = []; // here we will store our recorded media chunks (Blobs)
 						const stream = canvas.captureStream(); // grab our canvas MediaStream
-						const rec = new MediaRecorder(stream); // init the recorder
+						var options = {
+							mimeType: 'video/webm',
+							videoBitsPerSecond : 3000000
+						}
+
+						var rec = new MediaRecorder(stream,options); // init the recorder
 						// every time the recorder has new data, we will store it in our array
 						rec.ondataavailable = e => chunks.push(e.data);
 						// only when the recorder stops, we construct a complete Blob from all the chunks
-						rec.onstop = e => exportVid(new Blob(chunks, {type: 'video/webm'}));
+						rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/webm'}));
 						
 						rec.start();
-						setTimeout(()=>rec.stop(), 3000); // stop recording in 3s
+						setTimeout(()=>rec.stop(), 11000); // stop recording in 3s
 					}
 
 					function exportVid(blob) {
@@ -253,15 +290,6 @@
 						link.href = URL.createObjectURL( blob );
 						link.download = 'tangle.webm';
 						link.dispatchEvent( new MouseEvent( 'click' ) );
-						// const vid = document.createElement('video');
-						// vid.src = URL.createObjectURL(blob);
-						// vid.controls = true;
-						// document.body.appendChild(vid);
-						// const a = document.createElement('a');
-						// a.download = 'myvid.webm';
-						// a.href = vid.src;
-						// a.textContent = 'download the video';
-						// document.body.appendChild(a);
 					}
 					
 					//generate a new stroke
@@ -304,7 +332,12 @@
 							let stroke = strokeMeshes[strokeMeshes.length-1].geometry;
 							stroke.setPoints(strokePoints[strokePoints.length-1])
 							strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
-							strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line)
+							strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line);
+						}
+						rotation += 0.00166666666;
+						// //set every meshes rotation
+						for (let i = 0; i < strokeMeshes.length; i++) {
+							strokeMeshes[i].rotation.y = rotation;
 						}
 						renderer.render( scene, camera );
 					}
