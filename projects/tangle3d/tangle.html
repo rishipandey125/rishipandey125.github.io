@@ -91,7 +91,6 @@
 				<div class="col-sm-7 col-md-6 col-lg-4">
 				<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
 				<script src="THREE.MeshLine.js"></script>
-				<script src="CCapture.all.min.js"></script>
 				<!-- <script src="gif.js"></script> -->
 				<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
 				<script type="module">
@@ -105,8 +104,6 @@
 					var strokePoints = []; //points for every stroke
 					var strokeMeshes = []; //mesh (w/ geo and material) for every stroke
 					const canvas = document.getElementById( 'canvas' );
-
-					var capturer; 
 
 					var controls; //controls variable
 					var seed;
@@ -124,9 +121,6 @@
 						let canvasHeight = 700; //height of canvas
 						let canvasWidth = canvasHeight*aspectRatio; //width based on aspect ratio
 						
-						// capturer = new CCapture( { format: 'gif', workersPath: 'js/' } );
-						capturer = null;
-						// capturer = new CCapture( {  format: 'webm',  framerate: 30,  name: 'noise_visualization',  quality: 100,} );
 						//enforce conditions for mobile friendly canvas
 						if (window.innerWidth < canvasWidth) {
 							//make canvas mobile friendly
@@ -244,14 +238,12 @@
 						});
 
 						startBtn.on('click', () => {
-							// capturer = new CCapture( {  format: 'webm',  framerate: 30,  name: 'noise_visualization',  quality: 100,} );
-							// capturer.start();
+	
 							renderLine = true;
 						});
 
 						stopBtn.on('click', () => {
-							// capturer.stop()
-							// capturer.save();
+	
 							renderLine = false;
 						});
 
@@ -270,25 +262,47 @@
 					function startRecording() {
 						const chunks = []; // here we will store our recorded media chunks (Blobs)
 						const stream = canvas.captureStream(); // grab our canvas MediaStream
-						var options = {
-							mimeType: 'video/webm;codecs=h264',
-							videoBitsPerSecond : 3000000
+						var options;
+						var rec;
+						try {
+							options = {
+								mimeType: 'video/webm',
+								videoBitsPerSecond : 3000000
+							};
+							rec = new MediaRecorder(stream, { mimeType: 'video/webm' });
+							// every time the recorder has new data, we will store it in our array
+							rec.ondataavailable = e => chunks.push(e.data);
+							// only when the recorder stops, we construct a complete Blob from all the chunks
+							rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/webm'}),'.webm');
 						}
-
-						var rec = new MediaRecorder(stream,options); // init the recorder
-						// every time the recorder has new data, we will store it in our array
-						rec.ondataavailable = e => chunks.push(e.data);
-						// only when the recorder stops, we construct a complete Blob from all the chunks
-						rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/webm'}));
+						catch (err1) {
+							try {
+								options = {
+									mimeType: 'video/mp4',
+									videoBitsPerSecond : 3000000
+								};
+								// Fallback for iOS
+								rec = new MediaRecorder(stream, { mimeType: 'video/mp4' });
+								// every time the recorder has new data, we will store it in our array
+								rec.ondataavailable = e => chunks.push(e.data);
+								// only when the recorder stops, we construct a complete Blob from all the chunks
+								rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/mp4'}),'.mp4');
+							}
+							catch (err2) {
+								// If fallback doesn't work either. Log / process errors.
+								console.error({err1});
+								console.error({err2})
+							}
+						}
 						
 						rec.start();
 						setTimeout(()=>rec.stop(), 11000); // stop recording in 3s
 					}
 
-					function exportVid(blob) {
+					function exportVid(blob,extension) {
 						const link = document.createElement( 'a' );
 						link.href = URL.createObjectURL( blob );
-						link.download = 'tangle.webm';
+						link.download = 'tangle' + extension;
 						link.dispatchEvent( new MouseEvent( 'click' ) );
 					}
 					
