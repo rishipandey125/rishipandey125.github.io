@@ -69,7 +69,7 @@
 			<p>&nbsp;</p> 
 	  
 			<div class="row justify-content-center mb-3s">
-			  <div class="col-sm-12 col-md-8 col-lg-10">
+			  <div class="col-sm-12 col-md-8 col-lg-6">
 				<p class="">an interactive generative art experiment created by 
 				  <a href="https://twitter.com/wookiepandey25" target="_blank">rishi pandey</a>
 				</p>
@@ -88,7 +88,8 @@
 	  
 	  
 			<div class="row justify-content-center mb-3">
-				<div class="col-sm-7 col-md-6 col-lg-4">
+				<div class="col-9 col-md-5 col-lg-3">
+				<!-- <div class="col-sm-5 col-md-4 col-lg-3"> -->
 				<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
 				<script src="THREE.MeshLine.js"></script>
 				<!-- <script src="gif.js"></script> -->
@@ -111,7 +112,7 @@
 					var noiseObject = new ImprovedNoise(); //improved noise object
 					var PARAMS; //params for UI
 					const MIN_THICKNESS = 25;
-					const MAX_THICKNESS = 200;
+					const MAX_THICKNESS = 300;
 					init(); //onStart
 					animate(); //onUpdate
 					
@@ -162,89 +163,65 @@
 							thickness: 25,
 							background: '#000000'
 						};
-						//creation of pane
+
 						const pane = new Tweakpane.Pane({
 											container: document.getElementById('UI'),
-											title: 'CONTROLS',
-											expanded: true,
+											expanded: true
 										});
-						//canvas controls section
-						const canvasControls = pane.addFolder({
-									title: 'CANVAS',
-									expanded: true,   // optional
-									});
-						//stroke controls section
-						const strokeControls = pane.addFolder({
-												title: 'NOODLE',
-												expanded: true,   // optional
+						const savePane = new Tweakpane.Pane({
+							container: document.getElementById('UI_SAVE'),
+							expanded: true
+						});
+
+						const tab = pane.addTab({pages: [
+														{title: 'canvas'},
+														{title: 'noodle'},
+													],
 												});
+						
 						//button to generate new stroke
-						const newLineBtn = canvasControls.addButton({
-										title: 'generate noodle'
+						const newLineBtn = tab.pages[1].addButton({
+										title: 'generate new noodle'
 										});
-						//clear the canvas 
-						const clearBtn = canvasControls.addButton({
-										title: 'clear'
-										});
-						const saveBtn = canvasControls.addButton({
-							title: 'download!!'
-						});
+						tab.pages[1].addSeparator();
 
-						const startBtn = strokeControls.addButton({
-							title: 'start'
-						});
-
-						const stopBtn = strokeControls.addButton({
-							title: 'stop'
-						});
 
 						//set the bg color of the canvas
-						canvasControls.addInput(PARAMS, 'background',{
+						tab.pages[0].addInput(PARAMS, 'background',{
+												label: 'color',
 												picker: 'inline',
 												expanded: true,
 												});
+				
+
+						const saveBtn = savePane.addButton({
+							title: 'save'
+						});
+						tab.pages[0].addSeparator();
 
 						//thickness controls for stroke
-						strokeControls.addInput(PARAMS, 'thickness',{
+						tab.pages[1].addInput(PARAMS, 'thickness',{
+										label: 'thickness',
 										min: 1,
 										max: 100,
 										step: 1
 										}
 									);
 
+						tab.pages[1].addSeparator();
+
 						//color controls for stroke
-						strokeControls.addInput(PARAMS, 'line',{
+						tab.pages[1].addInput(PARAMS, 'line',{
+												label: 'color',
 												picker: 'inline',
 												expanded: true,
 												});
 
-						//handle buttons
-						//clear/reset button
-						clearBtn.on('click', () => {
-							//remove every mesh
-							for (let i = 0; i < strokeMeshes.length; i++) {
-								scene.remove(strokeMeshes[i])
-							}
-							strokePoints = [];
-							strokeMeshes = [];
-							newStroke()
-							renderLine = false;
-						});
-
+		
 						//new stroke
 						newLineBtn.on('click', () => {
 							renderLine = true;
 							newStroke();
-						});
-
-						startBtn.on('click', () => {
-	
-							renderLine = true;
-						});
-
-						stopBtn.on('click', () => {
-	
-							renderLine = false;
 						});
 
 
@@ -359,17 +336,21 @@
 				</script>
 				<div id="UI"></div>
 				<p>&nbsp;</p> 
-				<!-- <div id="sketch"></div> -->
 			  </div>
 			</div> 
+
 			<div class="row justify-content-center mb-3">
 				<div class="col-sm-12 col-md-8 col-lg-10">
 
 					<div id="sketch"></div>
 				</div>
 			</div> 
-			<p>&nbsp;</p> 
-	
+
+			<div class="row justify-content-center mb-3">
+				<div class="col-3 col-md-2 col-lg-1">
+					<div id="UI_SAVE"></div>
+				</div>
+			</div> 
 	  
 		</div>
 		  
