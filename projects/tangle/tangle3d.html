@@ -119,6 +119,7 @@
 					var strokeMeshes = []; //mesh (w/ geo and material) for every stroke
 					const canvas = document.getElementById( 'canvas' );
 					const progress = document.getElementById( 'progress' );
+					const saveButton = document.getElementById( 'UI_SAVE' );
 					var progressBar = false;
 					var progressTime = 0;
 					var previousTime = 0;
@@ -332,12 +333,14 @@
 							progressTime += time - previousTime;
 							progress.style.display = '';	
 							progress.value = progressTime/11000;
+							saveButton.style.display = 'none';
 							if (progressTime >= 11000) {
 								progressBar = false;
 								progressTime = 0;
 							}
 						} else {
 							progress.style.display = 'none';	
+							saveButton.style.display = ''
 						}
 
 						controls.minDistance = 1000; //change the min distance so onUpdate you can go up close
