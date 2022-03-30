@@ -1,10 +1,4 @@
 var canvas; //setup the canvas for rendering
-var buttonSave; //button for save
-var buttonReset; //button for reset
-//key colors for color palette
-var keyColors = []
-let numKeyColors = 5
-
 //stroke properties
 var strokeSizeMin; //min thickness
 var strokeSizeMax; //max thickness
@@ -14,6 +8,10 @@ var px,py; //previous xy of the stroke
 
 //control whether to sketch or not
 let sketch;
+
+//PARAMS
+var PARAMS;
+
 
 //setup the sketch -- runs on start
 function setup() {
@@ -33,35 +31,17 @@ function setup() {
   let canvasXPosition = (windowWidth - canvasWidth)/2
   let canvasYPosition = (windowHeight - canvasHeight)/2
   canvas.parent('sketch') //parent the canvas to sketch
-
   //handle canvas click
   canvas.mouseClicked(createNewStroke)
-
+  setupUI()
   //set the background color of the canvas
-  colorMode(HSB) //use hsb color space
-  // generate key colors
-  for (let i = 0; i < numKeyColors; i++) {
-    keyColors.push(randomColor()) // 5 random colors
-  }
-
-  //generate a color in the palette for the background
-  background(randomColorInPalette()) //set the background
+  colorMode(RGB) //use hsb color space
+  //set bg
+  background(PARAMS.background)
 
   //set the canvas stroke min & max thickness
   strokeSizeMin = 1
   strokeSizeMax = 12
-
-  //save button position and action
-  buttonSave = createButton('save');
-  buttonSave.style('font-size', '15px');
-  buttonSave.position(((windowWidth - width)/2),10);
-  buttonSave.mousePressed(saveImage);
-
-  //reset button position and action
-  buttonReset = createButton('reset');
-  buttonReset.style('font-size', '15px');
-  buttonReset.position(((windowWidth - width)/2),50);
-  buttonReset.mousePressed(resetSketch);
 }
 
 //rendering canvas
@@ -90,10 +70,11 @@ function createNewStroke() {
     sketch = false
   } else {
     //set the strokes color
-    strokeColor = randomColorInPalette()
+    strokeColor = PARAMS.line;
     stroke(strokeColor)
     //set stroke thickness
-    let strokeThickness = random(strokeSizeMin,strokeSizeMax)
+    let strokeThickness = lerp(strokeSizeMin,strokeSizeMax,PARAMS.thickness/100);
+    // random(strokeSizeMin,strokeSizeMax)
     strokeWeight(strokeThickness)
     //start position is where the user clicked
     x = mouseX
@@ -104,20 +85,6 @@ function createNewStroke() {
     //set sketch to true
     sketch = true
   }
-}
-//generate random hsb color
-function randomColor() {
-  return color(random(0,360),random(0,100),random(0,100))
-}
-
-//generate a random color in the palette based on the key colors
-function randomColorInPalette() {
-  shuffle(keyColors,true) //eliminate bias in color area by shuffling color vertices for sampling space
-  let endColor = keyColors[0] //initialize end color
-  for (let i = 1; i < keyColors.length; i++) { //loop through colors to sample from restricted color space
-    endColor = lerpColor(endColor,keyColors[i],random(0,1))
-  }
-  return endColor; //return sampled color
 }
 
 //enforces canvas boundary conditions
@@ -137,21 +104,6 @@ function enforceBoundaryConditions() {
     }
 }
 
-//reset the sketch when the button is clicked
-function resetSketch() {
-  //clear canvas
-  sketch = false
-  clear();
-  //clear colors list and update with new palette
-  keyColors = []
-  for (let i = 0; i < numKeyColors; i++) {
-    keyColors.push(randomColor()) // 5 random colors
-  }
-  //generate a color in the palette for the background
-  background(randomColorInPalette()) //set the background
-  //set background
-  //handle canvas click
-}
 
 //save the sketch as a png
 function saveImage(){
@@ -159,9 +111,83 @@ function saveImage(){
   sketch = false
 }
 
-//move the save button as the window is resized
-function windowResized() {
-  buttonSave.position((windowWidth - width)/2,10);
-  buttonReset.position((windowWidth - width)/2,50);
-}
 
+//setup the UI
+function setupUI() {
+  //initial params
+  PARAMS = {
+    line: '#ffffff',
+    thickness: 25,
+    background: '#000000'
+  };
+
+  const pane = new Tweakpane.Pane({
+            container: document.getElementById('UI'),
+            expanded: true
+          });
+
+  const savePane = new Tweakpane.Pane({
+    container: document.getElementById('UI_SAVE'),
+    expanded: true
+  });
+
+  const tab = pane.addTab({pages: [
+                  {title: 'canvas'},
+                  {title: 'noodle'},
+                ],
+              });
+  
+
+
+
+  //set the bg color of the canvas
+  tab.pages[0].addInput(PARAMS, 'background',{
+              label: 'color',
+              picker: 'inline',
+              expanded: true,
+              });
+
+  // //button to generate new stroke
+  const newCanvasBtn = tab.pages[0].addButton({
+          title: 'generate canvas'
+          });
+  tab.pages[0].addSeparator();
+
+  const saveBtn = savePane.addButton({
+    title: 'save'
+  });
+  tab.pages[0].addSeparator();
+
+  //thickness controls for stroke
+  tab.pages[1].addInput(PARAMS, 'thickness',{
+          label: 'thickness',
+          min: 1,
+          max: 100,
+          step: 1
+          }
+        );
+
+  tab.pages[1].addSeparator();
+
+  //color controls for stroke
+  tab.pages[1].addInput(PARAMS, 'line',{
+              label: 'color',
+              picker: 'inline',
+              expanded: true,
+              });
+
+
+  // new stroke
+  newCanvasBtn.on('click', () => {
+    background(PARAMS.background)
+    sketch = false
+  });
+
+
+  saveBtn.on('click', () => {
+    sketch = false // stop rendering the line
+    saveImage()
+    console.log("Working!")
+  });
+
+}
