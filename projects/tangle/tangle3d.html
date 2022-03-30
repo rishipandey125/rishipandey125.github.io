@@ -20,8 +20,18 @@
 		  body {
 			background-color: #ffffff;
 			font-family: 'Roboto Mono', monospace;
+			/* text-align: center; */
+			
 		  }
+
+		  progress {
+			position: absolute;
+			text-align: center;
+			left: calc(60% - 90px);
+			/* left: calc(50%); */
+			}
 		</style> 
+
 		<!-- style for tweakpane -->
 		<style> 
 			:root {
@@ -94,17 +104,25 @@
 				<script src="THREE.MeshLine.js"></script>
 				<!-- <script src="gif.js"></script> -->
 				<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
+				<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script>
+				<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.min.js"></script>
+
 				<script type="module">
 					
 					// Import OrbitControls for Dragging Viewport and Improved Noise for Perlin Noise
 					import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 					import { ImprovedNoise } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/math/ImprovedNoise.js';
-		
+			
 					var renderer, camera, scene; //gl renderer, camera and the scene
 					var rotation = 0; //initial rotation
 					var strokePoints = []; //points for every stroke
 					var strokeMeshes = []; //mesh (w/ geo and material) for every stroke
 					const canvas = document.getElementById( 'canvas' );
+					const progress = document.getElementById( 'progress' );
+					const saveButton = document.getElementById( 'UI_SAVE' );
+					var progressBar = false;
+					var progressTime = 0;
+					var previousTime = 0;
 
 					var controls; //controls variable
 					var seed;
@@ -113,6 +131,8 @@
 					var PARAMS; //params for UI
 					const MIN_THICKNESS = 25;
 					const MAX_THICKNESS = 300;
+
+
 					init(); //onStart
 					animate(); //onUpdate
 					
@@ -231,7 +251,8 @@
 							//interval for rotation = 1/num frames in recording
 							renderLine = false // stop rendering the line
 							startRecording()
-
+							progressBar = true
+							progress.value = 0
 							console.log("Working!")
 						});
 
@@ -304,8 +325,24 @@
 					}
 
 					//animate function onUpdate
-					function animate() {
+					function animate(time) {
 						requestAnimationFrame( animate ); //animate function
+						// console.log()
+						// progress.value = (time/11000)%1;
+						if (progressBar) {
+							progressTime += time - previousTime;
+							progress.style.display = '';	
+							progress.value = progressTime/11000;
+							saveButton.style.display = 'none';
+							if (progressTime >= 11000) {
+								progressBar = false;
+								progressTime = 0;
+							}
+						} else {
+							progress.style.display = 'none';	
+							saveButton.style.display = ''
+						}
+
 						controls.minDistance = 1000; //change the min distance so onUpdate you can go up close
 						renderer.setClearColor (PARAMS.background, 1); //set the bg color
 						if (renderLine) {
@@ -331,8 +368,10 @@
 						for (let i = 0; i < strokeMeshes.length; i++) {
 							strokeMeshes[i].rotation.y = rotation;
 						}
+						previousTime = time;
 						renderer.render( scene, camera );
 					}
+
 				</script>
 				<div id="UI"></div>
 				<p>&nbsp;</p> 
@@ -349,11 +388,12 @@
 			<div class="row justify-content-center mb-3">
 				<div class="col-3 col-md-2 col-lg-1">
 					<div id="UI_SAVE"></div>
+					<progress id="progress" value="0" max="1" style="display:none"></progress>
 					<p>&nbsp;</p> 
 
 				</div>
 			</div> 
-	  
+
 		</div>
 		  
 	</body>
