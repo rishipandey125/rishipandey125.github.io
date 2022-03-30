@@ -20,8 +20,18 @@
 		  body {
 			background-color: #ffffff;
 			font-family: 'Roboto Mono', monospace;
+			/* text-align: center; */
+			
 		  }
+
+		  progress {
+			position: absolute;
+			text-align: center;
+			left: calc(60% - 90px);
+			/* left: calc(50%); */
+			}
 		</style> 
+
 		<!-- style for tweakpane -->
 		<style> 
 			:root {
@@ -326,6 +336,8 @@
 								progressBar = false;
 								progressTime = 0;
 							}
+						} else {
+							progress.style.display = 'none';	
 						}
 
 						controls.minDistance = 1000; //change the min distance so onUpdate you can go up close
