@@ -76,16 +76,15 @@
 		<div class="container" align="center">
 			<p>&nbsp;</p> 
 			<h1>tangle!</h1>
-			<h3>3d</h3>
+			<p>&nbsp;</p> 
 			<div class="row justify-content-center mb-3s">
-			  <div class="col-sm-12 col-md-8 col-lg-6">
-				<p class="">
-					<a href="tangle2d.html">try tangle! 2d</a>
-				</p>
+			  <div class="col-10 col-md-10 col-lg-8">
 				<p class="">an interactive generative art experiment created by 
 				  <a href="https://twitter.com/wookiepandey25" target="_blank">rishi pandey</a>
 				</p>
 				<p class="">tap/click <i>generate noodle</i> to create a noodle
+				</p>
+				<p class="">use the control panel to stylize the canvas and noodle
 				</p>
 				<p class="">drag/pinch the canvas to explore the noodle in 3d space
 				</p>
@@ -97,286 +96,296 @@
 			</div>
 
 			<p>&nbsp;</p> 
-	  
-			<div class="row justify-content-center mb-3">
-				<div class="col-9 col-md-5 col-lg-3">
-				<!-- <div class="col-sm-5 col-md-4 col-lg-3"> -->
-				<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
-				<script src="THREE.MeshLine.js"></script>
-				<!-- <script src="gif.js"></script> -->
-				<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
-				<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script>
-				<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.min.js"></script>
+	
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
+			<script src="THREE.MeshLine.js"></script>
+			<!-- <script src="gif.js"></script> -->
+			<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.min.js"></script>
 
-				<script type="module">
-					
-					// Import OrbitControls for Dragging Viewport and Improved Noise for Perlin Noise
-					import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
-					import { ImprovedNoise } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/math/ImprovedNoise.js';
-			
-					var renderer, camera, scene; //gl renderer, camera and the scene
-					var rotation = 0; //initial rotation
-					var strokePoints = []; //points for every stroke
-					var strokeMeshes = []; //mesh (w/ geo and material) for every stroke
-					const canvas = document.getElementById( 'canvas' );
-					const progress = document.getElementById( 'progress' );
-					const saveButton = document.getElementById( 'UI_SAVE' );
-					var progressBar = false;
-					var progressTime = 0;
-					var previousTime = 0;
-
-					var controls; //controls variable
-					var seed;
-					var renderLine = false; 
-					var noiseObject = new ImprovedNoise(); //improved noise object
-					var PARAMS; //params for UI
-					const MIN_THICKNESS = 25;
-					const MAX_THICKNESS = 300;
-
-
-					init(); //onStart
-					animate(); //onUpdate
-					
-					function init() {
-						renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); //render using webgl
-						let aspectRatio = 2/3; //canvas aspect ratio
-						let canvasHeight = 700; //height of canvas
-						let canvasWidth = canvasHeight*aspectRatio; //width based on aspect ratio
-						
-						//enforce conditions for mobile friendly canvas
-						if (window.innerWidth < canvasWidth) {
-							//make canvas mobile friendly
-							canvasWidth = 0.8*window.innerWidth;
-							canvasHeight = canvasWidth * (1/aspectRatio);
-						}
-						
-						renderer.setSize( canvasWidth, canvasHeight ); //set the render size
-						document.getElementById('sketch').appendChild( renderer.domElement ); //parent to sketch id 	
-						
-						camera = new THREE.PerspectiveCamera(80, canvasWidth / canvasHeight, 1, 26000 ); // create a camera with (fov, aspect ratio, near, far)
-						
-						controls = new OrbitControls( camera, renderer.domElement ); //setup orbit controls
-						controls.minDistance = 11000; //start far out
-						controls.maxDistance = 13000; //max distance for orbit controls
-						camera.position.set( 0, 0, 100 ); //set the camera location
-						camera.lookAt( 0, 0, 0 ); //set camera lookat 
-
-						controls.update();
+			<script type="module">
+				
+				// Import OrbitControls for Dragging Viewport and Improved Noise for Perlin Noise
+				import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
+				import { ImprovedNoise } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/math/ImprovedNoise.js';
 		
-						scene = new THREE.Scene(); //create a scene : stores items (geometry/lights/etc.)
-									
-						setupUI() //setup the UI
-						newStroke() //generate the first stroke		
+				var renderer, camera, scene; //gl renderer, camera and the scene
+				var rotation = 0; //initial rotation
+				var strokePoints = []; //points for every stroke
+				var strokeMeshes = []; //mesh (w/ geo and material) for every stroke
+				const canvas = document.getElementById( 'canvas' );
+				const progress = document.getElementById( 'progress' );
+				const saveButton = document.getElementById( 'UI_SAVE' );
+				var progressBar = false;
+				var progressTime = 0;
+				var previousTime = 0;
+
+				var controls; //controls variable
+				var seed;
+				var renderLine = false; 
+				var noiseObject = new ImprovedNoise(); //improved noise object
+				var PARAMS; //params for UI
+				const MIN_THICKNESS = 25;
+				const MAX_THICKNESS = 300;
+
+
+				init(); //onStart
+				animate(); //onUpdate
+				
+				function init() {
+					renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); //render using webgl
+					let aspectRatio = 2/3; //canvas aspect ratio
+					let canvasHeight = 700; //height of canvas
+					let canvasWidth = canvasHeight*aspectRatio; //width based on aspect ratio
+					
+					//enforce conditions for mobile friendly canvas
+					if (window.innerWidth < canvasWidth) {
+						//make canvas mobile friendly
+						canvasWidth = 0.8*window.innerWidth;
+						canvasHeight = canvasWidth * (1/aspectRatio);
 					}
 					
-	
-
-					//random num between bounds
-					function getRandomNumber(min, max) {
-						return Math.random() * (max - min) + min;
-					}	
+					renderer.setSize( canvasWidth, canvasHeight ); //set the render size
+					document.getElementById('sketch').appendChild( renderer.domElement ); //parent to sketch id 	
 					
-					//setup the UI
-					function setupUI() {
-						//initial params
-						PARAMS = {
-							line: '#ffffff',
-							thickness: 25,
-							background: '#000000'
-						};
+					camera = new THREE.PerspectiveCamera(80, canvasWidth / canvasHeight, 1, 26000 ); // create a camera with (fov, aspect ratio, near, far)
+					
+					controls = new OrbitControls( camera, renderer.domElement ); //setup orbit controls
+					controls.minDistance = 11000; //start far out
+					controls.maxDistance = 13000; //max distance for orbit controls
+					camera.position.set( 0, 0, 100 ); //set the camera location
+					camera.lookAt( 0, 0, 0 ); //set camera lookat 
 
-						const pane = new Tweakpane.Pane({
-											container: document.getElementById('UI'),
-											expanded: true
-										});
-						const savePane = new Tweakpane.Pane({
-							container: document.getElementById('UI_SAVE'),
-							expanded: true
-						});
-
-						const tab = pane.addTab({pages: [
-														{title: 'canvas'},
-														{title: 'noodle'},
-													],
-												});
-						
-						//button to generate new stroke
-						const newLineBtn = tab.pages[0].addButton({
-										title: 'generate noodle'
-										});
-						tab.pages[0].addSeparator();
-
-
-						//set the bg color of the canvas
-						tab.pages[0].addInput(PARAMS, 'background',{
-												label: 'color',
-												picker: 'inline',
-												expanded: true,
-												});
+					controls.update();
+	
+					scene = new THREE.Scene(); //create a scene : stores items (geometry/lights/etc.)
+								
+					setupUI() //setup the UI
+					newStroke() //generate the first stroke		
+				}
 				
 
-						const saveBtn = savePane.addButton({
-							title: 'save'
-						});
-						tab.pages[0].addSeparator();
 
-						//thickness controls for stroke
-						tab.pages[1].addInput(PARAMS, 'thickness',{
-										label: 'thickness',
-										min: 1,
-										max: 100,
-										step: 1
-										}
-									);
+				//random num between bounds
+				function getRandomNumber(min, max) {
+					return Math.random() * (max - min) + min;
+				}	
+				
+				//setup the UI
+				function setupUI() {
+					//initial params
+					PARAMS = {
+						line: '#ffffff',
+						thickness: 25,
+						background: '#000000'
+					};
 
-						tab.pages[1].addSeparator();
+					const pane = new Tweakpane.Pane({
+										container: document.getElementById('UI'),
+										expanded: true
+									});
+					const savePane = new Tweakpane.Pane({
+						container: document.getElementById('UI_SAVE'),
+						expanded: true
+					});
 
-						//color controls for stroke
-						tab.pages[1].addInput(PARAMS, 'line',{
-												label: 'color',
-												picker: 'inline',
-												expanded: true,
-												});
+					const newNoodlePane = new Tweakpane.Pane({
+						container: document.getElementById('UI_NEW'),
+						expanded: true
+					});
 
-		
-						//new stroke
-						newLineBtn.on('click', () => {
-							renderLine = true;
-							newStroke();
-						});
+					const tab = pane.addTab({pages: [
+													{title: 'canvas'},
+													{title: 'noodle'},
+												],
+											});
+					
+					//button to generate new stroke
+					const newLineBtn = newNoodlePane.addButton({
+									title: 'generate noodle'
+									});
+					// tab.pages[0].addSeparator();
 
 
-						saveBtn.on('click', () => {
-							// start rotation
-							// recording length * num frames (60?) = num frames in recording
-							//interval for rotation = 1/num frames in recording
-							renderLine = false // stop rendering the line
-							startRecording()
-							progressBar = true
-							progress.value = 0
-							console.log("Working!")
-						});
+					//set the bg color of the canvas
+					tab.pages[0].addInput(PARAMS, 'background',{
+											label: 'color',
+											picker: 'inline',
+											expanded: true,
+											});
+			
 
+					const saveBtn = savePane.addButton({
+						title: 'save'
+					});
+					tab.pages[0].addSeparator();
+
+					//thickness controls for stroke
+					tab.pages[1].addInput(PARAMS, 'thickness',{
+									label: 'thickness',
+									min: 1,
+									max: 100,
+									step: 1
+									}
+								);
+
+					tab.pages[1].addSeparator();
+
+					//color controls for stroke
+					tab.pages[1].addInput(PARAMS, 'line',{
+											label: 'color',
+											picker: 'inline',
+											expanded: true,
+											});
+
+	
+					//new stroke
+					newLineBtn.on('click', () => {
+						renderLine = true;
+						newStroke();
+					});
+
+
+					saveBtn.on('click', () => {
+						// start rotation
+						// recording length * num frames (60?) = num frames in recording
+						//interval for rotation = 1/num frames in recording
+						renderLine = false // stop rendering the line
+						startRecording()
+						progressBar = true
+						progress.value = 0
+						console.log("Working!")
+					});
+
+				}
+
+				function startRecording() {
+					const chunks = []; // here we will store our recorded media chunks (Blobs)
+					const stream = canvas.captureStream(); // grab our canvas MediaStream
+					var options;
+					var rec;
+					try {
+						options = {
+							mimeType: 'video/webm',
+							videoBitsPerSecond : 3000000
+						};
+						rec = new MediaRecorder(stream, options);
+						// every time the recorder has new data, we will store it in our array
+						rec.ondataavailable = e => chunks.push(e.data);
+						// only when the recorder stops, we construct a complete Blob from all the chunks
+						rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/webm'}),'.webm');
 					}
-
-					function startRecording() {
-						const chunks = []; // here we will store our recorded media chunks (Blobs)
-						const stream = canvas.captureStream(); // grab our canvas MediaStream
-						var options;
-						var rec;
+					catch (err1) {
 						try {
 							options = {
-								mimeType: 'video/webm',
+								mimeType: 'video/mp4',
 								videoBitsPerSecond : 3000000
 							};
+							// Fallback for iOS
 							rec = new MediaRecorder(stream, options);
 							// every time the recorder has new data, we will store it in our array
 							rec.ondataavailable = e => chunks.push(e.data);
 							// only when the recorder stops, we construct a complete Blob from all the chunks
-							rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/webm'}),'.webm');
+							rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/mp4'}),'.mp4');
 						}
-						catch (err1) {
-							try {
-								options = {
-									mimeType: 'video/mp4',
-									videoBitsPerSecond : 3000000
-								};
-								// Fallback for iOS
-								rec = new MediaRecorder(stream, options);
-								// every time the recorder has new data, we will store it in our array
-								rec.ondataavailable = e => chunks.push(e.data);
-								// only when the recorder stops, we construct a complete Blob from all the chunks
-								rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/mp4'}),'.mp4');
-							}
-							catch (err2) {
-								// If fallback doesn't work either. Log / process errors.
-								console.error({err1});
-								console.error({err2})
-							}
+						catch (err2) {
+							// If fallback doesn't work either. Log / process errors.
+							console.error({err1});
+							console.error({err2})
 						}
-						
-						rec.start();
-						setTimeout(()=>rec.stop(), 11000); // stop recording in 11s
-					}
-
-					function exportVid(blob,extension) {
-						const link = document.createElement( 'a' );
-						link.href = URL.createObjectURL( blob );
-						link.download = 'tangle' + extension;
-						link.dispatchEvent( new MouseEvent( 'click' ) );
 					}
 					
-					//generate a new stroke
-					function newStroke() {
-						//stroke has a set of points
-						let points = [];
-						//material and line and mesh
-						let stroke  = new MeshLine(); //create the line
-						stroke.setPoints(points) // set the line to be the points
-						let material = new MeshLineMaterial({color: new THREE.Color(PARAMS.line) , side: THREE.DoubleSide,lineWidth: lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)}); //create a material for the line 
-						let mesh = new THREE.Mesh(stroke,material); //set the mesh to be the meshline and material					
-						strokePoints.push(points); //add to the global array
-						strokeMeshes.push(mesh);
-						seed = getRandomNumber(0.3,0.8);
-						scene.add(strokeMeshes[strokeMeshes.length-1])
-					}
-					
-					function lerp(min,max,i) {
-						return min + ((max - min) * i);
-					}
+					rec.start();
+					setTimeout(()=>rec.stop(), 11000); // stop recording in 11s
+				}
 
-					//animate function onUpdate
-					function animate(time) {
-						requestAnimationFrame( animate ); //animate function
-						// console.log()
-						// progress.value = (time/11000)%1;
-						if (progressBar) {
-							progressTime += time - previousTime;
-							progress.style.display = '';	
-							progress.value = progressTime/11000;
-							saveButton.style.display = 'none';
-							if (progressTime >= 11000) {
-								progressBar = false;
-								progressTime = 0;
-							}
-						} else {
-							progress.style.display = 'none';	
-							saveButton.style.display = ''
-						}
+				function exportVid(blob,extension) {
+					const link = document.createElement( 'a' );
+					link.href = URL.createObjectURL( blob );
+					link.download = 'tangle' + extension;
+					link.dispatchEvent( new MouseEvent( 'click' ) );
+				}
+				
+				//generate a new stroke
+				function newStroke() {
+					//stroke has a set of points
+					let points = [];
+					//material and line and mesh
+					let stroke  = new MeshLine(); //create the line
+					stroke.setPoints(points) // set the line to be the points
+					let material = new MeshLineMaterial({color: new THREE.Color(PARAMS.line) , side: THREE.DoubleSide,lineWidth: lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)}); //create a material for the line 
+					let mesh = new THREE.Mesh(stroke,material); //set the mesh to be the meshline and material					
+					strokePoints.push(points); //add to the global array
+					strokeMeshes.push(mesh);
+					seed = getRandomNumber(0.3,0.8);
+					scene.add(strokeMeshes[strokeMeshes.length-1])
+				}
+				
+				function lerp(min,max,i) {
+					return min + ((max - min) * i);
+				}
 
-						controls.minDistance = 1000; //change the min distance so onUpdate you can go up close
-						renderer.setClearColor (PARAMS.background, 1); //set the bg color
-						if (renderLine) {
-							let frame = renderer.info.render.frame;
-							let points = strokePoints[strokePoints.length-1];
-							// let previousPoint  = points[points.length-1];
-							let boundary = 7000;
-							let xNoise = noiseObject.noise(frame*0.003,seed,seed);
-							let yNoise = noiseObject.noise(frame*0.006,seed,seed);
-							let zNoise = noiseObject.noise(frame*0.008,seed,seed);
-							let xOffset = xNoise * boundary;
-							let yOffset = yNoise * boundary;
-							let zOffset = zNoise * boundary;
-							let nextPoint = new THREE.Vector3(xOffset,yOffset,zOffset);
-							strokePoints[strokePoints.length-1].push(nextPoint);
-							let stroke = strokeMeshes[strokeMeshes.length-1].geometry;
-							stroke.setPoints(strokePoints[strokePoints.length-1])
-							strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
-							strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line);
+				//animate function onUpdate
+				function animate(time) {
+					requestAnimationFrame( animate ); //animate function
+					// console.log()
+					// progress.value = (time/11000)%1;
+					if (progressBar) {
+						progressTime += time - previousTime;
+						progress.style.display = '';	
+						progress.value = progressTime/11000;
+						saveButton.style.display = 'none';
+						if (progressTime >= 11000) {
+							progressBar = false;
+							progressTime = 0;
 						}
-						rotation += 0.00166666666;
-						// //set every meshes rotation
-						for (let i = 0; i < strokeMeshes.length; i++) {
-							strokeMeshes[i].rotation.y = rotation;
-						}
-						previousTime = time;
-						renderer.render( scene, camera );
+					} else {
+						progress.style.display = 'none';	
+						saveButton.style.display = ''
 					}
 
-				</script>
-				<div id="UI"></div>
-				<p>&nbsp;</p> 
-			  </div>
+					controls.minDistance = 1000; //change the min distance so onUpdate you can go up close
+					renderer.setClearColor (PARAMS.background, 1); //set the bg color
+					if (renderLine) {
+						let frame = renderer.info.render.frame;
+						let points = strokePoints[strokePoints.length-1];
+						// let previousPoint  = points[points.length-1];
+						let boundary = 7000;
+						let xNoise = noiseObject.noise(frame*0.003,seed,seed);
+						let yNoise = noiseObject.noise(frame*0.006,seed,seed);
+						let zNoise = noiseObject.noise(frame*0.008,seed,seed);
+						let xOffset = xNoise * boundary;
+						let yOffset = yNoise * boundary;
+						let zOffset = zNoise * boundary;
+						let nextPoint = new THREE.Vector3(xOffset,yOffset,zOffset);
+						strokePoints[strokePoints.length-1].push(nextPoint);
+						let stroke = strokeMeshes[strokeMeshes.length-1].geometry;
+						stroke.setPoints(strokePoints[strokePoints.length-1])
+						strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
+						strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line);
+					}
+					rotation += 0.00166666666;
+					// //set every meshes rotation
+					for (let i = 0; i < strokeMeshes.length; i++) {
+						strokeMeshes[i].rotation.y = rotation;
+					}
+					previousTime = time;
+					renderer.render( scene, camera );
+				}
+
+			</script>
+
+			<div class="row justify-content-center mb-3">
+				<div class="col-4 col-md-3 col-lg-2">
+					<div id="UI_NEW"></div>
+				</div>
+			</div> 
+
+			<div class="row justify-content-center mb-3">
+				<div class="col-6 col-md-5 col-lg-4">
+					<div id="UI"></div>
+				</div>
 			</div> 
 
 			<div class="row justify-content-center mb-3">
@@ -391,7 +400,6 @@
 					<div id="UI_SAVE"></div>
 					<progress id="progress" value="0" max="1" style="display:none"></progress>
 					<p>&nbsp;</p> 
-
 				</div>
 			</div> 
 
