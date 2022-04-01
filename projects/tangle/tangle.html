@@ -134,7 +134,7 @@
 				animate(); //onUpdate
 				
 				function init() {
-					renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); //render using webgl
+					renderer = new THREE.WebGLRenderer({canvas: canvas}); //render using webgl
 					let aspectRatio = 2/3; //canvas aspect ratio
 					let canvasHeight = 700; //height of canvas
 					let canvasWidth = canvasHeight*aspectRatio; //width based on aspect ratio
@@ -145,7 +145,7 @@
 						canvasWidth = 0.8*window.innerWidth;
 						canvasHeight = canvasWidth * (1/aspectRatio);
 					}
-					// renderer.setPixelRatio( window.devicePixelRatio );
+					renderer.setPixelRatio( window.devicePixelRatio );
 					renderer.setSize( canvasWidth, canvasHeight ); //set the render size
 					document.getElementById('sketch').appendChild( renderer.domElement ); //parent to sketch id 	
 					
