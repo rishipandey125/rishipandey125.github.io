@@ -99,7 +99,6 @@
 	
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
 			<script src="THREE.MeshLine.js"></script>
-			<!-- <script src="gif.js"></script> -->
 			<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.0.7/dist/tweakpane.min.js"></script>
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script>
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.min.js"></script>
@@ -361,7 +360,8 @@
 						let zOffset = zNoise * boundary;
 						let nextPoint = new THREE.Vector3(xOffset,yOffset,zOffset);
 						strokePoints[strokePoints.length-1].push(nextPoint);
-						let stroke = strokeMeshes[strokeMeshes.length-1].geometry;
+						let stroke = strokeMeshes[strokeMeshes.length-1].geometry;						
+						stroke.dispose();
 						stroke.setPoints(strokePoints[strokePoints.length-1])
 						strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
 						strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line);
