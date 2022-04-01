@@ -269,7 +269,7 @@
 					try {
 						options = {
 							mimeType: 'video/webm',
-							videoBitsPerSecond : 3000000
+							videoBitsPerSecond : 8000000
 						};
 						rec = new MediaRecorder(stream, options);
 						// every time the recorder has new data, we will store it in our array
@@ -281,7 +281,7 @@
 						try {
 							options = {
 								mimeType: 'video/mp4',
-								videoBitsPerSecond : 3000000
+								videoBitsPerSecond : 8000000
 							};
 							// Fallback for iOS
 							rec = new MediaRecorder(stream, options);
