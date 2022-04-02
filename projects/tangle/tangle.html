@@ -196,7 +196,7 @@
 					});
 
 					const tab = pane.addTab({pages: [
-													{title: 'canvas'},
+													{title: 'canvas 3 sec'},
 													{title: 'noodle'},
 												],
 											});
@@ -296,7 +296,7 @@
 					}
 					
 					rec.start();
-					setTimeout(()=>rec.stop(), 11000); // stop recording in 11s
+					setTimeout(()=>rec.stop(), 3000); // stop recording in 11s
 				}
 
 				function exportVid(blob,extension) {
@@ -333,15 +333,17 @@
 					if (progressBar) {
 						progressTime += time - previousTime;
 						progress.style.display = '';	
-						progress.value = progressTime/11000;
+						progress.value = progressTime/3000;
 						saveButton.style.display = 'none';
-						if (progressTime >= 11000) {
+						if (progressTime >= 3000) {
 							progressBar = false;
 							progressTime = 0;
 						}
+						rotation += 0.03
 					} else {
 						progress.style.display = 'none';	
 						saveButton.style.display = ''
+						rotation += 0.00166666666;
 					}
 
 					controls.minDistance = 1000; //change the min distance so onUpdate you can go up close
@@ -365,7 +367,6 @@
 						strokeMeshes[strokeMeshes.length-1].material.lineWidth = lerp(MIN_THICKNESS,MAX_THICKNESS,PARAMS.thickness/100)
 						strokeMeshes[strokeMeshes.length-1].material.color = new THREE.Color(PARAMS.line);
 					}
-					rotation += 0.00166666666;
 					// //set every meshes rotation
 					for (let i = 0; i < strokeMeshes.length; i++) {
 						strokeMeshes[i].rotation.y = rotation;
