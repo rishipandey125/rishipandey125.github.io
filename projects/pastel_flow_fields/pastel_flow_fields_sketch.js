@@ -2,7 +2,6 @@ var points = [] //array for points
 var colors = [] //array for colors of the points 
 var mult = 0.005 //variation for perlin noise
 var radius = 4 //radius of the rendered dots
-
 //return a random pastel color
 function randomPastelColor() {
   colorMode(HSB) //use hsb color space so I can saturate things
@@ -21,12 +20,12 @@ function randomPastelColor() {
 
 //setup the canvas for rendering
 function setup() {
+  
   var localColors = [] //local colors for lines
   let numLocalColors = 4
   for (var i = 0; i < numLocalColors; i++) {
     localColors.push(randomPastelColor()) //generate local colors r
   }
-  
   createCanvas(windowWidth,windowHeight) //create the canvas w/ TT size
   let bgColor = color(random(0,255),random(0,255),random(0,255)) //random background color
   background(bgColor)
