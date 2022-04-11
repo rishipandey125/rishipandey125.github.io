@@ -1,7 +1,13 @@
 var img;
 //setup the canvas for rendering
+
+function preload() {
+  img = loadImage('https://corsanywhere.herokuapp.com/http://thispersondoesnotexist.com/image');
+}
+
+
 function setup() {
-  img = loadImage('http://www.rishi-pandey.com/assets/portrait.png');
+  createCanvas(windowWidth,windowHeight) //create the canvas w/ TT size
+  // background(255, 204, 0);
   image(img, 0, 0);
-  background(255, 204, 0);
 }
