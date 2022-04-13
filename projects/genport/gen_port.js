@@ -88,8 +88,11 @@ function drawKeypoints() {
       Object.entries(predictions[i].annotations).forEach(([key, keyPoints]) => { //loop through key and values in the semantic understanding of facemesh
         // console.log(key); //log all the keys
         if (key == semantics[k]) { //if it is one of the keys we want to draw
-          // px =  keyPoints[0].x; //set prev
-          // py =  keyPoints[0].y;
+          if (k == 0) {
+            px =  keyPoints[0].x; //set prev
+            py =  keyPoints[0].y;
+          }
+
           console.log(key)
           for (j = 0; j < keyPoints.length; j++ ) { //loop through keypoints
             const [x, y] = keyPoints[j];
