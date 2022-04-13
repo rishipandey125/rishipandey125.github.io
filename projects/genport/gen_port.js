@@ -9,7 +9,7 @@ var semantics = [
                 'lipsUpperInner',
                 'lipsLowerInner', 
                 'noseBottom',
-                'noseRightCorner',
+                // 'noseRightCorner',
                 'noseLeftCorner',
                 'noseTip',
                 'midwayBetweenEyes',
@@ -20,7 +20,7 @@ var semantics = [
                 'rightEyebrowUpper',
                 'rightEyeLower1',
                 'rightEyeUpper1'
-                // 'rightEyeUpper0',
+                // 'rightEyeUpper0'
                 // 'rightEyeLower0',
                 // 'rightEyeUpper2',
                 // 'rightEyeLower2',
@@ -81,44 +81,49 @@ function draw() {
 function drawKeypoints() {
   //create a new stroke
   stroke("white")
-  strokeWeight(1)
+  strokeWeight(10)
   for (let i = 0; i < predictions.length; i += 1) { //for all the predictions - should be 1
     // loop through all semantics - if it is that one draw
     for (let k = 0; k < semantics.length; k++) {
       Object.entries(predictions[i].annotations).forEach(([key, keyPoints]) => { //loop through key and values in the semantic understanding of facemesh
         // console.log(key); //log all the keys
         if (key == semantics[k]) { //if it is one of the keys we want to draw
-          if (k == 0) {
-            px =  keyPoints[0].x; //set prev
-            py =  keyPoints[0].y;
-          }
+         
+          //get the first and last points in the array
+          const [sx, sy] = keyPoints[0];
+          const [ex, ey] = keyPoints[keyPoints.length-1];
 
-          //if px/py is closer to the first point than the last 
-          // then keep the same
-          // otherwise iterate in reverse
-          let sx = keyPoints[0].x
-          let sy = keyPoints[0].y
-          let ex = keyPoints[keyPoints.length-1].x
-          let ey = keyPoints[keyPoints.length-1].y
+          if (k == 0) { //if the sketch just started
+            px =  sx; //set prev
+            py =  sy;
+          }
 
           //iterate forwards
           let start = 0;
           let end = keyPoints.length-1;
           let iterate = 1;
-          // if (dist(px,py,sx,sy) > dist(px,py,ex,ey)) {
-          //   //iterate backwards
-          //   start = keyPoints.length-1;
-          //   end = 0;
-          //   iterate = -1;
-          // }
+          //if the last point is closest
+          if (dist(px,py,sx,sy) > dist(px,py,ex,ey)) {
+            //iterate backwards
+            start = keyPoints.length-1;
+            end = 0;
+            iterate = -1;
+          }
           
-          while (start != end) {
+          if (start == end) { // if array len is 1 
             const [x, y] = keyPoints[start];
-            circle(x,y,4)
             line(px,py,x,y); //set line
             px = x; //update prev
             py = y;
-            start += iterate;
+          } else {
+            //loop through array in correct direction
+            while (start != end) {
+              const [x, y] = keyPoints[start];
+              line(px,py,x,y); //set line
+              px = x; //update prev
+              py = y;
+              start += iterate;
+            }
           }
         }
       });
