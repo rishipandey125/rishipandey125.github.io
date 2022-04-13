@@ -93,13 +93,32 @@ function drawKeypoints() {
             py =  keyPoints[0].y;
           }
 
-          console.log(key)
-          for (j = 0; j < keyPoints.length; j++ ) { //loop through keypoints
-            const [x, y] = keyPoints[j];
+          //if px/py is closer to the first point than the last 
+          // then keep the same
+          // otherwise iterate in reverse
+          let sx = keyPoints[0].x
+          let sy = keyPoints[0].y
+          let ex = keyPoints[keyPoints.length-1].x
+          let ey = keyPoints[keyPoints.length-1].y
+
+          //iterate forwards
+          let start = 0;
+          let end = keyPoints.length-1;
+          let iterate = 1;
+          // if (dist(px,py,sx,sy) > dist(px,py,ex,ey)) {
+          //   //iterate backwards
+          //   start = keyPoints.length-1;
+          //   end = 0;
+          //   iterate = -1;
+          // }
+          
+          while (start != end) {
+            const [x, y] = keyPoints[start];
             circle(x,y,4)
             line(px,py,x,y); //set line
             px = x; //update prev
             py = y;
+            start += iterate;
           }
         }
       });
