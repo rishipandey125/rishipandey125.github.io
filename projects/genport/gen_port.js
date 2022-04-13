@@ -3,7 +3,38 @@ let predictions = [];
 let img;
 var px = 0;
 var py = 0;
-var semantics = ['silhouette','lipsUpperOuter','lipsLowerOuter','lipsUpperInner','lipsLowerInner']
+var semantics = [
+                'lipsUpperOuter',
+                'lipsLowerOuter',
+                'lipsUpperInner',
+                'lipsLowerInner', 
+                'noseBottom',
+                'noseRightCorner',
+                'noseLeftCorner',
+                'noseTip',
+                'midwayBetweenEyes',
+                'leftEyeUpper1',
+                'leftEyeLower1',
+                'leftEyebrowLower',
+                'silhouette',
+                'rightEyebrowUpper',
+                'rightEyeLower1',
+                'rightEyeUpper1'
+                // 'rightEyeUpper0',
+                // 'rightEyeLower0',
+                // 'rightEyeUpper2',
+                // 'rightEyeLower2',
+                // 'rightEyeLower3',
+                // 'rightEyebrowLower',
+                // 'leftEyeUpper0',
+                // 'leftEyeLower0',
+                // 'leftEyeUpper2',
+                // 'leftEyeLower2',
+                // 'leftEyeLower3',
+                // 'leftEybrowUpper',
+                // 'rightCheek',
+                // 'leftCheek'
+              ]
 
 function preload() {
   img = loadImage('https://corsanywhere.herokuapp.com/http://thispersondoesnotexist.com/image');
@@ -50,24 +81,25 @@ function draw() {
 function drawKeypoints() {
   //create a new stroke
   stroke("white")
-  strokeWeight(10)
-  for (let i = 0; i < predictions.length; i += 1) {
-    // const keys = Object.keys(predictions[i].annotations);
-    // console.log(keys)
-    Object.entries(predictions[i].annotations).forEach(([key, keyPoints]) => {
-      console.log(key);
-      if (semantics.includes(key)) {
-        // loop through every value and draw a new line of random color
-        px =  keyPoints[0].x;
-        py =  keyPoints[0].y;
-        // stroke(randomColor())
-        for (j = 0; j < keyPoints.length; j++ ) {
-          const [x, y] = keyPoints[j];
-          line(px,py,x,y);
-          px = x;
-          py = y;
+  strokeWeight(1)
+  for (let i = 0; i < predictions.length; i += 1) { //for all the predictions - should be 1
+    // loop through all semantics - if it is that one draw
+    for (let k = 0; k < semantics.length; k++) {
+      Object.entries(predictions[i].annotations).forEach(([key, keyPoints]) => { //loop through key and values in the semantic understanding of facemesh
+        // console.log(key); //log all the keys
+        if (key == semantics[k]) { //if it is one of the keys we want to draw
+          // px =  keyPoints[0].x; //set prev
+          // py =  keyPoints[0].y;
+          console.log(key)
+          for (j = 0; j < keyPoints.length; j++ ) { //loop through keypoints
+            const [x, y] = keyPoints[j];
+            circle(x,y,4)
+            line(px,py,x,y); //set line
+            px = x; //update prev
+            py = y;
+          }
         }
-      }
-    });
+      });
+    }
   }
 }
