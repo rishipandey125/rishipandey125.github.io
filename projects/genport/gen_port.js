@@ -16,27 +16,12 @@ var semantics = [
                 'noseLeftCorner',
                 'noseTip',
                 'midwayBetweenEyes',
-                'leftEyeUpper1',
-                'leftEyeLower1',
-                'leftEyebrowLower',
-                'silhouette',
+                // 'leftEyeLower1',
+                // 'leftEyeUpper1',
+                // 'leftEyebrowLower',
                 'rightEyebrowUpper',
                 'rightEyeLower1',
                 'rightEyeUpper1'
-                // 'rightEyeUpper0'
-                // 'rightEyeLower0',
-                // 'rightEyeUpper2',
-                // 'rightEyeLower2',
-                // 'rightEyeLower3',
-                // 'rightEyebrowLower',
-                // 'leftEyeUpper0',
-                // 'leftEyeLower0',
-                // 'leftEyeUpper2',
-                // 'leftEyeLower2',
-                // 'leftEyeLower3',
-                // 'leftEybrowUpper',
-                // 'rightCheek',
-                // 'leftCheek'
               ]
 
 function preload() {
@@ -77,8 +62,10 @@ function draw() {
     saveKeyPoints();
   } else if (saved) { //keypoints have been predicted 
       //create a new stroke
+    clear();
+    background('black')
     stroke("white")
-    strokeWeight(10)
+    strokeWeight(5)
 
     // let py = keyPoints[0][1];
     for (let i = 0; i < facePoints.length-1; i++) {
@@ -91,18 +78,24 @@ function draw() {
       let endX = facePoints[i+1].x;
       let endY = facePoints[i+1].y; 
       let step = 10;
-      line(startX,startY,endX,endY)
-      // let px = startX;
-      // let py = startY;
-      // for (let j = startX; j <= endX; j += step) {
-      //   let x = lerp(startX,endX,(j-startX)/(endX-startX));
-      //   let y = lerp(startY,endY,(j-startX)/(endX-startX));
-      //   line(px,py,x,y)
-      //   px = x;
-      //   py = y;
-      // }
-      // startX = endX;
-      // startY = endY;
+      // line(startX,startY,endX,endY)
+      // circle(startX,startY,4)
+      let px = startX;
+      let py = startY; // since px py
+      for (let j = 0; j <= 1; j += 0.1) {
+        let perlinSeed =  2;
+        let x = ((noise(perlinSeed * 0.01) - 0.5) * 100) + lerp(startX,endX,j);
+        let y = ((noise(perlinSeed * 0.02) - 0.5) * 100) + lerp(startY,endY,j);
+        if (j == 0) {
+          px = x;
+          py = y;
+        }
+        // circle(x,y,8)
+        line(px,py,x,y)
+        px = x;
+        py = y;
+        // perlinSeed += 0.01;
+      }
     }
   }
 }
