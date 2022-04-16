@@ -22,6 +22,20 @@ var semantics = [
                 'rightEyebrowUpper',
                 'rightEyeLower1',
                 'rightEyeUpper1'
+                // 'rightEyeUpper0'
+                // 'rightEyeLower0',
+                // 'rightEyeUpper2',
+                // 'rightEyeLower2',
+                // 'rightEyeLower3',
+                // 'rightEyebrowLower',
+                // 'leftEyeUpper0',
+                // 'leftEyeLower0',
+                // 'leftEyeUpper2',
+                // 'leftEyeLower2',
+                // 'leftEyeLower3',
+                // 'leftEybrowUpper',
+                // 'rightCheek',
+                // 'leftCheek'
               ]
 
 function preload() {
@@ -58,16 +72,19 @@ function randomColor() {
 function draw() {
   //get the predictions and save the keypoints
   if (predictions.length > 0 && !saved) {
-    // image(img, 0, 0, width, height);
     saveKeyPoints();
+
   } else if (saved) { //keypoints have been predicted 
       //create a new stroke
     clear();
+
     background('black')
     stroke("white")
     strokeWeight(5)
+    noFill();
+    curveTightness(0);
 
-    // let py = keyPoints[0][1];
+    beginShape()
     for (let i = 0; i < facePoints.length-1; i++) {
       //loop through each x prev and next point
         //for every y value in that same lerp period
@@ -77,26 +94,28 @@ function draw() {
       let startY = facePoints[i].y;
       let endX = facePoints[i+1].x;
       let endY = facePoints[i+1].y; 
+      curveVertex(facePoints[i].x,facePoints[i].y);
       let step = 10;
       // line(startX,startY,endX,endY)
       // circle(startX,startY,4)
       let px = startX;
       let py = startY; // since px py
-      for (let j = 0; j <= 1; j += 0.1) {
-        let perlinSeed =  2;
-        let x = ((noise(perlinSeed * 0.01) - 0.5) * 100) + lerp(startX,endX,j);
-        let y = ((noise(perlinSeed * 0.02) - 0.5) * 100) + lerp(startY,endY,j);
-        if (j == 0) {
-          px = x;
-          py = y;
-        }
-        // circle(x,y,8)
-        line(px,py,x,y)
-        px = x;
-        py = y;
-        // perlinSeed += 0.01;
-      }
+      // for (let j = 0; j <= 1; j += 0.1) {
+      //   let x = lerp(startX,endX,j);
+      //   let y = lerp(startY,endY,j);
+      //   curveVertex(x,y);
+      //   if (j == 0) {
+      //     px = x;
+      //     py = y;
+      //   }
+      //   // circle(x,y,8)
+      //   // line(px,py,x,y)
+      //   px = x;
+      //   py = y;
+      //   // perlinSeed += 0.01;
+      // }
     }
+    endShape()
   }
 }
 
