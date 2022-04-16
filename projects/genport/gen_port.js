@@ -151,8 +151,8 @@ function draw() {
       if (PARAMS.design) {
         circle(facePoints[i].x,facePoints[i].y,2*RADIUS);
       } else {
-        xNoise = (noise(noiseSeed * 0.01) - 0.5) * 1000;
-        yNoise = (noise(noiseSeed * 0.02) - 0.5) * 1000;
+        xNoise = (noise(noiseSeed * 0.01) - 0.5) * 10;
+        yNoise = (noise(noiseSeed * 0.02) - 0.5) * 10;
       }
 
       curveVertex(facePoints[i].x+xNoise,facePoints[i].y+yNoise); //add face mesh point to the stroke
