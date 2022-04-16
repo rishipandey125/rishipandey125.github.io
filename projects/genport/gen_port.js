@@ -16,9 +16,10 @@ var semantics = [
                 'noseLeftCorner',
                 'noseTip',
                 'midwayBetweenEyes',
-                // 'leftEyeLower1',
-                // 'leftEyeUpper1',
+                'leftEyeUpper1',
+                'leftEyeLower1',
                 // 'leftEyebrowLower',
+                // 'silhouette',
                 'rightEyebrowUpper',
                 'rightEyeLower1',
                 'rightEyeUpper1'
