@@ -24,8 +24,8 @@ var semantics = [ //list and order of semantics for saved facepoints
                 'midwayBetweenEyes',
                 'leftEyeUpper1',
                 'leftEyeLower1',
-                'leftEyebrowLower',
-                'silhouette',
+                // 'leftEyebrowLower',
+                // 'silhouette',
                 'rightEyebrowUpper',
                 'rightEyeLower1',
                 'rightEyeUpper1'
@@ -136,7 +136,7 @@ function draw() {
     //create a new stroke
     background(PARAMS.background)
     stroke(PARAMS.line)
-    strokeWeight(PARAMS.thickness)
+    strokeWeight((PARAMS.thickness/100)*(25))
     noFill();
     curveTightness(0);
 
