@@ -25,7 +25,7 @@ var semantics = [ //list and order of semantics for saved facepoints
                 'leftEyeUpper1',
                 'leftEyeLower1',
                 // 'leftEyebrowLower',
-                // 'silhouette',
+                'silhouette',
                 'rightEyebrowUpper',
                 'rightEyeLower1',
                 'rightEyeUpper1'
@@ -68,7 +68,8 @@ function setupUI() {
     design: false,
     line: '#ffffff',
     thickness: 25,
-    background: '#000000'
+    background: '#000000',
+    face: '#ff0000'
   };
 
   const pane = new Tweakpane.Pane({
@@ -85,6 +86,13 @@ function setupUI() {
               picker: 'inline',
               expanded: true,
               });
+
+  //set the bg color of the canvas
+  pane.addInput(PARAMS, 'face',{
+    label: 'face',
+    picker: 'inline',
+    expanded: true,
+    });
 
   //thickness controls for stroke
   pane.addInput(PARAMS, 'thickness',{
@@ -131,17 +139,19 @@ function draw() {
     saveKeyPoints();
 
   } else if (saved) { //keypoints have been predicted 
-    clear(); //clear the canvas
+
+    background(PARAMS.background)
+    //draw the image abstract
 
     //create a new stroke
-    background(PARAMS.background)
-    stroke(PARAMS.line)
+
+    stroke(PARAMS.line);
     strokeWeight((PARAMS.thickness/100)*(25))
-    noFill();
+    // strokeWeight(100)
     curveTightness(0);
 
-    beginShape() //begin the stroke
-
+    beginShape()
+    noFill()
     for (let i = 0; i < facePoints.length; i++) {
       let noiseSeed = random(100)
 
@@ -149,41 +159,56 @@ function draw() {
       let yNoise = 0;
 
       if (PARAMS.design) {
-        circle(facePoints[i].x,facePoints[i].y,2*RADIUS);
+        let radius = 2*RADIUS;
+        if (i == selectedIndex && pointSelected) {
+          radius = 5*RADIUS;
+        }
+        circle(facePoints[i].x,facePoints[i].y,radius);
       } else {
-        xNoise = (noise(noiseSeed * 0.01) - 0.5) * 10;
-        yNoise = (noise(noiseSeed * 0.02) - 0.5) * 10;
+        xNoise = (noise(noiseSeed * 0.01) - 0.5) * 100;
+        yNoise = (noise(noiseSeed * 0.02) - 0.5) * 100;
       }
-
       curveVertex(facePoints[i].x+xNoise,facePoints[i].y+yNoise); //add face mesh point to the stroke
-
     }
     endShape() //end the shape
   }
+
+  // beginShape()
 }
+
 
 function mousePressed() {
   //find which point you clicked 
   //return the index of that point
   if (PARAMS.design) {
-    selectedIndex = getExistingPointIndex(mouseX,mouseY);
-    if (selectedIndex > -1)
-      pointSelected = true
+    if (pointSelected) {
+      //move said point
+      facePoints[selectedIndex] = createVector(mouseX,mouseY);
+      //set point Selected to false
+      pointSelected = false;
+    }  else {
+      selectedIndex = getExistingPointIndex(mouseX,mouseY);
+      if (selectedIndex > -1)
+        pointSelected = true
+    }
   }
 
 }
 
-function mouseReleased() {
-  pointSelected = false
-}
+// function mouseReleased() {
+//   if (pointSelected) {
+//     // facePoints[selectedIndex] = createVector(mouseX,mouseY)
+//     pointSelected = false
+//   }
+// }
 
-function mouseDragged() {
-  //if a point was clicked 
-  //set the point at that index to mouseX,mouseY
-  if (pointSelected) {
-    facePoints[selectedIndex] = createVector(mouseX,mouseY)
-  }
-}
+// function mouseDragged() {
+//   //if a point was clicked 
+//   //set the point at that index to mouseX,mouseY
+//   if (pointSelected) {
+//     facePoints[selectedIndex] = createVector(mouseX,mouseY)
+//   }
+// }
 
 function getExistingPointIndex(x,y) {
   for (let i = 0; i < facePoints.length; i++) {
