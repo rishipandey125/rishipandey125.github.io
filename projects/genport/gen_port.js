@@ -68,6 +68,7 @@ function setupUI() {
     design: false,
     line: '#ffffff',
     thickness: 25,
+    noise: 10,
     background: '#000000',
     face: '#ff0000'
   };
@@ -102,6 +103,15 @@ function setupUI() {
           step: 1
           }
         );
+
+  pane.addInput(PARAMS, 'noise',{
+          label: 'noise',
+          min: 1,
+          max: 100,
+          step: 1
+          }
+        );
+
 
 
   //color controls for stroke
@@ -165,13 +175,16 @@ function draw() {
         }
         circle(facePoints[i].x,facePoints[i].y,radius);
       } else {
-        xNoise = (noise(noiseSeed * 0.01) - 0.5) * 100;
-        yNoise = (noise(noiseSeed * 0.02) - 0.5) * 100;
+        xNoise = (noise(noiseSeed * 0.01) - 0.5) * PARAMS.noise * 5;
+        yNoise = (noise(noiseSeed * 0.02) - 0.5) * PARAMS.noise * 5;
       }
       curveVertex(facePoints[i].x+xNoise,facePoints[i].y+yNoise); //add face mesh point to the stroke
     }
     endShape() //end the shape
   }
+
+
+
 
   // beginShape()
 }
