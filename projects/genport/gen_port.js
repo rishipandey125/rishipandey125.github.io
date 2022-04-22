@@ -4,7 +4,9 @@ let img; //input image from StyleGan2
 var px = 0; //previous x component  
 var py = 0; //prev y
 var saved = false //bool indicating facepoints were saved
-var facePoints = []; //list of saved facepoints
+var facePointsStart = []; //list of saved face points start
+var facePointsEnd = []; //list of saved face points end
+var numPoints = 0;
 
 var renderCircles = false; //render the keyPoints
 const RADIUS = 5; //radius of rendered keyPoints
@@ -65,8 +67,10 @@ function setup() {
 function setupUI() {
   //initial params
   PARAMS = {
-    design: false,
+    design1: false,
+    design2: false,
     line: '#ffffff',
+    lerp: 1,
     thickness: 25,
     noise: 10,
     background: '#000000',
@@ -79,7 +83,8 @@ function setupUI() {
           });
 
   
-  pane.addInput(PARAMS, 'design');
+  pane.addInput(PARAMS, 'design1');
+  pane.addInput(PARAMS, 'design2');
 
   //set the bg color of the canvas
   pane.addInput(PARAMS, 'background',{
@@ -94,6 +99,14 @@ function setupUI() {
     picker: 'inline',
     expanded: true,
     });
+
+  pane.addInput(PARAMS, 'lerp',{
+    label: 'lerp',
+    min: 1,
+    max: 100,
+    step: 1
+    }
+  );
 
   //thickness controls for stroke
   pane.addInput(PARAMS, 'thickness',{
@@ -149,7 +162,7 @@ function draw() {
     saveKeyPoints();
 
   } else if (saved) { //keypoints have been predicted 
-
+    clear()
     background(PARAMS.background)
     //draw the image abstract
 
@@ -162,23 +175,27 @@ function draw() {
 
     beginShape()
     noFill()
-    for (let i = 0; i < facePoints.length; i++) {
+    for (let i = 0; i < numPoints; i++) {
       let noiseSeed = random(100)
 
       let xNoise = 0;
       let yNoise = 0;
 
-      if (PARAMS.design) {
+      if (PARAMS.design1 && !PARAMS.design2) {
         let radius = 2*RADIUS;
         if (i == selectedIndex && pointSelected) {
           radius = 5*RADIUS;
         }
-        circle(facePoints[i].x,facePoints[i].y,radius);
+        circle(facePointsStart[i].x,facePointsStart[i].y,radius);
       } else {
         xNoise = (noise(noiseSeed * 0.01) - 0.5) * PARAMS.noise * 5;
         yNoise = (noise(noiseSeed * 0.02) - 0.5) * PARAMS.noise * 5;
       }
-      curveVertex(facePoints[i].x+xNoise,facePoints[i].y+yNoise); //add face mesh point to the stroke
+      //x and y for curveVertex - is lerped between the two
+      // console.log(facePointsStart[i].x==facePointsEnd[i].x)
+      let x = lerp(facePointsStart[i].x,facePointsEnd[i].x,PARAMS.lerp/100) + xNoise
+      let y = lerp(facePointsStart[i].y,facePointsEnd[i].y,PARAMS.lerp/100) + yNoise
+      curveVertex(x,y); //add face mesh point to the stroke
     }
     endShape() //end the shape
   }
@@ -193,10 +210,10 @@ function draw() {
 function mousePressed() {
   //find which point you clicked 
   //return the index of that point
-  if (PARAMS.design) {
+  if (PARAMS.design1) {
     if (pointSelected) {
       //move said point
-      facePoints[selectedIndex] = createVector(mouseX,mouseY);
+      facePointsStart[selectedIndex] = createVector(mouseX,mouseY);
       //set point Selected to false
       pointSelected = false;
     }  else {
@@ -208,24 +225,9 @@ function mousePressed() {
 
 }
 
-// function mouseReleased() {
-//   if (pointSelected) {
-//     // facePoints[selectedIndex] = createVector(mouseX,mouseY)
-//     pointSelected = false
-//   }
-// }
-
-// function mouseDragged() {
-//   //if a point was clicked 
-//   //set the point at that index to mouseX,mouseY
-//   if (pointSelected) {
-//     facePoints[selectedIndex] = createVector(mouseX,mouseY)
-//   }
-// }
-
 function getExistingPointIndex(x,y) {
-  for (let i = 0; i < facePoints.length; i++) {
-    if (dist(x,y,facePoints[i].x,facePoints[i].y) <= RADIUS) 
+  for (let i = 0; i < numPoints; i++) {
+    if (dist(x,y,facePointsStart[i].x,facePointsEnd[i].y) <= RADIUS) 
       return i;
   }
   return -1; //return -1 if no point was selected
@@ -233,7 +235,6 @@ function getExistingPointIndex(x,y) {
 
 // A function to draw ellipses over the detected keypoints
 function saveKeyPoints() {
-
   for (let i = 0; i < predictions.length; i += 1) { //for all the predictions - should be 1
     // loop through all semantics - if it is that one draw
     for (let k = 0; k < semantics.length; k++) {
@@ -264,7 +265,8 @@ function saveKeyPoints() {
           if (start == end) { // if array len is 1 
             const [x, y] = keyPoints[start];
             let point = createVector(x,y);
-            facePoints.push(point) //add the point to the overall list 
+            facePointsStart.push(point) //add the point to the overall list 
+            facePointsEnd.push(point)   
             px = x; //update prev
             py = y;
           } else {
@@ -272,7 +274,9 @@ function saveKeyPoints() {
             while (start != end) {
               const [x, y] = keyPoints[start];
               let point = createVector(x,y);
-              facePoints.push(point) //add point to the overall list
+              facePointsStart.push(point) //add point to the overall list
+              facePointsEnd.push(point)
+              // initialPoints2.push(point)
               px = x; //update prev
               py = y;
               start += iterate;
@@ -282,6 +286,9 @@ function saveKeyPoints() {
       });
     }
   }
+  numPoints = facePointsStart.length;
+  // facePointsEnd = facePointsStart;
+
   saved = true //facepoints have been saved! 
 }
 
