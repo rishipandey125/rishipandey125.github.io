@@ -59,7 +59,7 @@ function setup() {
   // create a canvas that's at least the size of the image.
   createCanvas(img.width,img.height)
   setupUI()
-  background('white')
+  // background('white')
   imageReady() //load poseNet when image ready
 }
 
@@ -181,20 +181,30 @@ function draw() {
       let xNoise = 0;
       let yNoise = 0;
 
+      let interpolator = PARAMS.lerp/100;
+
       if (PARAMS.design1 && !PARAMS.design2) {
+        interpolator = 0 //display the first face
         let radius = 2*RADIUS;
         if (i == selectedIndex && pointSelected) {
           radius = 5*RADIUS;
         }
         circle(facePointsStart[i].x,facePointsStart[i].y,radius);
+      } else if (!PARAMS.design1 && PARAMS.design2) {
+        interpolator = 1; //display the second face
+        let radius = 2*RADIUS;
+        if (i == selectedIndex && pointSelected) {
+          radius = 5*RADIUS;
+        }
+        circle(facePointsEnd[i].x,facePointsEnd[i].y,radius);
       } else {
         xNoise = (noise(noiseSeed * 0.01) - 0.5) * PARAMS.noise * 5;
         yNoise = (noise(noiseSeed * 0.02) - 0.5) * PARAMS.noise * 5;
       }
       //x and y for curveVertex - is lerped between the two
       // console.log(facePointsStart[i].x==facePointsEnd[i].x)
-      let x = lerp(facePointsStart[i].x,facePointsEnd[i].x,PARAMS.lerp/100) + xNoise
-      let y = lerp(facePointsStart[i].y,facePointsEnd[i].y,PARAMS.lerp/100) + yNoise
+      let x = lerp(facePointsStart[i].x,facePointsEnd[i].x,interpolator) + xNoise
+      let y = lerp(facePointsStart[i].y,facePointsEnd[i].y,interpolator) + yNoise
       curveVertex(x,y); //add face mesh point to the stroke
     }
     endShape() //end the shape
@@ -210,24 +220,38 @@ function draw() {
 function mousePressed() {
   //find which point you clicked 
   //return the index of that point
-  if (PARAMS.design1) {
+
+
+  if (PARAMS.design1 && !PARAMS.design2) {
     if (pointSelected) {
-      //move said point
       facePointsStart[selectedIndex] = createVector(mouseX,mouseY);
-      //set point Selected to false
       pointSelected = false;
-    }  else {
-      selectedIndex = getExistingPointIndex(mouseX,mouseY);
+    } else {
+      selectedIndex = getExistingPointIndex(mouseX,mouseY,0);
       if (selectedIndex > -1)
-        pointSelected = true
+        pointSelected = true    
+    }
+  } else if (!PARAMS.design1 && PARAMS.design2) {
+    if (pointSelected) {
+      facePointsEnd[selectedIndex] = createVector(mouseX,mouseY);
+      pointSelected = false;
+    } else {
+      selectedIndex = getExistingPointIndex(mouseX,mouseY,1);
+      if (selectedIndex > -1)
+        pointSelected = true    
     }
   }
-
 }
 
-function getExistingPointIndex(x,y) {
+function getExistingPointIndex(x,y,flag) {
   for (let i = 0; i < numPoints; i++) {
-    if (dist(x,y,facePointsStart[i].x,facePointsEnd[i].y) <= RADIUS) 
+    let existingX = facePointsStart[i].x;
+    let existingY = facePointsStart[i].y;
+    if (flag == 1) {
+      existingX = facePointsEnd[i].x;
+      existingY = facePointsEnd[i].y;
+    }
+    if (dist(x,y,existingX,existingY) <= RADIUS) 
       return i;
   }
   return -1; //return -1 if no point was selected
