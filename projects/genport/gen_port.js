@@ -26,31 +26,15 @@ var semantics = [ //list and order of semantics for saved facepoints
                 'lipsUpperInner',
                 'lipsLowerInner', 
                 'noseBottom',
-                // 'noseRightCorner',
                 'noseLeftCorner',
                 'noseTip',
                 'midwayBetweenEyes',
                 'leftEyeUpper1',
                 'leftEyeLower1',
-                // 'leftEyebrowLower',
                 'silhouette',
                 'rightEyebrowUpper',
                 'rightEyeLower1',
                 'rightEyeUpper1'
-                // 'rightEyeUpper0'
-                // 'rightEyeLower0',
-                // 'rightEyeUpper2',
-                // 'rightEyeLower2',
-                // 'rightEyeLower3',
-                // 'rightEyebrowLower',
-                // 'leftEyeUpper0',
-                // 'leftEyeLower0',
-                // 'leftEyeUpper2',
-                // 'leftEyeLower2',
-                // 'leftEyeLower3',
-                // 'leftEybrowUpper',
-                // 'rightCheek',
-                // 'leftCheek'
               ]
 
 //PARAMS
@@ -71,10 +55,10 @@ function setup() {
     canvasHeight = canvasWidth * (1/aspectRatio);
   }
 
-  tx = (640/2)-(canvasWidth/2); //calculate x and y scale
-  ty = (480/2)-(canvasHeight/2);
+  tx = (640/2)-(canvasWidth/2); //calculate x and y translation from webcam to frame
+  ty = (480/2)-(canvasHeight/2); //640x480 is the output for webcam facemesh
 
-  createCanvas(canvasWidth,canvasHeight) //640x480 is the output for facemesh
+  createCanvas(canvasWidth,canvasHeight) 
 
   capture = createCapture(VIDEO);
   capture.size(width,height);
@@ -86,7 +70,7 @@ function setup() {
     predictions = results;
   });
 
-  capture.hide();
+  capture.hide(); //hide the webcam
 
 }
 
@@ -163,21 +147,9 @@ function setupUI() {
 
 }
 
-// // when the image is ready, then load up poseNet
-// function imageReady() {
-//   console.log("click")
-
-//   facemesh = ml5.facemesh(modelReady);//load poseNet
-
-//   facemesh.on("predict", results => {
-//     predictions = results;
-//   });
-// }
-
-// // when poseNet is ready, do the detection
+// signal that the model is ready
 function modelReady() {
   console.log("Model ready!");
-  // facemesh.predict(capture);//predict the keypoints
 }
 
 function randomColor() {
@@ -187,35 +159,32 @@ function randomColor() {
 // draw() function (onUpdate)
 function draw() {
   //get the predictions and save the keypoints
-  if (!captured) {
+  if (!captured) { //if not captured then when the user taps capture their face as the seed mesh
     clear();
-    image(capture, 0, 0, width, height);
+    background(PARAMS.background)
     drawKeyPoints();
-    // filter('THRESHOLD');
-    // image(capture,0,0);
     return
   }
-  if (predictions.length > 0 && !saved) {
-    saveKeyPoints();
 
-  } else if (saved) { //keypoints have been predicted 
+  if (predictions.length > 0 && !saved) { //cache the keypoints
+    saveKeyPoints();
+  } else if (saved) { //keypoints have been cached 
     clear()
+    // set the background color
     background(PARAMS.background)
-    //draw the image abstract
 
     //create a new stroke
+    stroke(PARAMS.line); // stroke color
+    strokeWeight((PARAMS.thickness/100)*(25)) //stroke thickness
+    curveTightness(0); //set the curve tightness
 
-    stroke(PARAMS.line);
-    strokeWeight((PARAMS.thickness/100)*(25))
-    // strokeWeight(100)
-    curveTightness(0);
-
-    beginShape()
-    noFill()
+    beginShape() //begin the curve
+    noFill() //dont fill in the curve
+    //loop through the points
     for (let i = 0; i < numPoints; i++) {
-      let noiseSeed = random(100);
+      let noiseSeed = random(100); //seed for the perlin noise
 
-      let xNoise = 0;
+      let xNoise = 0; //initiailize x and y noise
       let yNoise = 0;
 
       let interpolator = PARAMS.lerp/100;
@@ -258,16 +227,7 @@ function mousePressed() {
   //find which point you clicked 
   //return the index of that point
   if (!captured) {
-    console.log("click")
-
-    // The capture element is initially smaller than it should be
-    if (!img) {
-      img = createImage(capture.width, capture.height);
-    }
-    img.copy(capture, 0, 0, capture.width, capture.height, 0, 0, img.width, img.height);
-    // redraw();
     captured = true;
-    imageReady()
   } 
 
   if (PARAMS.design1 && !PARAMS.design2) {
@@ -352,7 +312,7 @@ function saveKeyPoints() {
           
           if (start == end) { // if array len is 1 
             const [x, y] = keyPoints[start];
-            let point = createVector(x,y);
+            let point = createVector(x-tx,y-ty);
             facePointsStart.push(point) //add the point to the overall list 
             facePointsEnd.push(point)   
             px = x; //update prev
@@ -361,7 +321,7 @@ function saveKeyPoints() {
             //loop through array in correct direction
             while (start != end) {
               const [x, y] = keyPoints[start];
-              let point = createVector(x,y);
+              let point = createVector(x-tx,y-ty);
               facePointsStart.push(point) //add point to the overall list
               facePointsEnd.push(point)
               // initialPoints2.push(point)
