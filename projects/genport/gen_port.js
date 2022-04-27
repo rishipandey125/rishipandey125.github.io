@@ -1,12 +1,18 @@
 let facemesh; // facemesh variable
 let predictions = []; //predictions list (num of people predicted)
 let img; //input image from StyleGan2
+let capture;
+var captured = false;
 var px = 0; //previous x component  
 var py = 0; //prev y
 var saved = false //bool indicating facepoints were saved
 var facePointsStart = []; //list of saved face points start
 var facePointsEnd = []; //list of saved face points end
 var numPoints = 0;
+
+var tx; //translate x y
+var ty; 
+
 
 var renderCircles = false; //render the keyPoints
 const RADIUS = 5; //radius of rendered keyPoints
@@ -50,17 +56,38 @@ var semantics = [ //list and order of semantics for saved facepoints
 //PARAMS
 var PARAMS;
 
-
-function preload() {
-  img = loadImage('https://corsanywhere.herokuapp.com/http://thispersondoesnotexist.com/image');
-}
-
 function setup() {
   // create a canvas that's at least the size of the image.
-  createCanvas(img.width,img.height)
   setupUI()
-  // background('white')
-  imageReady() //load poseNet when image ready
+
+  let aspectRatio = 9/16;
+  let canvasHeight = 700
+  let canvasWidth = canvasHeight*aspectRatio
+
+  //enforce conditions for mobile friendly canvas
+  if (windowWidth < canvasWidth) {
+    //make canvas mobile friendly
+    canvasWidth = 0.8*windowWidth;
+    canvasHeight = canvasWidth * (1/aspectRatio);
+  }
+
+  tx = (640/2)-(canvasWidth/2); //calculate x and y scale
+  ty = (480/2)-(canvasHeight/2);
+
+  createCanvas(canvasWidth,canvasHeight) //640x480 is the output for facemesh
+
+  capture = createCapture(VIDEO);
+  capture.size(width,height);
+  facemesh = ml5.facemesh(capture, modelReady);
+
+  // This sets up an event that fills the global variable "predictions"
+  // with an array every time new predictions are made
+  facemesh.on("predict", results => {
+    predictions = results;
+  });
+
+  capture.hide();
+
 }
 
 //setup the UI
@@ -136,19 +163,21 @@ function setupUI() {
 
 }
 
-// when the image is ready, then load up poseNet
-function imageReady() {
-  facemesh = ml5.facemesh(modelReady);//load poseNet
+// // when the image is ready, then load up poseNet
+// function imageReady() {
+//   console.log("click")
 
-  facemesh.on("predict", results => {
-    predictions = results;
-  });
-}
+//   facemesh = ml5.facemesh(modelReady);//load poseNet
 
-// when poseNet is ready, do the detection
+//   facemesh.on("predict", results => {
+//     predictions = results;
+//   });
+// }
+
+// // when poseNet is ready, do the detection
 function modelReady() {
-  // console.log("Model ready!");
-  facemesh.predict(img);//predict the keypoints
+  console.log("Model ready!");
+  // facemesh.predict(capture);//predict the keypoints
 }
 
 function randomColor() {
@@ -158,6 +187,14 @@ function randomColor() {
 // draw() function (onUpdate)
 function draw() {
   //get the predictions and save the keypoints
+  if (!captured) {
+    clear();
+    image(capture, 0, 0, width, height);
+    drawKeyPoints();
+    // filter('THRESHOLD');
+    // image(capture,0,0);
+    return
+  }
   if (predictions.length > 0 && !saved) {
     saveKeyPoints();
 
@@ -176,7 +213,7 @@ function draw() {
     beginShape()
     noFill()
     for (let i = 0; i < numPoints; i++) {
-      let noiseSeed = random(100)
+      let noiseSeed = random(100);
 
       let xNoise = 0;
       let yNoise = 0;
@@ -198,8 +235,8 @@ function draw() {
         }
         circle(facePointsEnd[i].x,facePointsEnd[i].y,radius);
       } else {
-        xNoise = (noise(noiseSeed * 0.01) - 0.5) * PARAMS.noise * 5;
-        yNoise = (noise(noiseSeed * 0.02) - 0.5) * PARAMS.noise * 5;
+        xNoise = (noise(noiseSeed * 0.01) - 0.5) * PARAMS.noise;
+        yNoise = (noise(noiseSeed * 0.02) - 0.5) * PARAMS.noise;
       }
       //x and y for curveVertex - is lerped between the two
       // console.log(facePointsStart[i].x==facePointsEnd[i].x)
@@ -220,7 +257,18 @@ function draw() {
 function mousePressed() {
   //find which point you clicked 
   //return the index of that point
+  if (!captured) {
+    console.log("click")
 
+    // The capture element is initially smaller than it should be
+    if (!img) {
+      img = createImage(capture.width, capture.height);
+    }
+    img.copy(capture, 0, 0, capture.width, capture.height, 0, 0, img.width, img.height);
+    // redraw();
+    captured = true;
+    imageReady()
+  } 
 
   if (PARAMS.design1 && !PARAMS.design2) {
     if (pointSelected) {
@@ -256,6 +304,22 @@ function getExistingPointIndex(x,y,flag) {
   }
   return -1; //return -1 if no point was selected
 }
+
+
+function drawKeyPoints() {
+  for (let i = 0; i < predictions.length; i += 1) {
+    const keypoints = predictions[i].scaledMesh;
+
+    // Draw facial keypoints.
+    for (let j = 0; j < keypoints.length; j += 1) {
+      const [x, y] = keypoints[j];
+
+      fill(PARAMS.line);
+      ellipse(x-tx, y-ty, 5, 5);
+    }
+  }
+}
+
 
 // A function to draw ellipses over the detected keypoints
 function saveKeyPoints() {
