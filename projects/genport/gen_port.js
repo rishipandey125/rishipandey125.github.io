@@ -94,12 +94,8 @@ function setupUI() {
     color3: '#c1e2d7',
     color4: '#3a0c6f',
     color5: '#c299b7',
-    line: '#ffffff',
-    lerp: 1,
-    thickness: 25,
-    noise: 10,
-    background: '#000000',
-    face: '#ff0000'
+    thickness1: 25,
+    thickness2: 25,
   };
 
   const pane = new Tweakpane.Pane({
@@ -135,18 +131,27 @@ function setupUI() {
     });
 
   
-  tab.pages[1].addInput(PARAMS, 'design1');
+  tab.pages[1].addInput(PARAMS, 'design1', {label:'design'});
 
-  tab.pages[2].addInput(PARAMS, 'design2');
+  tab.pages[2].addInput(PARAMS, 'design2', {label:'design'});
 
   //thickness controls for stroke
-  tab.pages[1].addInput(PARAMS, 'thickness',{
+  tab.pages[1].addInput(PARAMS, 'thickness1',{
           label: 'thickness',
           min: 1,
           max: 100,
           step: 1
           }
         );
+
+  //thickness controls for stroke
+  tab.pages[2].addInput(PARAMS, 'thickness2',{
+    label: 'thickness',
+    min: 1,
+    max: 100,
+    step: 1
+    }
+  );
 
 }
 
@@ -164,7 +169,6 @@ function draw() {
   //get the predictions and save the keypoints
   if (!captured) { //if not captured then when the user taps capture their face as the seed mesh
     clear();
-    background(PARAMS.background)
     if (!savedEnd)
       background('white')
       fill('black')
@@ -182,8 +186,7 @@ function draw() {
 
     //create a new stroke
     stroke(PARAMS.color2); // stroke color
-    let thicknessInterp = PARAMS.thickness/100;
-    strokeWeight(0.75 + (12.5-0.75)*thicknessInterp); //stroke thickness
+
     curveTightness(0); //set the curve tightness
 
     beginShape() //begin the curve
@@ -219,7 +222,8 @@ function draw() {
       noiseVal = lerp(10,100,l);
     }
 
-    // noiseVal = (modTime/5000)*100;
+    let thicknessInterp = lerp(PARAMS.thickness1,PARAMS.thickness2,interpolator)/100;
+    strokeWeight(0.75 + (12.5-0.75)*thicknessInterp); //stroke thickness
 
     for (let i = 0; i < numPoints; i++) {
       let noiseSeed = random(100); //seed for the perlin noise
