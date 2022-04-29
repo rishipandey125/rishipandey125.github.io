@@ -92,8 +92,6 @@ function setupUI() {
     color1: '#c29c9c',
     color2: '#9caac2',
     color3: '#c1e2d7',
-    color4: '#3a0c6f',
-    color5: '#c299b7',
     thickness1: 25,
     thickness2: 25,
   };
@@ -121,15 +119,6 @@ function setupUI() {
   tab.pages[0].addInput(PARAMS, 'color3',{
     label: 'color #3',
     });
-
-  tab.pages[0].addInput(PARAMS, 'color4',{
-    label: 'color #4',
-    });
-  
-  tab.pages[0].addInput(PARAMS, 'color5',{
-    label: 'color #5',
-    });
-
   
   tab.pages[1].addInput(PARAMS, 'design1', {label:'design'});
 
@@ -182,10 +171,10 @@ function draw() {
   if (savedStart && savedEnd) { //keypoints have been cached 
     clear()
     // set the background color
-    background(PARAMS.color1)
+    // background(PARAMS.color1)
 
-    //create a new stroke
-    stroke(PARAMS.color2); // stroke color
+    // create a new stroke
+    // stroke(PARAMS.color2); // stroke color
 
     curveTightness(0); //set the curve tightness
 
@@ -200,24 +189,31 @@ function draw() {
     let l = (modTime % 500)/500; 
 
     if (modTime < 500) {
+      setColor(0)
       interpolator = 0.5;
       noiseVal = 100; //Start at 70 with 100% noise - 3 seconds 
     } else if (modTime < 1000) {
+      setColor(1)
       interpolator = lerp(0.5,0,l);
       noiseVal = lerp(100,10,l); //Lerp to 0 - decrease noise to 10% - 3 seconds
     } else if (modTime < 2000) {
+      setColor(2)
       interpolator = 0;
       noiseVal = 10; //lerp 0 to 30 - 10 -> 100
     } else if (modTime < 2500) {
+      setColor(0)
       interpolator = lerp(0.0,0.5,l);
       noiseVal = lerp(10,100,l); //lerp to 100 - decrease noise to 10% - 3 seconds
     } else if (modTime < 3000) {
+      setColor(1)
       interpolator = lerp(0.5,1.0,l);
       noiseVal = lerp(100,10,l); 
     } else if (modTime < 4000) {
+      setColor(2)
       interpolator = 1.0;
       noiseVal = 10;
     } else if (modTime < 4500) {
+      setColor(1)
       interpolator = lerp(1.0,0.5,l);
       noiseVal = lerp(10,100,l);
     }
@@ -233,6 +229,7 @@ function draw() {
 
 
       if (PARAMS.design1 && !PARAMS.design2) {
+        strokeWeight(0.75 + (12.5-0.75)*0.1);
         interpolator = 0 //display the first face
         let radius = 2*RADIUS;
         if (i == selectedIndex && pointSelected) {
@@ -240,6 +237,7 @@ function draw() {
         }
         circle(facePointsStart[i].x,facePointsStart[i].y,radius);
       } else if (!PARAMS.design1 && PARAMS.design2) {
+        strokeWeight(0.75 + (12.5-0.75)*0.1);
         interpolator = 1; //display the second face
         let radius = 2*RADIUS;
         if (i == selectedIndex && pointSelected) {
@@ -322,6 +320,20 @@ function getExistingPointIndex(x,y,flag) {
   return -1; //return -1 if no point was selected
 }
 
+function setColor(state) {
+  if (state == 0) {
+    background(PARAMS.color1)
+    stroke(PARAMS.color3)
+  } 
+  if (state == 1) {
+    stroke(PARAMS.color1)
+    background(PARAMS.color2)
+  } 
+  if (state == 2) {
+    background(PARAMS.color3)
+    stroke(PARAMS.color2)
+  }
+}
 
 function drawKeyPoints() {
   for (let i = 0; i < predictions.length; i += 1) {
