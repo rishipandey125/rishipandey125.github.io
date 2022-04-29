@@ -1,20 +1,26 @@
 let facemesh; // facemesh variable
 let predictions = []; //predictions list (num of people predicted)
-let img; //input image from StyleGan2
-let capture;
+let capture; //video feed for webcam
 var captured = false;
 var px = 0; //previous x component  
 var py = 0; //prev y
-var saved = false //bool indicating facepoints were saved
+
+var savedStart = false //bool indicating facepoints were saved
+var savedEnd = false
+
 var facePointsStart = []; //list of saved face points start
 var facePointsEnd = []; //list of saved face points end
-var numPoints = 0;
+
+var numPoints = 0; //total num point
 
 var tx; //translate x y
 var ty; 
 
 
+var totalTime = 0; //total time
+
 var renderCircles = false; //render the keyPoints
+
 const RADIUS = 5; //radius of rendered keyPoints
 
 var selectedIndex = 0; //index selected by the mouse
@@ -62,6 +68,9 @@ function setup() {
 
   capture = createCapture(VIDEO);
   capture.size(width,height);
+
+
+
   facemesh = ml5.facemesh(capture, modelReady);
 
   // This sets up an event that fills the global variable "predictions"
@@ -80,6 +89,11 @@ function setupUI() {
   PARAMS = {
     design1: false,
     design2: false,
+    color1: '#c29c9c',
+    color2: '#9caac2',
+    color3: '#c1e2d7',
+    color4: '#3a0c6f',
+    color5: '#c299b7',
     line: '#ffffff',
     lerp: 1,
     thickness: 25,
@@ -93,57 +107,46 @@ function setupUI() {
             expanded: true
           });
 
-  
-  pane.addInput(PARAMS, 'design1');
-  pane.addInput(PARAMS, 'design2');
+  const tab = pane.addTab({pages: [
+    {title: 'palette'},
+    {title: 'pose #1'},
+    {title: 'pose #2'}
+    ],
+  });
 
-  //set the bg color of the canvas
-  pane.addInput(PARAMS, 'background',{
-              label: 'bg',
-              picker: 'inline',
-              expanded: true,
-              });
-
-  //set the bg color of the canvas
-  pane.addInput(PARAMS, 'face',{
-    label: 'face',
-    picker: 'inline',
-    expanded: true,
+  tab.pages[0].addInput(PARAMS, 'color1',{
+    label: 'color #1',
     });
 
-  pane.addInput(PARAMS, 'lerp',{
-    label: 'lerp',
-    min: 1,
-    max: 100,
-    step: 1
-    }
-  );
+  tab.pages[0].addInput(PARAMS, 'color2',{
+    label: 'color #2',
+    });
+
+  tab.pages[0].addInput(PARAMS, 'color3',{
+    label: 'color #3',
+    });
+
+  tab.pages[0].addInput(PARAMS, 'color4',{
+    label: 'color #4',
+    });
+  
+  tab.pages[0].addInput(PARAMS, 'color5',{
+    label: 'color #5',
+    });
+
+  
+  tab.pages[1].addInput(PARAMS, 'design1');
+
+  tab.pages[2].addInput(PARAMS, 'design2');
 
   //thickness controls for stroke
-  pane.addInput(PARAMS, 'thickness',{
+  tab.pages[1].addInput(PARAMS, 'thickness',{
           label: 'thickness',
           min: 1,
           max: 100,
           step: 1
           }
         );
-
-  pane.addInput(PARAMS, 'noise',{
-          label: 'noise',
-          min: 1,
-          max: 100,
-          step: 1
-          }
-        );
-
-
-
-  //color controls for stroke
- pane.addInput(PARAMS, 'line',{
-              label: 'line',
-              picker: 'inline',
-              expanded: true,
-              });
 
 }
 
@@ -162,32 +165,68 @@ function draw() {
   if (!captured) { //if not captured then when the user taps capture their face as the seed mesh
     clear();
     background(PARAMS.background)
+    if (!savedEnd)
+      background('white')
+      fill('black')
+    if (!savedStart)
+      background('black')
+      fill('white')
     drawKeyPoints();
     return
   }
 
-  if (predictions.length > 0 && !saved) { //cache the keypoints
-    saveKeyPoints();
-  } else if (saved) { //keypoints have been cached 
+  if (savedStart && savedEnd) { //keypoints have been cached 
     clear()
     // set the background color
-    background(PARAMS.background)
+    background(PARAMS.color1)
 
     //create a new stroke
-    stroke(PARAMS.line); // stroke color
-    strokeWeight((PARAMS.thickness/100)*(25)) //stroke thickness
+    stroke(PARAMS.color2); // stroke color
+    let thicknessInterp = PARAMS.thickness/100;
+    strokeWeight(0.75 + (12.5-0.75)*thicknessInterp); //stroke thickness
     curveTightness(0); //set the curve tightness
 
     beginShape() //begin the curve
     noFill() //dont fill in the curve
     //loop through the points
+    let noiseVal = 0;
+    let interpolator = 0;
+     
+    let modTime = totalTime % 4500; //loop every 10 seconds
+
+    let l = (modTime % 500)/500; 
+
+    if (modTime < 500) {
+      interpolator = 0.5;
+      noiseVal = 100; //Start at 70 with 100% noise - 3 seconds 
+    } else if (modTime < 1000) {
+      interpolator = lerp(0.5,0,l);
+      noiseVal = lerp(100,10,l); //Lerp to 0 - decrease noise to 10% - 3 seconds
+    } else if (modTime < 2000) {
+      interpolator = 0;
+      noiseVal = 10; //lerp 0 to 30 - 10 -> 100
+    } else if (modTime < 2500) {
+      interpolator = lerp(0.0,0.5,l);
+      noiseVal = lerp(10,100,l); //lerp to 100 - decrease noise to 10% - 3 seconds
+    } else if (modTime < 3000) {
+      interpolator = lerp(0.5,1.0,l);
+      noiseVal = lerp(100,10,l); 
+    } else if (modTime < 4000) {
+      interpolator = 1.0;
+      noiseVal = 10;
+    } else if (modTime < 4500) {
+      interpolator = lerp(1.0,0.5,l);
+      noiseVal = lerp(10,100,l);
+    }
+
+    // noiseVal = (modTime/5000)*100;
+
     for (let i = 0; i < numPoints; i++) {
       let noiseSeed = random(100); //seed for the perlin noise
 
       let xNoise = 0; //initiailize x and y noise
       let yNoise = 0;
 
-      let interpolator = PARAMS.lerp/100;
 
       if (PARAMS.design1 && !PARAMS.design2) {
         interpolator = 0 //display the first face
@@ -204,11 +243,10 @@ function draw() {
         }
         circle(facePointsEnd[i].x,facePointsEnd[i].y,radius);
       } else {
-        xNoise = (noise(noiseSeed * 0.01) - 0.5) * PARAMS.noise;
-        yNoise = (noise(noiseSeed * 0.02) - 0.5) * PARAMS.noise;
+        xNoise = (noise(noiseSeed * 0.01) - 0.5) * noiseVal;
+        yNoise = (noise(noiseSeed * 0.02) - 0.5) * noiseVal;
       }
       //x and y for curveVertex - is lerped between the two
-      // console.log(facePointsStart[i].x==facePointsEnd[i].x)
       let x = lerp(facePointsStart[i].x,facePointsEnd[i].x,interpolator) + xNoise
       let y = lerp(facePointsStart[i].y,facePointsEnd[i].y,interpolator) + yNoise
       curveVertex(x,y); //add face mesh point to the stroke
@@ -219,15 +257,30 @@ function draw() {
 
 
 
-  // beginShape()
+  totalTime += deltaTime;
 }
 
 
-function mousePressed() {
+function mouseClicked() {
   //find which point you clicked 
   //return the index of that point
+
   if (!captured) {
-    captured = true;
+    if (!savedStart) {
+      if (predictions.length > 0) {
+        saveKeyPoints(0)
+        return
+      }
+    }
+    
+    if (!savedEnd) {
+      if (predictions.length > 0) {
+        saveKeyPoints(1)
+        captured = true;
+        return
+      }
+    }
+
   } 
 
   if (PARAMS.design1 && !PARAMS.design2) {
@@ -274,7 +327,7 @@ function drawKeyPoints() {
     for (let j = 0; j < keypoints.length; j += 1) {
       const [x, y] = keypoints[j];
 
-      fill(PARAMS.line);
+      // fill(PARAMS.line);
       ellipse(x-tx, y-ty, 5, 5);
     }
   }
@@ -282,7 +335,7 @@ function drawKeyPoints() {
 
 
 // A function to draw ellipses over the detected keypoints
-function saveKeyPoints() {
+function saveKeyPoints(flag) {
   for (let i = 0; i < predictions.length; i += 1) { //for all the predictions - should be 1
     // loop through all semantics - if it is that one draw
     for (let k = 0; k < semantics.length; k++) {
@@ -313,8 +366,11 @@ function saveKeyPoints() {
           if (start == end) { // if array len is 1 
             const [x, y] = keyPoints[start];
             let point = createVector(x-tx,y-ty);
-            facePointsStart.push(point) //add the point to the overall list 
-            facePointsEnd.push(point)   
+            if (flag == 1) {
+              facePointsEnd.push(point)   
+            } else {
+              facePointsStart.push(point) //add the point to the overall list 
+            }
             px = x; //update prev
             py = y;
           } else {
@@ -322,8 +378,11 @@ function saveKeyPoints() {
             while (start != end) {
               const [x, y] = keyPoints[start];
               let point = createVector(x-tx,y-ty);
-              facePointsStart.push(point) //add point to the overall list
-              facePointsEnd.push(point)
+              if (flag == 1) {
+                facePointsEnd.push(point)   
+              } else {
+                facePointsStart.push(point) //add the point to the overall list 
+              }
               // initialPoints2.push(point)
               px = x; //update prev
               py = y;
@@ -336,8 +395,11 @@ function saveKeyPoints() {
   }
   numPoints = facePointsStart.length;
   // facePointsEnd = facePointsStart;
-
-  saved = true //facepoints have been saved! 
+  if (flag == 1) {
+    savedEnd = true 
+  } else {
+    savedStart = true
+  }
 }
 
 
