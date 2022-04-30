@@ -1,4 +1,5 @@
 //Global Variables
+var canvas;
 let facemesh; // facemesh variable
 let predictions = []; //predictions list (num of people predicted)
 let capture; //video feed for webcam
@@ -63,7 +64,8 @@ function setup() {
   tx = (640/2)-(canvasWidth/2); //calculate x and y translation from webcam to frame
   ty = (480/2)-(canvasHeight/2); //640x480 is the output for webcam facemesh
 
-  createCanvas(canvasWidth,canvasHeight) //create canvas
+  canvas = createCanvas(canvasWidth,canvasHeight); //create canvas
+  canvas.parent('sketch'); //parent the canvas to sketch
 
   capture = createCapture(VIDEO); //record from webcam
   capture.size(width,height); //webcam width/height
@@ -141,6 +143,15 @@ function setupUI() {
   //noise controls for stroke 1
   tab.pages[0].addInput(PARAMS, 'noise1',{
     label: 'noise',
+    min: 1,
+    max: 100,
+    step: 1
+    }
+  );
+
+  //thickness controls for stroke 2
+  tab.pages[1].addInput(PARAMS, 'thickness2',{
+    label: 'thickness',
     min: 1,
     max: 100,
     step: 1
