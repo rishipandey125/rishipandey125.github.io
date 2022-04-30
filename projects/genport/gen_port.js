@@ -277,7 +277,7 @@ function draw() {
 
 
 //mouse clicked!
-function touchStarted() {
+function mousePressed() {
 
   // if the key points have not been cached
   if (!captured) { 
