@@ -89,9 +89,10 @@ function setupUI() {
   PARAMS = {
     design1: false,
     design2: false,
-    color1: '#c29c9c',
-    color2: '#9caac2',
-    color3: '#c1e2d7',
+    bg1: '#000000',
+    bg2: '#ffffff',
+    stroke1: '#ffffff',
+    stroke2: '#000000',
     thickness1: 25,
     thickness2: 25,
   };
@@ -102,30 +103,33 @@ function setupUI() {
           });
 
   const tab = pane.addTab({pages: [
-    {title: 'palette'},
     {title: 'pose #1'},
     {title: 'pose #2'}
     ],
   });
 
-  tab.pages[0].addInput(PARAMS, 'color1',{
-    label: 'color #1',
-    });
+  tab.pages[0].addInput(PARAMS, 'design1', {label:'design'});
 
-  tab.pages[0].addInput(PARAMS, 'color2',{
-    label: 'color #2',
-    });
+  tab.pages[1].addInput(PARAMS, 'design2', {label:'design'});
 
-  tab.pages[0].addInput(PARAMS, 'color3',{
-    label: 'color #3',
+  tab.pages[0].addInput(PARAMS, 'bg1',{
+    label: 'bg',
     });
   
-  tab.pages[1].addInput(PARAMS, 'design1', {label:'design'});
+  tab.pages[0].addInput(PARAMS, 'stroke1',{
+    label: 'stroke',
+    });
 
-  tab.pages[2].addInput(PARAMS, 'design2', {label:'design'});
+  tab.pages[1].addInput(PARAMS, 'bg2',{
+    label: 'bg',
+    });
+  
+  tab.pages[1].addInput(PARAMS, 'stroke2',{
+    label: 'stroke',
+    });
 
   //thickness controls for stroke
-  tab.pages[1].addInput(PARAMS, 'thickness1',{
+  tab.pages[0].addInput(PARAMS, 'thickness1',{
           label: 'thickness',
           min: 1,
           max: 100,
@@ -134,7 +138,7 @@ function setupUI() {
         );
 
   //thickness controls for stroke
-  tab.pages[2].addInput(PARAMS, 'thickness2',{
+  tab.pages[1].addInput(PARAMS, 'thickness2',{
     label: 'thickness',
     min: 1,
     max: 100,
@@ -149,37 +153,40 @@ function modelReady() {
   console.log("Model ready!");
 }
 
-function randomColor() {
-  return color(random(0,255),random(0,255),random(0,255));
-}
-
 // draw() function (onUpdate)
 function draw() {
+
+  let d1 = false;
+  let d2 = false;
+
+  let bgColor1 = color(PARAMS.bg1);
+  let strokeColor1 = color(PARAMS.stroke1);
+  let bgColor2 = color(PARAMS.bg2);
+  let strokeColor2 = color(PARAMS.stroke2);
+
   //get the predictions and save the keypoints
   if (!captured) { //if not captured then when the user taps capture their face as the seed mesh
     clear();
-    if (!savedEnd)
-      background('white')
-      fill('black')
-    if (!savedStart)
-      background('black')
-      fill('white')
+    if (!savedEnd) {
+      background(bgColor2)
+      fill(strokeColor2)
+    }
+    if (!savedStart) {
+      background(bgColor1)
+      fill(strokeColor1)
+    }
     drawKeyPoints();
     return
   }
 
   if (savedStart && savedEnd) { //keypoints have been cached 
     clear()
-    // set the background color
-    // background(PARAMS.color1)
-
-    // create a new stroke
-    // stroke(PARAMS.color2); // stroke color
 
     curveTightness(0); //set the curve tightness
 
     beginShape() //begin the curve
     noFill() //dont fill in the curve
+
     //loop through the points
     let noiseVal = 0;
     let interpolator = 0;
@@ -188,39 +195,23 @@ function draw() {
 
     let l = (modTime % 500)/500; 
 
-    if (modTime < 500) {
-      setColor(0)
-      interpolator = 0.5;
-      noiseVal = 100; //Start at 70 with 100% noise - 3 seconds 
-    } else if (modTime < 1000) {
-      setColor(1)
-      interpolator = lerp(0.5,0,l);
-      noiseVal = lerp(100,10,l); //Lerp to 0 - decrease noise to 10% - 3 seconds
-    } else if (modTime < 2000) {
-      setColor(2)
-      interpolator = 0;
-      noiseVal = 10; //lerp 0 to 30 - 10 -> 100
-    } else if (modTime < 2500) {
-      setColor(0)
-      interpolator = lerp(0.0,0.5,l);
-      noiseVal = lerp(10,100,l); //lerp to 100 - decrease noise to 10% - 3 seconds
-    } else if (modTime < 3000) {
-      setColor(1)
-      interpolator = lerp(0.5,1.0,l);
-      noiseVal = lerp(100,10,l); 
-    } else if (modTime < 4000) {
-      setColor(2)
-      interpolator = 1.0;
-      noiseVal = 10;
-    } else if (modTime < 4500) {
-      setColor(1)
-      interpolator = lerp(1.0,0.5,l);
-      noiseVal = lerp(10,100,l);
-    }
+    interpolator = modTime/4500;
+    noiseVal = 10;
 
     let thicknessInterp = lerp(PARAMS.thickness1,PARAMS.thickness2,interpolator)/100;
     strokeWeight(0.75 + (12.5-0.75)*thicknessInterp); //stroke thickness
+    background(lerpColor(bgColor1,bgColor2,interpolator));
+    stroke(lerpColor(strokeColor1,strokeColor2,interpolator));
 
+    if (PARAMS.design1 && !PARAMS.design2) {
+      background(bgColor1);
+      stroke(strokeColor1);
+      d1 = true;
+    } else if (PARAMS.design2 && !PARAMS.design1) {
+      background(bgColor2);
+      stroke(strokeColor2);
+      d2 = true;
+    }
     for (let i = 0; i < numPoints; i++) {
       let noiseSeed = random(100); //seed for the perlin noise
 
@@ -228,15 +219,16 @@ function draw() {
       let yNoise = 0;
 
 
-      if (PARAMS.design1 && !PARAMS.design2) {
+      if (d1) {
         strokeWeight(0.75 + (12.5-0.75)*0.1);
         interpolator = 0 //display the first face
         let radius = 2*RADIUS;
         if (i == selectedIndex && pointSelected) {
           radius = 5*RADIUS;
         }
+        console.log("in")
         circle(facePointsStart[i].x,facePointsStart[i].y,radius);
-      } else if (!PARAMS.design1 && PARAMS.design2) {
+      } else if (d2) {
         strokeWeight(0.75 + (12.5-0.75)*0.1);
         interpolator = 1; //display the second face
         let radius = 2*RADIUS;
@@ -248,6 +240,7 @@ function draw() {
         xNoise = (noise(noiseSeed * 0.01) - 0.5) * noiseVal;
         yNoise = (noise(noiseSeed * 0.02) - 0.5) * noiseVal;
       }
+  
       //x and y for curveVertex - is lerped between the two
       let x = lerp(facePointsStart[i].x,facePointsEnd[i].x,interpolator) + xNoise
       let y = lerp(facePointsStart[i].y,facePointsEnd[i].y,interpolator) + yNoise
@@ -320,20 +313,6 @@ function getExistingPointIndex(x,y,flag) {
   return -1; //return -1 if no point was selected
 }
 
-function setColor(state) {
-  if (state == 0) {
-    background(PARAMS.color1)
-    stroke(PARAMS.color3)
-  } 
-  if (state == 1) {
-    stroke(PARAMS.color1)
-    background(PARAMS.color2)
-  } 
-  if (state == 2) {
-    background(PARAMS.color3)
-    stroke(PARAMS.color2)
-  }
-}
 
 function drawKeyPoints() {
   for (let i = 0; i < predictions.length; i += 1) {
