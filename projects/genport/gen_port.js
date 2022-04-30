@@ -121,7 +121,7 @@ function setupUI() {
 
   //colors for each tab
   tab.pages[0].addInput(PARAMS, 'bg1',{
-    label: 'bg',
+    label: 'background',
     picker: 'inline',
     expanded: true
     });
@@ -133,7 +133,7 @@ function setupUI() {
     });
 
   tab.pages[1].addInput(PARAMS, 'bg2',{
-    label: 'bg',
+    label: 'background',
     picker: 'inline',
     expanded: true
     });
@@ -183,14 +183,14 @@ function setupUI() {
   animCurve = tab.pages[2].addBlade({
     view: 'cubicbezier', 
     value: [0.5, 0, 0.5, 1],
-    label: 'animation curve',
+    label: 'curve',
     expanded: true,
     picker: 'inline',
   });
 
   //thickness controls for stroke 2
   tab.pages[2].addInput(PARAMS, 'animTime',{
-    label: 'animation time',
+    label: 'time',
     min: 1,
     max: 10,
     step: 1

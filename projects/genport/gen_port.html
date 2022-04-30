@@ -21,6 +21,20 @@
 			background-color: #ffffff;
 			font-family: 'Roboto Mono', monospace;
 		  }
+
+		  .error {
+				padding: 5%;
+				line-height: 2;
+				top: 50%;
+				position: relative;
+				transform: translateY(-50%);
+			}
+
+		.intro {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
 		</style> 
 		<!-- style for tweakpane -->
 		<style> 
@@ -71,9 +85,13 @@
 				<p class="">a <b>WIP</b> minimial interactive animation experiment created by 
 					<a href="https://twitter.com/wookiepandey25" target="_blank">rishi pandey</a>
 				</p>
-				<p class="">your face + ml + animation
+				<p class="">pose and click once to capture the first keyframe
 				</p>
-				<p class="">ask me about it if you have questions!
+				<p class="">pose and click again to capture the second keyframe
+				</p>
+				<p class="">use the toolbox to animate!
+				</p>
+				<p class="">ask me about it if you have questions and let me know what you like and don't like about LERP :)
 				</p>
 			  </div>
 			</div>
@@ -86,18 +104,19 @@
 
 			<p>&nbsp;</p> 
 
-			<div class="row justify-content-center mb-3">
-				<div class="col-6 col-md-5 col-lg-4">
+			<div class="container mb-3">
+
+				<div class="row intro">
+				  <div class="col-md-4" align="center">
 					<div id="UI"></div>
-				</div>
-			</div> 
 
-			<div class="row justify-content-center mb-3">
-				<div class="col-sm-12 col-md-8 col-lg-10">
-
+				  </div>
+				  <div class="col-md-6" align="center">
 					<div id="sketch"></div>
+				  </div>
 				</div>
-			</div> 
+		  
+			</div>
 		</div>
 		<p>&nbsp;</p> 
 
