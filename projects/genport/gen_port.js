@@ -66,7 +66,7 @@ function setup() {
 
   canvas = createCanvas(canvasWidth,canvasHeight); //create canvas
   canvas.parent('sketch'); //parent the canvas to sketch
-
+  canvas.mouseClicked(touch)
   capture = createCapture(VIDEO); //record from webcam
   capture.size(width,height); //webcam width/height
 
@@ -277,7 +277,7 @@ function draw() {
 
 
 //mouse clicked!
-function mousePressed() {
+function touch() {
 
   // if the key points have not been cached
   if (!captured) { 
