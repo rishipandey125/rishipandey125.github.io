@@ -1,3 +1,4 @@
+
 //Global Variables
 var canvas;
 let facemesh; // facemesh variable
@@ -18,10 +19,13 @@ var ty;
 
 
 var totalTime = 0; //total time
+var animTime = 10000; //10 seconds
 
 var renderCircles = false; //render the keyPoints
 
-const RADIUS = 5; //radius of rendered keyPoints
+var animCurve; //
+
+const RADIUS = 2; //radius of rendered keyPoints
 
 var selectedIndex = 0; //index selected by the mouse
 var pointSelected = false; //indicating a point was selected
@@ -104,10 +108,11 @@ function setupUI() {
             container: document.getElementById('UI'),
             expanded: true
           }); //create the pane and parent it to the "UI"
-
+  pane.registerPlugin(TweakpaneEssentialsPlugin);
   const tab = pane.addTab({pages: [ //create two tabs one for pose 1 and one for pose 2 
     {title: 'pose #1'},
-    {title: 'pose #2'}
+    {title: 'pose #2'},
+    {title: 'animate'}
     ],
   });
 
@@ -117,18 +122,26 @@ function setupUI() {
   //colors for each tab
   tab.pages[0].addInput(PARAMS, 'bg1',{
     label: 'bg',
+    picker: 'inline',
+    expanded: true
     });
   
   tab.pages[0].addInput(PARAMS, 'stroke1',{
     label: 'stroke',
+    picker: 'inline',
+    expanded: true
     });
 
   tab.pages[1].addInput(PARAMS, 'bg2',{
     label: 'bg',
+    picker: 'inline',
+    expanded: true
     });
   
   tab.pages[1].addInput(PARAMS, 'stroke2',{
     label: 'stroke',
+    picker: 'inline',
+    expanded: true
     });
 
   //thickness controls for stroke 1
@@ -166,6 +179,14 @@ function setupUI() {
     step: 1
     }
   );
+
+  animCurve = tab.pages[2].addBlade({
+    view: 'cubicbezier', 
+    value: [0.5, 0, 0.5, 1],
+  
+    expanded: true,
+    picker: 'inline',
+  });
 
 }
 
@@ -209,13 +230,16 @@ function draw() {
     //temp interpolator
     let interpolator = 0;
      
-    let modTime = totalTime % 4500; //loop every 10 seconds
-
-    let l = (modTime % 500)/500; 
-
-    interpolator = modTime/4500;
+    let modTime = totalTime % animTime; //loop every 10 seconds
 
 
+    interpolator = sampleCubicCurve(0.0,
+                                    animCurve.value.comps_[1],
+                                    animCurve.value.comps_[3],
+                                    1.0,
+                                    modTime/animTime);
+
+    console.log(interpolator)
     //set the thickness & noise values based on the interpolator
     let thicknessInterp = lerp(PARAMS.thickness1,PARAMS.thickness2,interpolator)/100;
     let noiseVal = lerp(PARAMS.noise1,PARAMS.noise2,interpolator);
@@ -275,6 +299,15 @@ function draw() {
   totalTime += deltaTime; //update total time
 }
 
+//sample the animation curve
+function sampleCubicCurve(u0,u1,u2,u3,t) {
+  let sample = (1-t)**3 * u0 + t*u1*(3*(1-t)**2) + u2*(3*(1-t)*t**2) + u3*t**3;
+  if (sample > 1) 
+    return 1
+  if (sample < 0)
+    return 0
+  return sample
+}
 
 //mouse clicked!
 function touch() {
