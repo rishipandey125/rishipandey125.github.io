@@ -21,7 +21,6 @@ var ty;
 
 
 var totalTime = 0; //total time
-var animTime = 10000; //10 seconds
 
 var renderCircles = false; //render the keyPoints
 
@@ -101,7 +100,8 @@ function setupUI() {
     thickness1: 25, //first thickness
     thickness2: 25, //second thickness
     noise1: 10, //first noise
-    noise2: 10 //second noise
+    noise2: 10, //second noise
+    animTime: 5
   };
 
   const pane = new Tweakpane.Pane({
@@ -171,7 +171,7 @@ function setupUI() {
     }
   );
 
-  //thickness controls for stroke 2
+  //noise controls for stroke 2
   tab.pages[1].addInput(PARAMS, 'noise2',{
     label: 'noise',
     min: 1,
@@ -183,10 +183,19 @@ function setupUI() {
   animCurve = tab.pages[2].addBlade({
     view: 'cubicbezier', 
     value: [0.5, 0, 0.5, 1],
-  
+    label: 'animation curve',
     expanded: true,
     picker: 'inline',
   });
+
+  //thickness controls for stroke 2
+  tab.pages[2].addInput(PARAMS, 'animTime',{
+    label: 'animation time',
+    min: 1,
+    max: 10,
+    step: 1
+    }
+  );
 }
 
 // signal that the model is ready
@@ -228,15 +237,15 @@ function draw() {
     
     //temp interpolator
     let interpolator = 0;
-     
-    let modTime = totalTime % animTime; //loop every 10 seconds
+    let aTime = PARAMS.animTime*1000;
+    let modTime = totalTime % aTime; //loop every 10 seconds
 
 
     interpolator = sampleCubicCurve(0.0,
                                     animCurve.value.comps_[1],
                                     animCurve.value.comps_[3],
                                     1.0,
-                                    modTime/animTime);
+                                    modTime/aTime);
 
     //set the thickness & noise values based on the interpolator
     let thicknessInterp = lerp(PARAMS.thickness1,PARAMS.thickness2,interpolator)/100;
