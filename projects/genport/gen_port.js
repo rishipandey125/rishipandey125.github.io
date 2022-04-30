@@ -1,4 +1,3 @@
-
 //Global Variables
 var canvas;
 let facemesh; // facemesh variable
@@ -73,8 +72,6 @@ function setup() {
   canvas.mouseClicked(touch)
   capture = createCapture(VIDEO); //record from webcam
   capture.size(width,height); //webcam width/height
-
-
 
   facemesh = ml5.facemesh(capture, modelReady); //create face mesh model with webcam
 
@@ -188,6 +185,19 @@ function setupUI() {
     picker: 'inline',
   });
 
+  var saveBtn = tab.pages[2].addButton({
+    title: 'save'
+  });
+  
+  //save button on click
+  saveBtn.on('click', () => {
+    // start rotation
+    //interval for rotation = 1/num frames in recording
+    // renderLine = false // stop rendering the line
+    startRecording() //start recording
+    // progressBar = true //use the progress bar
+    // progress.value = 0
+  });
 }
 
 // signal that the model is ready
@@ -239,7 +249,6 @@ function draw() {
                                     1.0,
                                     modTime/animTime);
 
-    console.log(interpolator)
     //set the thickness & noise values based on the interpolator
     let thicknessInterp = lerp(PARAMS.thickness1,PARAMS.thickness2,interpolator)/100;
     let noiseVal = lerp(PARAMS.noise1,PARAMS.noise2,interpolator);
@@ -446,6 +455,58 @@ function saveKeyPoints(flag) {
   } else {
     savedStart = true
   }
+}
+
+
+// start recording! 
+function startRecording() {
+  const chunks = []; // here we will store our recorded media chunks (Blobs)
+  const stream = document.querySelector('canvas').captureStream(30); // grab our canvas MediaStream
+  var options;
+  var rec;
+  try { //this works for chrome
+    options = {
+      mimeType: 'video/webm',
+      videoBitsPerSecond : 8000000
+    };
+    rec = new MediaRecorder(stream, options);
+    // every time the recorder has new data, we will store it in our array
+    // rec.ondataavailable = e => chunks.push(e.data);
+    rec.ondataavailable = e => chunks.push(e.data);
+
+    // only when the recorder stops, we construct a complete Blob from all the chunks
+    rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/webm'}),'.webm');
+  }
+  catch (err1) {
+    try { //this works for safari
+      options = {
+        mimeType: 'video/mp4',
+        videoBitsPerSecond : 8000000
+      };
+      // Fallback for iOS
+      rec = new MediaRecorder(stream, options);
+      // every time the recorder has new data, we will store it in our array
+      rec.ondataavailable = e => chunks.push(e.data);
+      // only when the recorder stops, we construct a complete Blob from all the chunks
+      rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/mp4'}),'.mp4');
+    }
+    catch (err2) {
+      // If fallback doesn't work either. Log / process errors.
+      console.error({err1});
+      console.error({err2})
+    }
+  }
+  
+  rec.start(); //start the recording
+  setTimeout(()=>rec.stop(), 3000); // stop recording in 3s 
+}
+
+//export the video - let the user download
+function exportVid(blob,extension) {
+  const link = document.createElement( 'a' );
+  link.href = URL.createObjectURL( blob );
+  link.download = 'video' + extension;
+  link.dispatchEvent( new MouseEvent( 'click' ) );
 }
 
 
