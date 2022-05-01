@@ -55,7 +55,7 @@ var PARAMS;
 function setup() {
   setupUI() //setup the UI controllers
 
-  let aspectRatio = 9/16; //aspect ratio of canvas
+  let aspectRatio = 1; //aspect ratio of canvas
   let canvasHeight = 700 //canvas height
   let canvasWidth = canvasHeight*aspectRatio //canvas width
 
