@@ -206,8 +206,6 @@ function modelReady() {
 
 // onUpdate
 function draw() { 
-  translate(width , 0)
-  scale(-1,1)
 
   let d1 = false; //design state flags
   let d2 = false; 
@@ -308,6 +306,9 @@ function draw() {
   }
 
   totalTime += deltaTime; //update total time
+  translate(width , 0)
+  scale(-1,1)
+
 }
 
 //sample the animation curve
