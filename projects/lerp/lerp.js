@@ -56,7 +56,7 @@ function setup() {
   setupUI() //setup the UI controllers
 
   let aspectRatio = 1; //aspect ratio of canvas
-  let canvasHeight = 370 //canvas height
+  let canvasHeight = 390 //canvas height
   let canvasWidth = canvasHeight*aspectRatio //canvas width
 
   //enforce conditions for mobile friendly canvas
@@ -74,6 +74,7 @@ function setup() {
   canvas.mouseClicked(touch)
   capture = createCapture(VIDEO); //record from webcam
   capture.size(width,height); //webcam width/height
+
 
   facemesh = ml5.facemesh(capture, modelReady); //create face mesh model with webcam
 
@@ -205,6 +206,9 @@ function modelReady() {
 
 // onUpdate
 function draw() { 
+  translate(width , 0)
+  scale(-1,1)
+
   let d1 = false; //design state flags
   let d2 = false; 
 
