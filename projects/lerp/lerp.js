@@ -306,8 +306,8 @@ function draw() {
   }
 
   totalTime += deltaTime; //update total time
-  translate(width , 0)
-  scale(-1,1)
+  // translate(width , 0)
+  // scale(-1,1)
 
 }
 
@@ -319,6 +319,27 @@ function sampleCubicCurve(u0,u1,u2,u3,t) {
   if (sample < 0)
     return 0
   return sample
+}
+
+function mouseDragged() {
+  if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height)
+    return
+  if (PARAMS.design1 && !PARAMS.design2) { //design state 1
+    if (pointSelected)
+      facePointsStart[selectedIndex] = createVector(mouseX,mouseY);
+    // if (pointSelected) { // if a point is selected 
+    //   facePointsStart[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
+    //   pointSelected = false; //unselect point
+    // } else { // not selected
+    //   selectedIndex = getExistingPointIndex(mouseX,mouseY,0); //find if a point is near where you clicked
+    //   if (selectedIndex > -1) //if a point was selected register that
+    //     pointSelected = true    
+    // }
+  } else if (!PARAMS.design1 && PARAMS.design2) { //design state 2
+    if (pointSelected)
+      facePointsEnd[selectedIndex] = createVector(mouseX,mouseY);
+  }
+  // pointSelected = false;
 }
 
 //mouse clicked!
@@ -344,23 +365,29 @@ function touch() {
   } 
 
   if (PARAMS.design1 && !PARAMS.design2) { //design state 1
-    if (pointSelected) { // if a point is selected 
-      facePointsStart[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
-      pointSelected = false; //unselect point
-    } else { // not selected
-      selectedIndex = getExistingPointIndex(mouseX,mouseY,0); //find if a point is near where you clicked
-      if (selectedIndex > -1) //if a point was selected register that
-        pointSelected = true    
-    }
+    selectedIndex = getExistingPointIndex(mouseX,mouseY,0); //find if a point is near where you clicked
+    if (selectedIndex > -1) //if a point was selected register that
+      pointSelected = true    
+    // if (pointSelected) { // if a point is selected 
+    //   facePointsStart[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
+    //   pointSelected = false; //unselect point
+    // } else { // not selected
+    //   selectedIndex = getExistingPointIndex(mouseX,mouseY,0); //find if a point is near where you clicked
+    //   if (selectedIndex > -1) //if a point was selected register that
+    //     pointSelected = true    
+    // }
   } else if (!PARAMS.design1 && PARAMS.design2) { //design state 2
-    if (pointSelected) { // if a point is selected 
-      facePointsEnd[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
-      pointSelected = false; //unselect point
-    } else { // not selected 
-      selectedIndex = getExistingPointIndex(mouseX,mouseY,1); //find if a point is near where you clicked
-      if (selectedIndex > -1) //if a point was selected register that
-        pointSelected = true    
-    }
+    selectedIndex = getExistingPointIndex(mouseX,mouseY,1); //find if a point is near where you clicked
+    if (selectedIndex > -1) //if a point was selected register that
+      pointSelected = true 
+    // if (pointSelected) { // if a point is selected 
+    //   facePointsEnd[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
+    //   pointSelected = false; //unselect point
+    // } else { // not selected 
+    //   selectedIndex = getExistingPointIndex(mouseX,mouseY,1); //find if a point is near where you clicked
+    //   if (selectedIndex > -1) //if a point was selected register that
+    //     pointSelected = true    
+    // }
   }
 }
 
