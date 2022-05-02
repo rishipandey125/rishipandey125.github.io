@@ -3,6 +3,7 @@
 const btn = document.querySelector('button')
 
 var canvas;
+
 let facemesh; // facemesh variable
 let predictions = []; //predictions list (num of people predicted)
 let capture; //video feed for webcam
@@ -109,12 +110,24 @@ function setupUI() {
             container: document.getElementById('UI'),
             expanded: true
           }); //create the pane and parent it to the "UI"
+
+  //create the save pane 
+  const savePane = new Tweakpane.Pane({
+    container: document.getElementById('UI_SAVE'),
+    expanded: true
+  });
+  
   pane.registerPlugin(TweakpaneEssentialsPlugin);
   const tab = pane.addTab({pages: [ //create two tabs one for pose 1 and one for pose 2 
     {title: 'pose #1'},
     {title: 'pose #2'},
     {title: 'animate'}
     ],
+  });
+
+  //add the save button to the save pane
+  const saveBtn = savePane.addButton({
+    title: 'save'
   });
 
   tab.pages[0].addInput(PARAMS, 'design1', {label:'design'}); //design checkbox
@@ -197,6 +210,16 @@ function setupUI() {
     step: 1
     }
   );
+
+  //save button on click
+  saveBtn.on('click', () => {
+    // start rotation
+    //interval for rotation = 1/num frames in recording
+    // renderLine = false // stop rendering the line
+    startRecording() //start recording
+    // progressBar = true //use the progress bar
+    // progress.value = 0
+  });
 }
 
 // signal that the model is ready
@@ -321,25 +344,18 @@ function sampleCubicCurve(u0,u1,u2,u3,t) {
   return sample
 }
 
+
+//drag mouse to move keypoint
 function mouseDragged() {
   if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height)
     return
   if (PARAMS.design1 && !PARAMS.design2) { //design state 1
     if (pointSelected)
       facePointsStart[selectedIndex] = createVector(mouseX,mouseY);
-    // if (pointSelected) { // if a point is selected 
-    //   facePointsStart[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
-    //   pointSelected = false; //unselect point
-    // } else { // not selected
-    //   selectedIndex = getExistingPointIndex(mouseX,mouseY,0); //find if a point is near where you clicked
-    //   if (selectedIndex > -1) //if a point was selected register that
-    //     pointSelected = true    
-    // }
   } else if (!PARAMS.design1 && PARAMS.design2) { //design state 2
     if (pointSelected)
       facePointsEnd[selectedIndex] = createVector(mouseX,mouseY);
   }
-  // pointSelected = false;
 }
 
 //mouse clicked!
@@ -368,26 +384,10 @@ function touch() {
     selectedIndex = getExistingPointIndex(mouseX,mouseY,0); //find if a point is near where you clicked
     if (selectedIndex > -1) //if a point was selected register that
       pointSelected = true    
-    // if (pointSelected) { // if a point is selected 
-    //   facePointsStart[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
-    //   pointSelected = false; //unselect point
-    // } else { // not selected
-    //   selectedIndex = getExistingPointIndex(mouseX,mouseY,0); //find if a point is near where you clicked
-    //   if (selectedIndex > -1) //if a point was selected register that
-    //     pointSelected = true    
-    // }
   } else if (!PARAMS.design1 && PARAMS.design2) { //design state 2
     selectedIndex = getExistingPointIndex(mouseX,mouseY,1); //find if a point is near where you clicked
     if (selectedIndex > -1) //if a point was selected register that
       pointSelected = true 
-    // if (pointSelected) { // if a point is selected 
-    //   facePointsEnd[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
-    //   pointSelected = false; //unselect point
-    // } else { // not selected 
-    //   selectedIndex = getExistingPointIndex(mouseX,mouseY,1); //find if a point is near where you clicked
-    //   if (selectedIndex > -1) //if a point was selected register that
-    //     pointSelected = true    
-    // }
   }
 }
 
@@ -485,4 +485,55 @@ function saveKeyPoints(flag) {
   } else {
     savedStart = true
   }
+}
+
+
+
+// start recording! 
+function startRecording() {
+  const chunks = []; // here we will store our recorded media chunks (Blobs)
+  const stream = document.querySelector('canvas').captureStream(); // grab our canvas MediaStream
+  var options;
+  var rec;
+  try { //this works for chrome
+    options = {
+      mimeType: 'video/webm',
+      videoBitsPerSecond : 8000000
+    };
+    rec = new MediaRecorder(stream, options);
+    // every time the recorder has new data, we will store it in our array
+    rec.ondataavailable = e => chunks.push(e.data);
+    // only when the recorder stops, we construct a complete Blob from all the chunks
+    rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/webm'}),'.webm');
+  }
+  catch (err1) {
+    try { //this works for safari
+      options = {
+        mimeType: 'video/mp4',
+        videoBitsPerSecond : 8000000
+      };
+      // Fallback for iOS
+      rec = new MediaRecorder(stream, options);
+      // every time the recorder has new data, we will store it in our array
+      rec.ondataavailable = e => chunks.push(e.data);
+      // only when the recorder stops, we construct a complete Blob from all the chunks
+      rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/mp4'}),'.mp4');
+    }
+    catch (err2) {
+      // If fallback doesn't work either. Log / process errors.
+      console.error({err1});
+      console.error({err2})
+    }
+  }
+  
+  rec.start(); //start the recording
+  setTimeout(()=>rec.stop(), 3000); // stop recording in 3s 
+}
+
+//export the video - let the user download
+function exportVid(blob,extension) {
+  const link = document.createElement( 'a' );
+  link.href = URL.createObjectURL( blob );
+  link.download = 'tangle' + extension;
+  link.dispatchEvent( new MouseEvent( 'click' ) );
 }
