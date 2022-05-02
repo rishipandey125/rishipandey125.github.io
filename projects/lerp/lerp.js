@@ -92,7 +92,6 @@ function setup() {
   });
 
   capture.hide(); //hide the webcam
-
 }
 
 //setup the UI
