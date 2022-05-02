@@ -3,6 +3,7 @@
 const btn = document.querySelector('button')
 
 var canvas;
+
 let facemesh; // facemesh variable
 let predictions = []; //predictions list (num of people predicted)
 let capture; //video feed for webcam
@@ -51,10 +52,15 @@ var semantics = [ //list and order of semantics for saved facepoints
 //PARAMS for UI controllers
 var PARAMS;
 
+//recording things
+let recording = false;
+let recorder;
+let chunks = [];
+const fr = 30;
 //onStart
 function setup() {
   setupUI() //setup the UI controllers
-
+  
   let aspectRatio = 1; //aspect ratio of canvas
   let canvasHeight = 390 //canvas height
   let canvasWidth = canvasHeight*aspectRatio //canvas width
@@ -70,6 +76,7 @@ function setup() {
   ty = (480/2)-(canvasHeight/2); //640x480 is the output for webcam facemesh
 
   canvas = createCanvas(canvasWidth,canvasHeight); //create canvas
+  frameRate(fr);
   canvas.parent('sketch'); //parent the canvas to sketch
   canvas.mouseClicked(touch)
   capture = createCapture(VIDEO); //record from webcam
@@ -85,7 +92,6 @@ function setup() {
   });
 
   capture.hide(); //hide the webcam
-
 }
 
 //setup the UI
@@ -109,6 +115,7 @@ function setupUI() {
             container: document.getElementById('UI'),
             expanded: true
           }); //create the pane and parent it to the "UI"
+  
   pane.registerPlugin(TweakpaneEssentialsPlugin);
   const tab = pane.addTab({pages: [ //create two tabs one for pose 1 and one for pose 2 
     {title: 'pose #1'},
@@ -197,6 +204,7 @@ function setupUI() {
     step: 1
     }
   );
+
 }
 
 // signal that the model is ready
@@ -306,9 +314,6 @@ function draw() {
   }
 
   totalTime += deltaTime; //update total time
-  translate(width , 0)
-  scale(-1,1)
-
 }
 
 //sample the animation curve
@@ -319,6 +324,20 @@ function sampleCubicCurve(u0,u1,u2,u3,t) {
   if (sample < 0)
     return 0
   return sample
+}
+
+
+//drag mouse to move keypoint
+function mouseDragged() {
+  if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height)
+    return
+  if (PARAMS.design1 && !PARAMS.design2) { //design state 1
+    if (pointSelected)
+      facePointsStart[selectedIndex] = createVector(mouseX,mouseY);
+  } else if (!PARAMS.design1 && PARAMS.design2) { //design state 2
+    if (pointSelected)
+      facePointsEnd[selectedIndex] = createVector(mouseX,mouseY);
+  }
 }
 
 //mouse clicked!
@@ -337,6 +356,7 @@ function touch() {
       if (predictions.length > 0) {
         saveKeyPoints(1) //cache the current view!
         captured = true;
+        capture.stop(); //turn the webcam off
         return
       }
     }
@@ -344,23 +364,13 @@ function touch() {
   } 
 
   if (PARAMS.design1 && !PARAMS.design2) { //design state 1
-    if (pointSelected) { // if a point is selected 
-      facePointsStart[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
-      pointSelected = false; //unselect point
-    } else { // not selected
-      selectedIndex = getExistingPointIndex(mouseX,mouseY,0); //find if a point is near where you clicked
-      if (selectedIndex > -1) //if a point was selected register that
-        pointSelected = true    
-    }
+    selectedIndex = getExistingPointIndex(mouseX,mouseY,0); //find if a point is near where you clicked
+    if (selectedIndex > -1) //if a point was selected register that
+      pointSelected = true    
   } else if (!PARAMS.design1 && PARAMS.design2) { //design state 2
-    if (pointSelected) { // if a point is selected 
-      facePointsEnd[selectedIndex] = createVector(mouseX,mouseY); //then move that point to where you click
-      pointSelected = false; //unselect point
-    } else { // not selected 
-      selectedIndex = getExistingPointIndex(mouseX,mouseY,1); //find if a point is near where you clicked
-      if (selectedIndex > -1) //if a point was selected register that
-        pointSelected = true    
-    }
+    selectedIndex = getExistingPointIndex(mouseX,mouseY,1); //find if a point is near where you clicked
+    if (selectedIndex > -1) //if a point was selected register that
+      pointSelected = true 
   }
 }
 
