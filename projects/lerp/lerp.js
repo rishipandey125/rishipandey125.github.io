@@ -52,10 +52,15 @@ var semantics = [ //list and order of semantics for saved facepoints
 //PARAMS for UI controllers
 var PARAMS;
 
+//recording things
+let recording = false;
+let recorder;
+let chunks = [];
+const fr = 30;
 //onStart
 function setup() {
   setupUI() //setup the UI controllers
-
+  
   let aspectRatio = 1; //aspect ratio of canvas
   let canvasHeight = 390 //canvas height
   let canvasWidth = canvasHeight*aspectRatio //canvas width
@@ -71,6 +76,7 @@ function setup() {
   ty = (480/2)-(canvasHeight/2); //640x480 is the output for webcam facemesh
 
   canvas = createCanvas(canvasWidth,canvasHeight); //create canvas
+  frameRate(fr);
   canvas.parent('sketch'); //parent the canvas to sketch
   canvas.mouseClicked(touch)
   capture = createCapture(VIDEO); //record from webcam
@@ -110,12 +116,6 @@ function setupUI() {
             container: document.getElementById('UI'),
             expanded: true
           }); //create the pane and parent it to the "UI"
-
-  //create the save pane 
-  const savePane = new Tweakpane.Pane({
-    container: document.getElementById('UI_SAVE'),
-    expanded: true
-  });
   
   pane.registerPlugin(TweakpaneEssentialsPlugin);
   const tab = pane.addTab({pages: [ //create two tabs one for pose 1 and one for pose 2 
@@ -123,11 +123,6 @@ function setupUI() {
     {title: 'pose #2'},
     {title: 'animate'}
     ],
-  });
-
-  //add the save button to the save pane
-  const saveBtn = savePane.addButton({
-    title: 'save'
   });
 
   tab.pages[0].addInput(PARAMS, 'design1', {label:'design'}); //design checkbox
@@ -211,15 +206,6 @@ function setupUI() {
     }
   );
 
-  //save button on click
-  saveBtn.on('click', () => {
-    // start rotation
-    //interval for rotation = 1/num frames in recording
-    // renderLine = false // stop rendering the line
-    startRecording() //start recording
-    // progressBar = true //use the progress bar
-    // progress.value = 0
-  });
 }
 
 // signal that the model is ready
@@ -329,9 +315,6 @@ function draw() {
   }
 
   totalTime += deltaTime; //update total time
-  // translate(width , 0)
-  // scale(-1,1)
-
 }
 
 //sample the animation curve
@@ -374,6 +357,7 @@ function touch() {
       if (predictions.length > 0) {
         saveKeyPoints(1) //cache the current view!
         captured = true;
+        capture.stop(); //turn the webcam off
         return
       }
     }
@@ -485,55 +469,4 @@ function saveKeyPoints(flag) {
   } else {
     savedStart = true
   }
-}
-
-
-
-// start recording! 
-function startRecording() {
-  const chunks = []; // here we will store our recorded media chunks (Blobs)
-  const stream = document.querySelector('canvas').captureStream(); // grab our canvas MediaStream
-  var options;
-  var rec;
-  try { //this works for chrome
-    options = {
-      mimeType: 'video/webm',
-      videoBitsPerSecond : 8000000
-    };
-    rec = new MediaRecorder(stream, options);
-    // every time the recorder has new data, we will store it in our array
-    rec.ondataavailable = e => chunks.push(e.data);
-    // only when the recorder stops, we construct a complete Blob from all the chunks
-    rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/webm'}),'.webm');
-  }
-  catch (err1) {
-    try { //this works for safari
-      options = {
-        mimeType: 'video/mp4',
-        videoBitsPerSecond : 8000000
-      };
-      // Fallback for iOS
-      rec = new MediaRecorder(stream, options);
-      // every time the recorder has new data, we will store it in our array
-      rec.ondataavailable = e => chunks.push(e.data);
-      // only when the recorder stops, we construct a complete Blob from all the chunks
-      rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/mp4'}),'.mp4');
-    }
-    catch (err2) {
-      // If fallback doesn't work either. Log / process errors.
-      console.error({err1});
-      console.error({err2})
-    }
-  }
-  
-  rec.start(); //start the recording
-  setTimeout(()=>rec.stop(), 3000); // stop recording in 3s 
-}
-
-//export the video - let the user download
-function exportVid(blob,extension) {
-  const link = document.createElement( 'a' );
-  link.href = URL.createObjectURL( blob );
-  link.download = 'tangle' + extension;
-  link.dispatchEvent( new MouseEvent( 'click' ) );
 }
