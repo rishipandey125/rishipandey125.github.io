@@ -3,7 +3,7 @@
 	<head> 
 		<meta charset="utf-8"> 
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-		<title>WebGL Boilerplate</title> 
+		<title>generative pathtraced</title> 
 		
 		<style> 
 			html, body {
@@ -39,18 +39,51 @@
 		<script id="fs" type="x-shader/fragment"> 
  
 			uniform float time;
-			uniform vec2 resolution;
- 
+			uniform vec2 resolution; //vec2(screen_width,screen_height)
+
+			struct ray {
+				vec3 origin;
+				vec3 direction;
+			};
+
+			vec3 get_point_on_ray(ray r, float t) {
+				return r.origin + (t*r.direction);
+			}
+
+			vec3 ray_color(ray r) {
+				vec3 unit_direction = normalize(r.direction);
+				float t = 0.5 * (unit_direction.y + 1.0);
+				vec3 light_blue = vec3(0.5,0.7,1.0);
+				vec3 white = vec3(1.0);
+				return mix(white,light_blue,t);
+			}
+
 			void main( void ) {
- 
-				vec2 position = - 1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;
-				float red = abs( sin( position.x * position.y + time / 5.0 ) );
-				float green = abs( sin( position.x * position.y + time / 4.0 ) );
-				float blue = abs( sin( position.x * position.y + time / 3.0 ) );
-				gl_FragColor = vec4( red, green, blue, 1.0 );
+				//image
+				float aspect_ratio = resolution.x/resolution.y;
+
+				//camera
+				float viewport_height = 2.0;
+				float viewport_width = viewport_height * aspect_ratio;
+				float focal_length = 1.0;
+
+				vec3 origin = vec3(0.0);
+				// how far we should traverse the viewport horizontally and vertically to cast rays
+
+				vec3 horizontal = vec3(viewport_width,0.0,0.0);
+				vec3 vertical = vec3(0.0,viewport_height,0.0);
+
+				//viewport lower left corner in 3d space
+				vec3 lower_left_corner = origin - (horizontal/2.0) - (vertical/2.0) - vec3(0.0,0.0,focal_length);
+
+				vec2 uv = - 1.0 + 2.0 * gl_FragCoord.xy / resolution.xy; //calc quad uv (0-1) down to up and left to right
+
+				ray r = ray(origin,lower_left_corner + uv.x*horizontal + uv.y*vertical - origin);
+				vec3 pixel_color = ray_color(r);
+				gl_FragColor = vec4(pixel_color,1.0);
  
 			}
- 
+			
 		</script> 
  
 		<script> 
@@ -192,7 +225,7 @@
 					gl.viewport( 0, 0, canvas.width, canvas.height );
 
 				}
- 
+				
 			}
  
 			function animate() {
