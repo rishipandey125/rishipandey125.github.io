@@ -38,7 +38,8 @@
 		</script> 
  
 		<script id="fs" type="x-shader/fragment"> 
- 
+			precision highp float;
+
 			uniform float time;
 			uniform vec2 resolution; //vec2(screen_width,screen_height)
 
@@ -47,28 +48,77 @@
 				vec3 direction;
 			};
 
+			struct hit_record { 
+				vec3 point;
+				vec3 normal;
+				float t;
+			};
+			
+			struct hittable { // this is just a sphere right now 
+				vec3 center; 
+				float radius; 
+			};
+
 			vec3 get_point_on_ray(ray r, float t) {
 				return r.origin + (t*r.direction);
 			}
-
-			//return 0.0 for no hit and 1.0 for hit 
-			float hit_sphere (vec3 center, float radius, ray r) {
-				vec3 oc = r.origin - center;
+			
+			bool hittable_hit (hittable h, ray r, float t_min, float t_max, inout hit_record rec) {
+				vec3 oc = r.origin - h.center;
 				float a = dot(r.direction,r.direction);
-				float b = 2.0 * dot(oc,r.direction);
-				float c = dot(oc,oc) - radius*radius;
-				float discriminant = (b*b) - (4.0*a*c);
-				return step(0.0,discriminant);
+				float half_b = dot(oc,r.direction);
+				float c = dot(oc,oc) - h.radius*h.radius;
+				float discriminant = (half_b*half_b) - (a*c);
+				if (discriminant < 0.0) {
+					return false;
+				}
+				float root =  (-half_b - sqrt(discriminant))/a;
+				//determine which root is in bounds
+				if (root < t_min || t_max < root) {
+					root = ((-half_b) + sqrt(discriminant))/a;
+					if (root < t_min || t_max < root) {
+						return false;
+					}
+				}
+				rec.t = root; 
+				rec.point = get_point_on_ray(r,root);
+				rec.normal = (rec.point - h.center)/h.radius;
+				return true;
 			}
 
-			vec3 ray_color(ray r) {
-				float hit = hit_sphere(vec3(0.0,0.0,-1.0),0.5,r); //store 0 or 1 for no hit or hit
+			bool world_hit(ray r, float t_min, float t_max, out hit_record rec) {
+				rec.t = t_max;
+				hittable ground = hittable(vec3(0.0,-100.5,-1.0),100.0);
+				hittable ball = hittable(vec3(0.0,0.0,-1.0),0.5);
+				
+				bool hit = false;
+				hit = hittable_hit(ground,r,t_min,rec.t,rec) || hit;
+				hit = hittable_hit(ball,r,t_min,rec.t,rec) || hit;
+				return hit;
+			}
+
+
+			vec3 bg_color(ray r) {
 				vec3 unit_direction = normalize(r.direction);
 				float t = 0.5 * (unit_direction.y + 1.0);
 				vec3 light_blue = vec3(0.5,0.7,1.0);
 				vec3 white = vec3(1.0);
 				vec3 bg = mix(white,light_blue,t);
-				return mix(bg,vec3(1.0,0.0,0.0),step(0.01,hit)); // if it is a hit then render sphere otherwise render the background
+				return bg;
+			}
+
+			vec3 ray_color(ray r) {
+				hit_record rec;
+
+				bool hit = world_hit(r,0.001,1e5,rec);
+
+				vec3 color = bg_color(r);
+				if (hit) {
+					vec3 n = normalize(rec.normal);
+					color = (n+vec3(1.0))*0.5;
+				}
+
+				return color;
 			}
 
 			void main( void ) {
@@ -93,7 +143,6 @@
 				ray r = ray(origin,lower_left_corner + (uv.x*horizontal) + (uv.y*vertical) - origin);
 				vec3 pixel_color = ray_color(r);
 				gl_FragColor = vec4(pixel_color,1.0);
-				//gl_FragColor = mix(vec4(1.0),vec4(1.0,0.0,0.0,1.0),step(0.5,uv.x));
 			}
 			
 		</script> 
