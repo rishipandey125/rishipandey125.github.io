@@ -26,7 +26,6 @@
 		<div id="info"></div> 
  
 		<script id="vs" type="x-shader/vertex"> 
- 
 			attribute vec3 position;
  
 			void main() {
@@ -43,9 +42,47 @@
 			uniform float time;
 			uniform vec2 resolution; //vec2(screen_width,screen_height)
 
-			struct ray {
+		
+			//random functions using gold noise 
+			float seed = 0.0;
+
+			float random (vec2 st) {
+				return fract(sin(dot(st.xy,
+									 vec2(12.9898,78.233)))*
+					43758.5453123);
+			}
+
+			vec2 random2(float seed) {
+				return vec2(
+				  random(vec2(seed-1.23, (seed+3.1)* 3.2)),
+				  random(vec2(seed+12.678, seed - 5.8324))
+				  );
+			}
+			  
+			vec3 random3(float seed){
+				return vec3(
+					random(vec2(seed-0.678, seed-0.123)),
+					random(vec2(seed-0.3, seed+0.56)),
+					random(vec2(seed+0.1234, seed-0.523))
+					);
+			}
+
+
+			vec3 random_in_unit_sphere(float seed) {
+				vec3 h = random3(seed) * vec3(2.,6.28318530718,1.)-vec3(1,0,0);
+				float phi = h.y;
+				float r = pow(h.z, 1./3.);
+				return r * vec3(sqrt(1.-h.x*h.x)*vec2(sin(phi),cos(phi)),h.x);
+			}
+			 
+ 			struct ray {
 				vec3 origin;
 				vec3 direction;
+			};
+
+			struct camera {
+				vec3 origin, lower_left_corner, horizontal, vertical; 
+				float focal_length;
 			};
 
 			struct hit_record { 
@@ -58,6 +95,10 @@
 				vec3 center; 
 				float radius; 
 			};
+
+			ray get_camera_ray(camera c, vec2 uv) {
+				return ray(c.origin,c.lower_left_corner + (uv.x*c.horizontal) + (uv.y*c.vertical) - c.origin);
+			}
 
 			vec3 get_point_on_ray(ray r, float t) {
 				return r.origin + (t*r.direction);
@@ -107,17 +148,26 @@
 				return bg;
 			}
 
-			vec3 ray_color(ray r) {
+			vec3 color(ray r) {
 				hit_record rec;
 
-				bool hit = world_hit(r,0.001,1e5,rec);
+				vec3 color = vec3(1.0);
 
-				vec3 color = bg_color(r);
-				if (hit) {
-					vec3 n = normalize(rec.normal);
-					color = (n+vec3(1.0))*0.5;
+
+				//50 is max recursion right now
+				for (int i = 0; i < 50; i++) {
+					bool hit = world_hit(r,0.001,1e5,rec);
+					if (hit) {
+						vec3 rd = normalize(rec.normal + random_in_unit_sphere(seed));
+						color *= 0.5;
+						r.origin = rec.point;
+						r.direction = rd;
+					} else {
+						color *= bg_color(r);
+						return color;
+					}
 				}
-
+				
 				return color;
 			}
 
@@ -127,21 +177,29 @@
 				//camera
 				float viewport_height = 2.0;
 				float viewport_width = viewport_height * aspect_ratio;
-				float focal_length = 1.0;
 
-				vec3 origin = vec3(0.0);
+				camera c;
+				c.focal_length = 1.0;
+				c.origin = vec3(0.0);
 				// how far we should traverse the viewport horizontally and vertically to cast rays
 
-				vec3 horizontal = vec3(viewport_width,0.0,0.0);
-				vec3 vertical = vec3(0.0,viewport_height,0.0);
+				c.horizontal = vec3(viewport_width,0.0,0.0);
+				c.vertical = vec3(0.0,viewport_height,0.0);
 
 				//viewport lower left corner in 3d space
-				vec3 lower_left_corner = origin - (horizontal/2.0) - (vertical/2.0) - vec3(0.0,0.0,focal_length);
+				c.lower_left_corner = c.origin - (c.horizontal/2.0) - (c.vertical/2.0) - vec3(0.0,0.0,c.focal_length);
 
 				vec2 uv = gl_FragCoord.xy / resolution.xy; //calc quad uv (0-1) down to up and left to right
-
-				ray r = ray(origin,lower_left_corner + (uv.x*horizontal) + (uv.y*vertical) - origin);
-				vec3 pixel_color = ray_color(r);
+				//seed 
+				seed = random(uv.xy * time);
+				
+				vec3 pixel_color = vec3(0.0);
+				for (int i = 0; i < 10; i++) {
+					ray r = get_camera_ray(c,uv+random2(seed)*0.001);
+					pixel_color += color(r);
+				}
+				//vec3 pixel_color = color(r);
+				pixel_color /= 10.0;
 				gl_FragColor = vec4(pixel_color,1.0);
 			}
 			
@@ -195,7 +253,7 @@
  
 				try {
  
-					gl = canvas.getContext( 'experimental-webgl' );
+					gl = canvas.getContext( 'webgl2' );
  
 				} catch( error ) { }
  
