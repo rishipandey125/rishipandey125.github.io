@@ -47,6 +47,8 @@
             uniform float u_numTilesX;
             uniform float u_numTilesY;
 			uniform float u_tileSlits;
+			uniform vec3 u_color1;
+			uniform vec3 u_color2;
 
 			//below random + noise from the book of shaders 
 			//https://thebookofshaders.com/11/
@@ -89,6 +91,10 @@
 				return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 			}
 
+			vec3 pastelColor(vec3 c) {
+				return mix(c,vec3(210.0/360.0,0.01,1.0),0.5);
+			}
+
             vec3 generateBlock(vec2 canvasUV, vec2 tileUV) {
 				vec2 tileNums = floor(canvasUV*vec2(u_numTilesX,u_numTilesY))+vec2(1.0); //determine the tile num for the x and y directions (starting from 1)
 				float tileIndex = (u_numTilesX*(tileNums.y-1.0))+tileNums.x; //create an index for each tile
@@ -97,12 +103,20 @@
 
 				vec2 gridUV = floor(tileUV * u_tileSlits); //rows or cols within a tile
 				
-				vec2 noiseSample = mix(vec2(gridUV.x,tileUV.y),vec2(tileUV.x,gridUV.y),mod(tileIndex+flipVal,2.0)); //determine the tile orientation
+				float tileOrientation = mod(tileIndex+flipVal,2.0);
+				vec2 noiseSample = mix(vec2(gridUV.x,tileUV.y),vec2(tileUV.x,gridUV.y),tileOrientation); //determine the tile orientation
 				float i = noise((noiseSample+tileIndex+u_time)); //sample the noise function based the sample cords, tile index, and time to animate
-                
-				vec3 color1 = vec3(0.91,0.66,0.73);
-                vec3 color2 = vec3(0.0,0.06,0.27);
-                return mix(color1,color2,i);
+				
+				float mixer = random(vec2(tileNums));
+
+				vec3 light1 = mix(u_color1,vec3(1.0),mixer);
+				vec3 light2 = mix(u_color2,vec3(1.0),mixer);
+				vec3 dark1 = mix(u_color1,vec3(0.0),0.5);
+				vec3 dark2 = mix(u_color2,vec3(0.0),0.5);
+				//vec3 pastel1 = hsv2rgb(pastelColor(u_color1));
+				//vec3 pastel2 = hsv2rgb(pastelColor(u_color2));
+
+                return mix(mix(light1,dark2,i),mix(light2,dark1,i),tileOrientation);
             }
 
 			void main( void ) {
@@ -145,8 +159,15 @@
 			    timeLocation,
 			    resolutionLocation,
                 numTilesX,
+				genTilesX,
                 numTilesY,
+				genTilesY,
 				tileSlits,
+				genSlits,
+				color1,
+				genColor1,
+				color2,
+				genColor2,
 			    parameters = {  start_time  : new Date().getTime(), 
 			                    time        : 0, 
 			                    screenWidth : 0, 
@@ -154,7 +175,13 @@
  
 			init();
 			animate();
- 
+
+
+			//return a random color
+			function randomColor() {
+				return [Math.random(),Math.random(),Math.random()]
+			}
+
 			function init() {
  
 				vertex_shader = document.getElementById('vs').textContent;
@@ -188,12 +215,21 @@
  
 				currentProgram = createProgram( vertex_shader, fragment_shader );
 
+				//set uniforms
 				timeLocation = gl.getUniformLocation( currentProgram, 'u_time' );
 				resolutionLocation = gl.getUniformLocation( currentProgram, 'u_resolution' );
                 numTilesX = gl.getUniformLocation(currentProgram, 'u_numTilesX');
                 numTilesY = gl.getUniformLocation(currentProgram, 'u_numTilesY'); 
 				tileSlits = gl.getUniformLocation(currentProgram, 'u_tileSlits'); 
+				color1 =  gl.getUniformLocation(currentProgram, 'u_color1'); 
+				color2 = gl.getUniformLocation(currentProgram, 'u_color2'); 
 
+				//generative elements
+				genTilesX = Math.floor(Math.random() * 40)+1;
+				genTilesY = Math.floor(genTilesX*(3/2));
+				genSlits = Math.floor(Math.random() * 7)+1;
+				genColor1 = randomColor()
+				genColor2 = randomColor()
 			}
  
 			function createProgram( vertex, fragment ) {
@@ -263,6 +299,7 @@
 				// }
 				
 			}
+
 			
 			function animate() {
 				resizeCanvas();
@@ -287,9 +324,12 @@
  
 				gl.uniform1f( timeLocation, parameters.time / 1000 );
 				gl.uniform2f( resolutionLocation, canvas.width, canvas.height );
-                gl.uniform1f( numTilesX, 20);
-                gl.uniform1f( numTilesY, 30);
-				gl.uniform1f( tileSlits, 1);
+                gl.uniform1f( numTilesX, genTilesX);
+                gl.uniform1f( numTilesY, genTilesY);
+				gl.uniform1f( tileSlits, genSlits);
+				gl.uniform3fv(color1,  genColor1);
+				gl.uniform3fv(color2,  genColor2);
+
 				// Render geometry
  
 				gl.bindBuffer( gl.ARRAY_BUFFER, buffer );
