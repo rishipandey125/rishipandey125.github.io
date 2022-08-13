@@ -127,9 +127,9 @@
 				
 				float tileOrientation = mod(tileIndex+flipVal,2.0);
 				vec2 noiseSample = mix(vec2(gridUV.x,tileUV.y),vec2(tileUV.x,gridUV.y),tileOrientation); //determine the tile orientation
-				float i = fbm(((noiseSample+tileIndex+u_time)*2.0)); //sample the noise function based the sample cords, tile index, and time to animate
+				float i = noise(((noiseSample+tileIndex+u_time)*2.0)); //sample the noise function based the sample cords, tile index, and time to animate
 				
-				i = remap(i);
+				//i = remap(i);
 
 				float mixer = random(vec2(tileNums));
 				mixer = 0.5;
@@ -203,6 +203,10 @@
 			animate();
 
 
+			function randomInt(min, max) {
+				return Math.floor(min + (Math.random()*(max-min)))
+			}
+
 			//return a random color
 			function randomColor() {
 				return [Math.random(),Math.random(),Math.random()]
@@ -251,9 +255,9 @@
 				color2 = gl.getUniformLocation(currentProgram, 'u_color2'); 
 
 				//generative elements
-				genTilesX = Math.floor(Math.random() * 40)+1;
+				genTilesX = randomInt(4,20);
 				genTilesY = Math.floor(genTilesX*(3/2));
-				genSlits = Math.floor(Math.random() * 7)+1;
+				genSlits = randomInt(5,10);
 				genColor1 = randomColor()
 				genColor2 = randomColor()
 			}
@@ -352,7 +356,7 @@
 				gl.uniform2f( resolutionLocation, canvas.width, canvas.height );
                 gl.uniform1f( numTilesX, genTilesX);
                 gl.uniform1f( numTilesY, genTilesY);
-				gl.uniform1f( tileSlits, 6);
+				gl.uniform1f( tileSlits, genSlits);
 				gl.uniform3fv(color1,  genColor1);
 				gl.uniform3fv(color2,  genColor2);
 
