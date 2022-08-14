@@ -82,21 +82,6 @@
 						(d - b) * u.x * u.y;
 			}
 			
-			#define OCTAVES 6
-			float fbm (in vec2 st) {
-				// Initial values
-				float value = 0.0;
-				float amplitude = .5;
-				float frequency = 0.;
-				//
-				// Loop of octaves
-				for (int i = 0; i < OCTAVES; i++) {
-					value += amplitude * noise(st);
-					st *= 2.;
-					amplitude *= .5;
-				}
-				return value;
-			}
 
 			//classic hsv to rgb conversion
 			vec3 hsv2rgb(vec3 c) {
@@ -111,10 +96,12 @@
 
 
 			float remap(float x) {
-				if (x > 0.3 && x < 0.7) {
+				float min = 0.25;
+				float max = 0.75;
+				if (x < min || x > max) {
 					return step(0.5,x);
 				}
-				return x;
+				return (x-min)/(max-min);
 			}
 
             vec3 generateBlock(vec2 canvasUV, vec2 tileUV) {
@@ -124,12 +111,17 @@
 				float flipVal = mix(1.0,0.0,mod(tileNums.y,2.0)); //if sequence should be staggered then use flip val of 1 to set the index to odd or even accordingly
 
 				vec2 gridUV = fract(tileUV * u_tileSlits); //rows or cols within a tile
+				vec2 gridIndicies = floor(tileUV * u_tileSlits);
+
 				
 				float tileOrientation = mod(tileIndex+flipVal,2.0);
+				
+				float slitIndex = mix(gridIndicies.x,gridIndicies.y,tileOrientation);
+
 				vec2 noiseSample = mix(vec2(gridUV.x,tileUV.y),vec2(tileUV.x,gridUV.y),tileOrientation); //determine the tile orientation
 				float i = noise(((noiseSample+tileIndex+u_time)*2.0)); //sample the noise function based the sample cords, tile index, and time to animate
 				
-				//i = remap(i);
+				i = remap(i);
 
 				float mixer = random(vec2(tileNums));
 				mixer = 0.5;
@@ -150,7 +142,7 @@
                 
 				//scale the uv by the x and y tile amounts
 				//and create fractional uvs within each tile
-				vec2 tileUV = fract(vec2(uv.x*u_numTilesX,uv.y*u_numTilesY)); 
+				vec2 tileUV = mix(floor(vec2(uv.x*u_numTilesX,uv.y*u_numTilesY)),fract(vec2(uv.x*u_numTilesX,uv.y*u_numTilesY)),1.0); 
 
 				gl_FragColor = vec4(generateBlock(uv,tileUV),1.0);
 			}
@@ -255,9 +247,9 @@
 				color2 = gl.getUniformLocation(currentProgram, 'u_color2'); 
 
 				//generative elements
-				genTilesX = randomInt(4,20);
+				genTilesX = 2*randomInt(2,15);
 				genTilesY = Math.floor(genTilesX*(3/2));
-				genSlits = randomInt(5,10);
+				genSlits = randomInt(6,20);
 				genColor1 = randomColor()
 				genColor2 = randomColor()
 			}
