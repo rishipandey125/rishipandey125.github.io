@@ -206,6 +206,16 @@
 				return [Math.random(),Math.random(),Math.random()]
 			}
 
+			//generative function for the uniforms
+			function generateUniforms() {
+				//generative elements
+				genTilesX = 2*randomInt(2,15);
+				genTilesY = Math.floor(genTilesX*(3/2));
+				genSlits = randomInt(6,20);
+				genColor1 = randomColor()
+				genColor2 = randomColor()
+			}
+			
 			function init() {
  
 				vertex_shader = document.getElementById('vs').textContent;
@@ -248,12 +258,7 @@
 				color1 =  gl.getUniformLocation(currentProgram, 'u_color1'); 
 				color2 = gl.getUniformLocation(currentProgram, 'u_color2'); 
 
-				//generative elements
-				genTilesX = 2*randomInt(2,15);
-				genTilesY = Math.floor(genTilesX*(3/2));
-				genSlits = randomInt(6,20);
-				genColor1 = randomColor()
-				genColor2 = randomColor()
+				generateUniforms();
 			}
  
 			function createProgram( vertex, fragment ) {
@@ -344,10 +349,16 @@
  
 				gl.useProgram( currentProgram );
 				
-				console.log(parameters.time/1000)
-				let tilesX  = Math.floor(Math.sin(parameters.time/1000) * genTilesX);
-				let tilesY = Math.floor(Math.sin(parameters.time/1000) * genTilesY);
+				let animCurve = (Math.cos(parameters.time/1000)+1)/2.0 // -> remap to 0->1
 
+				if (animCurve < 0.001) {
+					generateUniforms()
+				}
+
+				let tilesX  = Math.floor(animCurve * genTilesX);
+				let tilesY = Math.floor(animCurve * genTilesY);
+
+				console.log(animCurve)
 				// Set values to program variables
  
 				gl.uniform1f( timeLocation, parameters.time / 1000 );
