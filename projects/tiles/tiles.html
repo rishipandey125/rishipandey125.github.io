@@ -138,6 +138,8 @@
             }
 
 			void main( void ) {
+
+				
 				vec2 uv = gl_FragCoord.xy / u_resolution.xy; //calc quad uv (0-1) down to up and left to right
                 
 				//scale the uv by the x and y tile amounts
@@ -341,13 +343,17 @@
 				// Load program into GPU
  
 				gl.useProgram( currentProgram );
- 
+				
+				console.log(parameters.time/1000)
+				let tilesX  = Math.floor(Math.sin(parameters.time/1000) * genTilesX);
+				let tilesY = Math.floor(Math.sin(parameters.time/1000) * genTilesY);
+
 				// Set values to program variables
  
 				gl.uniform1f( timeLocation, parameters.time / 1000 );
 				gl.uniform2f( resolutionLocation, canvas.width, canvas.height );
-                gl.uniform1f( numTilesX, genTilesX);
-                gl.uniform1f( numTilesY, genTilesY);
+                gl.uniform1f( numTilesX, tilesX);
+                gl.uniform1f( numTilesY, tilesY);
 				gl.uniform1f( tileSlits, genSlits);
 				gl.uniform3fv(color1,  genColor1);
 				gl.uniform3fv(color2,  genColor2);
