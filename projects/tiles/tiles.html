@@ -22,10 +22,9 @@
 	<body> 
         <p>&nbsp;</p> 
         <center>
-            <canvas  id="myCanvas" width =600 height=900> </canvas>
+            <canvas  id="tiles" width =600 height=900> </canvas>
         </center> 
 
-		<!-- <canvas></canvas> -->
 		<div id="info"></div> 
  
 		<script id="vs" type="x-shader/vertex"> 
@@ -42,7 +41,7 @@
 		<script id="fs" type="x-shader/fragment"> 
 			precision highp float;
 
-			uniform float u_time;
+			uniform float u_time; 
 			uniform vec2 u_resolution; //vec2(screen_width,screen_height)
             uniform float u_numTilesX;
             uniform float u_numTilesY;
@@ -83,25 +82,21 @@
 			}
 			
 
-			//classic hsv to rgb conversion
-			vec3 hsv2rgb(vec3 c) {
-				vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-				vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-				return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-			}
-
-			vec3 pastelColor(vec3 c) {
-				return mix(c,vec3(210.0/360.0,0.01,1.0),0.5);
-			}
-
-
 			float remap(float x) {
 				float min = 0.25;
 				float max = 0.75;
+
+				//step(edge,x) -> 0 if x < edge and 1 if edge > x
+	
+				float edges = step(step(min,x)+step(x,max),0.99); // -> should be 1 if it is an edge clamp and 0 otherwise replaces below if else
+				/*
 				if (x < min || x > max) {
 					return step(0.5,x);
+				} else {
+					return (x-min)/(max-min);
 				}
-				return (x-min)/(max-min);
+				*/
+				return mix((x-min)/(max-min),step(0.5,x),edges);
 			}
 
             vec3 generateBlock(vec2 canvasUV, vec2 tileUV) {
@@ -123,23 +118,14 @@
 				
 				i = remap(i);
 
-				float mixer = random(vec2(tileNums));
-				mixer = 0.5;
+				vec3 light = mix(u_color1,vec3(1.0),0.5);
+				vec3 dark = mix(u_color2,vec3(0.0),0.5);
 
-				vec3 light1 = mix(u_color1,vec3(1.0),mixer);
-				vec3 light2 = mix(u_color2,vec3(1.0),mixer);
-				vec3 dark1 = mix(u_color1,vec3(0.0),0.5);
-				vec3 dark2 = mix(u_color2,vec3(0.0),0.5);
-				vec3 pastel1 = hsv2rgb(pastelColor(u_color1));
-				vec3 pastel2 = hsv2rgb(pastelColor(u_color2));
-
-				return mix(light1,dark2,i);
-                //return mix(mix(light1,dark2,i),mix(light2,dark1,i),tileOrientation);
+				return mix(light,dark,i);
             }
 
 			void main( void ) {
 
-				
 				vec2 uv = gl_FragCoord.xy / u_resolution.xy; //calc quad uv (0-1) down to up and left to right
                 
 				//scale the uv by the x and y tile amounts
@@ -152,23 +138,6 @@
 		</script> 
  
 		<script> 
- 
-			/**
-			 * Provides requestAnimationFrame in a cross browser way.
-			 * paulirish.com/2011/requestanimationframe-for-smart-animating/
-			 */
-			window.requestAnimationFrame = window.requestAnimationFrame || ( function() {
-
-				return  window.webkitRequestAnimationFrame ||
-				        window.mozRequestAnimationFrame ||
-				        window.oRequestAnimationFrame ||
-				        window.msRequestAnimationFrame ||
-				        function(  callback, element ) {
-					        window.setTimeout( callback, 1000 / 60 );
-				        };
-
-			})();
-
  
 			var canvas, 
 			    gl, 
@@ -209,7 +178,7 @@
 			//generative function for the uniforms
 			function generateUniforms() {
 				//generative elements
-				genTilesX = 2*randomInt(2,15);
+				genTilesX = randomInt(4,30);
 				genTilesY = Math.floor(genTilesX*(3/2));
 				genSlits = randomInt(6,20);
 				genColor1 = randomColor()
@@ -222,13 +191,12 @@
 				fragment_shader = document.getElementById('fs').textContent;
  
 
-				canvas = document.getElementById("myCanvas");
-				// canvas = document.querySelector( 'canvas' );
- 
+				canvas = document.getElementById("tiles");
+
 				// Initialise WebGL
  
 				try {
- 
+
 					gl = canvas.getContext( 'webgl2' );
  
 				} catch( error ) { }
@@ -258,7 +226,7 @@
 				color1 =  gl.getUniformLocation(currentProgram, 'u_color1'); 
 				color2 = gl.getUniformLocation(currentProgram, 'u_color2'); 
 
-				generateUniforms();
+				generateUniforms(); // generate intial uniforms
 			}
  
 			function createProgram( vertex, fragment ) {
@@ -311,27 +279,8 @@
 				return shader;
  
 			}
- 
-			function resizeCanvas( event ) {
- 
-				// if ( canvas.width != canvas.clientWidth ||
-				// 	 canvas.height != canvas.clientHeight ) {
 
-				// 	canvas.width = canvas.clientWidth;
-				// 	canvas.height = canvas.clientHeight;
-
-				// 	parameters.screenWidth = canvas.width;
-				// 	parameters.screenHeight = canvas.height;
-
-				// 	gl.viewport( 0, 0, canvas.width, canvas.height );
-
-				// }
-				
-			}
-
-			
 			function animate() {
-				resizeCanvas();
 				render();
 				requestAnimationFrame( animate );
  
@@ -351,16 +300,16 @@
 				
 				let animCurve = (Math.cos(parameters.time/1000)+1)/2.0 // -> remap to 0->1
 
-				if (animCurve < 0.001) {
+				if (animCurve < 0.001) { //generate new uniforms
 					generateUniforms()
 				}
 
-				let tilesX  = Math.floor(animCurve * genTilesX);
+				let tilesX  = Math.floor(animCurve * genTilesX); //get the tiles xy on update
 				let tilesY = Math.floor(animCurve * genTilesY);
 
-				console.log(animCurve)
 				// Set values to program variables
- 
+				
+				// set uniforms
 				gl.uniform1f( timeLocation, parameters.time / 1000 );
 				gl.uniform2f( resolutionLocation, canvas.width, canvas.height );
                 gl.uniform1f( numTilesX, tilesX);
@@ -376,7 +325,6 @@
 				gl.enableVertexAttribArray( vertex_position );
 				gl.drawArrays( gl.TRIANGLES, 0, 6 );
 				gl.disableVertexAttribArray( vertex_position );
-				// console.log(parameters.screenWidth)
 			}
  
 		</script> 
