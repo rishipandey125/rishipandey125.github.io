@@ -34,40 +34,38 @@
 	<body> 
 	
 		</div>
-		    <!-- top title -->
+			<!-- top title -->
 			<div class="container-fluid mt-5">
 				<div class="row justify-content-md-center align-items-center">
-				  <div class="col col-lg-4">
+				<div class="col col-lg-4">
 					<!-- space at top! -->
-				  </div>
-				  <div class="col col-lg-4 hidden-lg-up" align="center" >
-				  </div>
 				</div>
-			  </div>
-		  
-			  <!-- Intro -->
-			  <div class="container mb-3">
-				<!-- <div class ="row intro">
-				  <h1>rishi pandey </h1>
-				</div> -->
+				<div class="col col-lg-4 hidden-lg-up" align="center" >
+				</div>
+				</div>
+			</div>
+		
+			<!-- Intro -->
+			<div class="container mb-3">
 				<div class="row intro">
-				  <div class="col-md-6" align="center">
+				<div class="col-md-6" align="center">
 					<h1 id="title">tiles no. 1</h1>
 					<p>&nbsp;</p> 
 					<div class="row justify-content-center mb-3s">
-					  <div class="col-10 col-md-10 col-lg-8">
-						<h2 id="explanation">a never ending generative art piece designed by 
-						  <a href="https://twitter.com/wookiepandey25" target="_blank">rishi pandey</a> via a fragment shader
-						</h2>
-					  </div>
+					<div class="col-10 col-md-10 col-lg-8">
+						<h3 id="explanation">a never-ending generative art piece designed by 
+						<a href="https://twitter.com/wookiepandey25" target="_blank">rishi pandey</a> via a fragment shader
+						</h3>
+					</div>
 					</div>	
-				  </div>
-				  <div class="col-md-6" align="center">
-					<canvas  id="tiles" width =600 height=900> </canvas>
+					<p>&nbsp;</p> 
 				</div>
+				<div class="col-md-6" align="center">
+					<canvas  id="tiles"> </canvas>
 				</div>
+			</div>
 		  
-			  </div>
+		</div>
  
 		<script id="vs" type="x-shader/vertex"> 
 			attribute vec3 position;
@@ -237,8 +235,22 @@
 				fragment_shader = document.getElementById('fs').textContent;
  
 
+				//create canvas
 				canvas = document.getElementById("tiles");
 
+				let aspectRatio = 2/3; //canvas aspect ratio
+				let canvasHeight = 700; //height of canvas
+				let canvasWidth = canvasHeight*aspectRatio; //width based on aspect ratio
+				
+				//enforce conditions for mobile friendly canvas
+				if (window.innerWidth < canvasWidth) {
+					//make canvas mobile friendly
+					canvasWidth = 0.8*window.innerWidth;
+					canvasHeight = canvasWidth * (1/aspectRatio);
+				}
+
+				canvas.width = canvasWidth;
+				canvas.height = canvasHeight;
 
 				// Initialise WebGL
  
