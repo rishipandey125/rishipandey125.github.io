@@ -3,7 +3,7 @@
 	<head> 
 		<meta charset="utf-8"> 
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-		<title>tiles 8/17/22</title> 
+		<title>tiles 08/18/22</title> 
 
 		<!-- load bootstrap -->
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -48,7 +48,7 @@
 			<div class="container mb-3">
 				<div class="row intro">
 				<div class="col-md-6" align="center">
-					<h1 style=font-size:80px id="title">tiles 8/17/22</h1>
+					<h1 style=font-size:80px id="title">tiles 08/18/22</h1>
 					<p>&nbsp;</p> 
 					<div class="row justify-content-center mb-3s">
 					<div class="col-10 col-md-10 col-lg-8">
@@ -201,7 +201,7 @@
 			init();
 			animate();
 
-
+			//return random int
 			function randomInt(min, max) {
 				return Math.floor(min + (Math.random()*(max-min)))
 			}
@@ -211,6 +211,7 @@
 				return [Math.random(),Math.random(),Math.random()]
 			}
 
+			//mix function on CPU 
 			function mix(color1, color2, value) {
 				let r = color1[0] + (color2[0]-color1[0])*value;
 				let g = color1[1] + (color2[1]-color1[1])*value;
@@ -222,12 +223,16 @@
 			function generateUniforms() {
 				//generative elements
 				genTilesX = randomInt(4,10);
+				if (genTilesX % 2 == 0) { //make sure it is odd
+					genTilesX += 1
+				}
 				genTilesY = Math.floor(genTilesX*(3/2));
 				genSlits = randomInt(6,20);
 				genColor1 = randomColor()
 				genColor2 = randomColor()
 			}
 			
+			// on start
 			function init() {
  
 				vertex_shader = document.getElementById('vs').textContent;
@@ -338,6 +343,7 @@
  
 			}
 
+			//onupdate
 			function animate() {
 				render();
 				requestAnimationFrame( animate );
@@ -358,7 +364,7 @@
 				
 				let animCurve = (Math.cos(parameters.time/1000)+1)/2.0 // -> remap to 0->1
 
-				if (animCurve < 0.0001) { //generate new uniforms
+				if (animCurve < 0.00001) { //generate new uniforms
 					generateUniforms()
 				}
 
@@ -380,7 +386,7 @@
 				gl.uniform3fv(color1,  light);
 				gl.uniform3fv(color2,  dark);
 
-
+				//set the font and bg color 
 				document.getElementById("title").style.color = 'rgb(' + light[0]*255 + ',' + light[1]*255 + ',' + light[2]*255 + ')';
 				document.getElementById("explanation").style.color = 'rgb(' + light[0]*255 + ',' + light[1]*255 + ',' + light[2]*255 + ')';;
 				document.body.style.backgroundColor = 'rgb(' + dark[0]*255 + ',' + dark[1]*255 + ',' + dark[2]*255 + ')';
