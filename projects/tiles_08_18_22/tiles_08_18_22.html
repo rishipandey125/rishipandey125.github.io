@@ -2,7 +2,7 @@
 <html> 
 	<head> 
 		<meta charset="utf-8"> 
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>tiles 08/18/22</title> 
 
 		<!-- load bootstrap -->
@@ -31,41 +31,40 @@
 		</style> 
 	</head> 
 	<body> 
-	
-		</div>
 			<!-- top title -->
 			<div class="container-fluid mt-5">
 				<div class="row justify-content-md-center align-items-center">
-				<div class="col col-lg-4">
-					<!-- space at top! -->
-				</div>
-				<div class="col col-lg-4 hidden-lg-up" align="center" >
-				</div>
+					<div class="col col-lg-4">
+						<!-- space at top! -->
+					</div>
+					<div class="col col-lg-4 hidden-lg-up" align="center" >
+					</div>
 				</div>
 			</div>
 		
 			<!-- Intro -->
 			<div class="container mb-3">
 				<div class="row intro">
-				<div class="col-md-6" align="center">
-					<h1 style=font-size:80px id="title">tiles 08/18/22</h1>
-					<p>&nbsp;</p> 
-					<div class="row justify-content-center mb-3s">
-					<div class="col-10 col-md-10 col-lg-8">
-						<h3 id="explanation">a never-ending generative art piece designed by 
-						<a href="https://twitter.com/wookiepandey25" target="_blank">rishi pandey</a> via a fragment shader
-						</h3>
+					<div class="col-md-6" align="center">
+						<h1 style=font-size:80px id="title">tiles 08/18/22</h1>
+						<p>&nbsp;</p> 
+						<div class="row justify-content-center mb-3s">
+							<div class="col-10 col-md-10 col-lg-8">
+								<h3 id="explanation">a never-ending generative art piece designed by 
+								<a href="https://twitter.com/wookiepandey25" target="_blank">rishi pandey</a> via a fragment shader
+								</h3>
+							</div>
+						</div>	
+						<p>&nbsp;</p> 
 					</div>
-					</div>	
-					<p>&nbsp;</p> 
-				</div>
 				<div class="col-md-6" align="center">
 					<canvas  id="tiles"> </canvas>
 				</div>
 			</div>
 		  
 		</div>
- 
+
+
 		<script id="vs" type="x-shader/vertex"> 
 			attribute vec3 position;
  
