@@ -363,7 +363,7 @@
 				
 				let animCurve = (Math.cos(parameters.time/1000)+1)/2.0 // -> remap to 0->1
 
-				if (animCurve < 0.00001) { //generate new uniforms
+				if (animCurve < 0.0001) { //generate new uniforms
 					generateUniforms()
 				}
 
