@@ -6,14 +6,22 @@ var canvasHeight;
 
 var totalTime = 0; //total time
 
+var START_PARAMS = {
+  line_color_start: "#ffffff",
+  bg_color_start: "#000000",
+  thickness_start: 5,
+  num_points_start: 10
+}
+
+var END_PARAMS = {
+  line_color_end: "#000000",
+  bg_color_end: "#ffffff",
+  thickness_end: 10,
+  num_points_end: 50
+}
+
 var startThickness;
 var endThickness;
-var startColor;
-var endColor;
-var startBGColor;
-var endBGColor;
-var startWobble;
-var endWobble;
 var startNumPoints;
 var endNumPoints;
 
@@ -46,15 +54,10 @@ function setup() {
   colorMode(RGB);
 
   startThickness = 5
-  endThickness = 1
-  startBGColor = color(0,0,0)
-  endBGColor = color(255,255,255)
-  startColor = color(random(255),random(255),random(255))
-  endColor = color(random(255),random(255),random(255))
-  // startBGColor = color(random(255),random(255),random(255))
-  // endBGColor = color(random(255),random(255),random(255))
-  startNumPoints = 1
-  endNumPoints = 100
+  endThickness = 5
+
+  startNumPoints = 4
+  endNumPoints = 10
   //initialize the start and end points
   // startControlPoint = [10,10]
   startSet = true;
@@ -65,13 +68,36 @@ function setup() {
   //how many points there are 
   //how large the canvas is
   //canvas origin is top left corner
+  setupUI();
+}
+
+function setupUI() {
+  const start_pane = new Tweakpane.Pane({
+    container: document.getElementById('UI_START_CONTROLLERS')
+  });
+
+  start_pane.addInput(START_PARAMS, 'line_color_start');
+  start_pane.addInput(START_PARAMS, 'bg_color_start');
+  start_pane.addInput(START_PARAMS, 'thickness_start');
+  start_pane.addInput(START_PARAMS, 'num_points_start');
+
+  const end_pane = new Tweakpane.Pane({
+    container: document.getElementById('UI_END_CONTROLLERS')
+  });
+
+  end_pane.addInput(END_PARAMS, 'line_color_end');
+  end_pane.addInput(END_PARAMS, 'bg_color_end');
+  end_pane.addInput(END_PARAMS, 'thickness_end');
+  end_pane.addInput(END_PARAMS, 'num_points_end');
 }
 
 function updatePointList(numPoints) {
   pointList = []
   for (let x = 0; x < numPoints; x++) {
     //f(x) function
-    pointList.push([sin(x/numPoints)*random(canvasWidth),random(canvasHeight)])
+    //
+    pointList.push([random(canvasWidth),random(canvasHeight)])
+    // pointList.push([sin(x/numPoints)*random(canvasWidth),random(canvasHeight)])
   }
   startControlPoint = pointList[0]
   endControlPoint = pointList[pointList.length-1]
@@ -79,15 +105,15 @@ function updatePointList(numPoints) {
 
 // onUpdate
 function draw() { 
-  let animTime = 10
+  let animTime = 15
   let animValue = ((totalTime/1000)%animTime)/animTime
 
   //set point list 
-  updatePointList(lerp(startNumPoints,endNumPoints,animValue))
+  updatePointList(lerp(START_PARAMS.num_points_start,END_PARAMS.num_points_end,animValue))
 
-  background(lerpColor(startBGColor,endBGColor,animValue))
-  stroke(lerpColor(startColor,endColor,animValue))
-  strokeWeight(lerp(startThickness,endThickness,animValue))
+  background(lerpColor(color(START_PARAMS.bg_color_start),color(END_PARAMS.bg_color_end),animValue))
+  stroke(lerpColor(color(START_PARAMS.line_color_start),color(END_PARAMS.line_color_end),animValue))
+  strokeWeight(lerp(START_PARAMS.thickness_start,END_PARAMS.thickness_end,animValue))
   noFill()
 
   if (startSet) {
