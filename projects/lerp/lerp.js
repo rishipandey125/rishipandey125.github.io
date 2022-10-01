@@ -20,10 +20,10 @@ var END_PARAMS = {
   num_points_end: 50
 }
 
-var startThickness;
-var endThickness;
-var startNumPoints;
-var endNumPoints;
+var FILL_PARAMS = {
+  fill: false,
+  fill_color: "#ff0000"
+}
 
 var pointList = [];
 var startControlPoint;
@@ -73,7 +73,7 @@ function setup() {
 
 function setupUI() {
   const start_pane = new Tweakpane.Pane({
-    container: document.getElementById('UI_START_CONTROLLERS')
+    container: document.getElementById('UI_START_CONTROLS')
   });
 
   start_pane.addInput(START_PARAMS, 'line_color_start');
@@ -82,13 +82,20 @@ function setupUI() {
   start_pane.addInput(START_PARAMS, 'num_points_start');
 
   const end_pane = new Tweakpane.Pane({
-    container: document.getElementById('UI_END_CONTROLLERS')
+    container: document.getElementById('UI_END_CONTROLS')
   });
 
   end_pane.addInput(END_PARAMS, 'line_color_end');
   end_pane.addInput(END_PARAMS, 'bg_color_end');
   end_pane.addInput(END_PARAMS, 'thickness_end');
   end_pane.addInput(END_PARAMS, 'num_points_end');
+
+  const fill_pane = new Tweakpane.Pane({
+    container: document.getElementById('UI_FILL_CONTROLS')
+  });
+
+  fill_pane.addInput(FILL_PARAMS, 'fill');
+  fill_pane.addInput(FILL_PARAMS, 'fill_color');
 }
 
 function updatePointList(numPoints) {
@@ -114,7 +121,12 @@ function draw() {
   background(lerpColor(color(START_PARAMS.bg_color_start),color(END_PARAMS.bg_color_end),animValue))
   stroke(lerpColor(color(START_PARAMS.line_color_start),color(END_PARAMS.line_color_end),animValue))
   strokeWeight(lerp(START_PARAMS.thickness_start,END_PARAMS.thickness_end,animValue))
-  noFill()
+
+  if (FILL_PARAMS.fill) {
+    fill(FILL_PARAMS.fill_color)
+  } else {
+    noFill()
+  }
 
   if (startSet) {
     beginShape()
