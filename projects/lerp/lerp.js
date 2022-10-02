@@ -25,6 +25,12 @@ var FILL_PARAMS = {
   fill_color: "#ff0000"
 }
 
+var ANIM_PARAMS = {
+  value: 0,
+  function: "linear",
+  timer: 5
+}
+
 var pointList = [];
 var startControlPoint;
 var startSet;
@@ -53,21 +59,8 @@ function setup() {
 
   colorMode(RGB);
 
-  startThickness = 5
-  endThickness = 5
-
-  startNumPoints = 4
-  endNumPoints = 10
-  //initialize the start and end points
-  // startControlPoint = [10,10]
   startSet = true;
-  // endControlPoint = [100,100]
 
-  //for spawning the things you have are...
-  //which point in the sequence it is 
-  //how many points there are 
-  //how large the canvas is
-  //canvas origin is top left corner
   setupUI();
 }
 
@@ -96,13 +89,34 @@ function setupUI() {
 
   fill_pane.addInput(FILL_PARAMS, 'fill');
   fill_pane.addInput(FILL_PARAMS, 'fill_color');
+
+  const anim_pane = new Tweakpane.Pane({
+    container: document.getElementById('UI_ANIM_CONTROLS')
+  });
+
+  anim_pane.addInput(ANIM_PARAMS, 'timer');
+  anim_pane.addInput(ANIM_PARAMS, 'function', {
+    label: 'animation curve',
+    options: {
+      random: 'random',
+      sin: 'sin',
+      linear: 'linear'
+    }
+  });
+
+  //add monitor and graph for tracking the value 
+  anim_pane.addMonitor(ANIM_PARAMS, 'value', {
+    view: 'graph',
+    min: 0,
+    max: 1,
+  });
 }
 
 function updatePointList(numPoints) {
   pointList = []
   for (let x = 0; x < numPoints; x++) {
     //f(x) function
-    //
+
     pointList.push([random(canvasWidth),random(canvasHeight)])
     // pointList.push([sin(x/numPoints)*random(canvasWidth),random(canvasHeight)])
   }
@@ -112,8 +126,21 @@ function updatePointList(numPoints) {
 
 // onUpdate
 function draw() { 
-  let animTime = 15
-  let animValue = ((totalTime/1000)%animTime)/animTime
+  //get the lerp value 
+  
+  let scaledTime = ANIM_PARAMS.timer * 1000; // convert the seconds to millisecnds 
+  let i = (totalTime % scaledTime)/scaledTime;
+  if (ANIM_PARAMS.function == "random") {
+    if (i < 0.02) {
+      ANIM_PARAMS.value = Math.random(0,1); 
+    }
+  } else if (ANIM_PARAMS.function == "sin") {
+    ANIM_PARAMS.value = (Math.sin(i*(2*Math.PI))+1)/2; //map sin to 0-1
+  } else if (ANIM_PARAMS.function == "linear") {
+    ANIM_PARAMS.value = i; //return 0-1 interpolater
+  }
+
+  let animValue = ANIM_PARAMS.value;
 
   //set point list 
   updatePointList(lerp(START_PARAMS.num_points_start,END_PARAMS.num_points_end,animValue))
