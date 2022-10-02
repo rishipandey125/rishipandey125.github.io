@@ -31,6 +31,11 @@ var ANIM_PARAMS = {
   timer: 5
 }
 
+var SCATTER_PARAMS = {
+  x_equation: 'random(canvasWidth)',
+  y_equation: 'random(canvas_height)'
+}
+
 var pointList = [];
 var startControlPoint;
 var startSet;
@@ -110,19 +115,59 @@ function setupUI() {
     min: 0,
     max: 1,
   });
+
+  const scatter_pane = new Tweakpane.Pane({
+    container: document.getElementById('UI_SCATTER_CONTROLS')
+  });
+
+  scatter_pane.addInput(SCATTER_PARAMS, 'x_equation');
+  scatter_pane.addInput(SCATTER_PARAMS, 'y_equation');
+
 }
 
-function updatePointList(numPoints) {
+//update the plot with the changed equation
+function updatePointList(equationX,equationY,numPoints) {
+  //function turns string expression to executable function for a list of vars
+  //function from https://stackoverflow.com/questions/41283897/how-to-convert-string-into-math-function-just-once
+  function toFunction(equation, variables) {
+    const expFormat = '(\\d+(?:\\.\\d+|)){{@}}';
+    var expressionCache = {};
+    function lookupExpansion(v) {
+      if (!expressionCache[v]) {
+        expressionCache[v] = new RegExp(expFormat.replace(/\{\{\@\}\}/, v), 'g');
+      }
+      return expressionCache[v];
+    }
+    variables.forEach(variable => {
+      equation = equation.replace(lookupExpansion(variable), '$1 * ' + variable);
+    });
+    equation = equation.replace(/\b([a-z])([a-z])\b/g, '$1 * $2');
+    // console.log('[DEBUG]: Expanded => ' + equation);
+    return Function.apply(null, variables.concat('return ' + equation));
+  }	
+
+  var xScatter = toFunction(equationX,['point_number','num_points', 'canvas_width','canvas_height']);
+  var yScatter = toFunction(equationY,['point_number','num_points', 'canvas_width','canvas_height']);
+  
   pointList = []
   for (let x = 0; x < numPoints; x++) {
-    //f(x) function
-
-    pointList.push([random(canvasWidth),random(canvasHeight)])
-    // pointList.push([sin(x/numPoints)*random(canvasWidth),random(canvasHeight)])
+    pointList.push([xScatter(x,numPoints,canvasWidth,canvasHeight),yScatter(x,numPoints,canvasWidth,canvasHeight)])
   }
   startControlPoint = pointList[0]
   endControlPoint = pointList[pointList.length-1]
 }
+
+// function updatePointList(numPoints) {
+//   pointList = []
+//   for (let x = 0; x < numPoints; x++) {
+//     //f(x) function
+
+//     pointList.push([random(canvasWidth),random(canvasHeight)])
+//     // pointList.push([sin(x/numPoints)*random(canvasWidth),random(canvasHeight)])
+//   }
+//   startControlPoint = pointList[0]
+//   endControlPoint = pointList[pointList.length-1]
+// }
 
 // onUpdate
 function draw() { 
@@ -143,7 +188,7 @@ function draw() {
   let animValue = ANIM_PARAMS.value;
 
   //set point list 
-  updatePointList(lerp(START_PARAMS.num_points_start,END_PARAMS.num_points_end,animValue))
+  updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,lerp(START_PARAMS.num_points_start,END_PARAMS.num_points_end,animValue))
 
   background(lerpColor(color(START_PARAMS.bg_color_start),color(END_PARAMS.bg_color_end),animValue))
   stroke(lerpColor(color(START_PARAMS.line_color_start),color(END_PARAMS.line_color_end),animValue))
