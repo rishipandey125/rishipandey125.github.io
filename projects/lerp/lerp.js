@@ -156,7 +156,7 @@ function updatePointList(equationX,equationY,numPoints) {
   startControlPoint = pointList[0]
   endControlPoint = pointList[pointList.length-1]
 }
-
+// ((point_number % (num_points/10))/(num_points/10))*canvas_width
 // function updatePointList(numPoints) {
 //   pointList = []
 //   for (let x = 0; x < numPoints; x++) {
