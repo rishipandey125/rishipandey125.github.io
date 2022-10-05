@@ -35,13 +35,15 @@ var SCATTER_PARAMS = {
   math_operators: [
     ['+', '-', '*'],
     ['%',  '(', ')'],
-    ['?', '>', '<'],
+    ['?', '/', '<'],
   ],
   variables: [
     ['p', 'l', 'cw'],
     ['ch',  '*', 'E'],
     ['SW', 'S', 'SE'],
-  ]
+  ],
+  x_equation: "",
+  y_equation: ""
 }
 
 var CONSOLE_PARAMS = {
@@ -76,8 +78,8 @@ function setup() {
 
   colorMode(RGB);
 
+  updatePointList("random(canvasWidth)","random(canvasHeight)",30)
   startSet = true;
-
   setupUI();
 }
 
@@ -136,6 +138,7 @@ function setupUI() {
 
   scatter_pane.registerPlugin(TweakpaneEssentialsPlugin);
 
+  
   scatter_pane.addBlade({
     view: 'buttongrid',
     size: [3, 3],
@@ -143,12 +146,13 @@ function setupUI() {
       title: [
         ['+', '-', '*'],
         ['%',  '(', ')'],
-        ['?', '>', '<'],
+        ['?', '/', '<'],
       ][y][x],
     }),
     label: 'buttongrid',
   }).on('click', (ev) => {
-    console.log(ev);
+    SCATTER_PARAMS.x_equation += SCATTER_PARAMS.math_operators[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.y_equation += SCATTER_PARAMS.math_operators[ev.index[1]][ev.index[0]]
   });
 
   scatter_pane.addBlade({
@@ -163,9 +167,18 @@ function setupUI() {
     }),
     label: 'buttongrid',
   }).on('click', (ev) => {
-    console.log(ev);
+    SCATTER_PARAMS.x_equation += SCATTER_PARAMS.variables[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.y_equation += SCATTER_PARAMS.variables[ev.index[1]][ev.index[0]]
   });
 
+  const compile_btn = scatter_pane.addButton({
+    title: 'button',
+    label: 'compile'
+  });
+  
+  compile_btn.on('click', () => {
+    updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,30)
+  });
 
   const console_pane = new Tweakpane.Pane({
     container: document.getElementById('UI_CONSOLE_CONTROLS')
@@ -202,8 +215,8 @@ function updatePointList(equationX,equationY,numPoints) {
     return Function.apply(null, variables.concat('return ' + equation));
   }	
 
-  var xScatter = toFunction(equationX,['point_number', 'num_points', 'canvas_width','canvas_height']);
-  var yScatter = toFunction(equationY,['point_number', 'num_points', 'canvas_width','canvas_height']);
+  var xScatter = toFunction(equationX,['p', 'l', 'cw','ch']);
+  var yScatter = toFunction(equationY,['p', 'l', 'cw','ch']);
 
   pointList = []
   for (let x = 0; x < numPoints; x++) {
@@ -256,7 +269,7 @@ function draw() {
   //set point list 
   let num_points = lerp(START_PARAMS.num_points_start,END_PARAMS.num_points_end,animValue);
 
-  updatePointList("random(canvas_width)","random(canvas_height)",num_points)
+  // updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,30)
 
   background(lerpColor(color(START_PARAMS.bg_color_start),color(END_PARAMS.bg_color_end),animValue))
   stroke(lerpColor(color(START_PARAMS.line_color_start),color(END_PARAMS.line_color_end),animValue))
