@@ -36,6 +36,10 @@ var SCATTER_PARAMS = {
   y_equation: 'random(canvas_height)'
 }
 
+var CONSOLE_PARAMS = {
+  console: ""
+}
+
 var pointList = [];
 var startControlPoint;
 var startSet;
@@ -105,7 +109,9 @@ function setupUI() {
     options: {
       random: 'random',
       sin: 'sin',
-      linear: 'linear'
+      linear: 'linear',
+      mouse_x: 'mouse_x',
+      mouse_y: 'mouse_y',
     }
   });
 
@@ -122,6 +128,17 @@ function setupUI() {
 
   scatter_pane.addInput(SCATTER_PARAMS, 'x_equation');
   scatter_pane.addInput(SCATTER_PARAMS, 'y_equation');
+
+  const console_pane = new Tweakpane.Pane({
+    container: document.getElementById('UI_CONSOLE_CONTROLS')
+  });
+
+  //add monitor and graph for tracking the value 
+  console_pane.addMonitor(CONSOLE_PARAMS, 'console', {
+    multiline: true,
+    lineCount: 5
+  });
+
 
 }
 
@@ -143,15 +160,26 @@ function updatePointList(equationX,equationY,numPoints) {
     });
     equation = equation.replace(/\b([a-z])([a-z])\b/g, '$1 * $2');
     // console.log('[DEBUG]: Expanded => ' + equation);
-    return Function.apply(null, variables.concat('return ' + equation));
+    try {
+      return Function.apply(null, variables.concat('return ' + equation));
+    } catch (error) {
+      console.log(error)
+      CONSOLE_PARAMS.bug = "there is a bug"
+    }
   }	
 
-  var xScatter = toFunction(equationX,['point_number','num_points', 'canvas_width','canvas_height']);
-  var yScatter = toFunction(equationY,['point_number','num_points', 'canvas_width','canvas_height']);
-  
+  var xScatter = toFunction(equationX,['point_number','prev', 'num_points', 'canvas_width','canvas_height']);
+  var yScatter = toFunction(equationY,['point_number','prev', 'num_points', 'canvas_width','canvas_height']);
+
   pointList = []
   for (let x = 0; x < numPoints; x++) {
-    pointList.push([xScatter(x,numPoints,canvasWidth,canvasHeight),yScatter(x,numPoints,canvasWidth,canvasHeight)])
+    let prevX = 0
+    let prevY = 0
+    if (x > 0) {
+      prevX = pointList[x-1][0]
+      prevY = pointList[x-1][1]
+    }
+    pointList.push([xScatter(x,prevX,numPoints,canvasWidth,canvasHeight),yScatter(x,prevY,numPoints,canvasWidth,canvasHeight)])
   }
   startControlPoint = pointList[0]
   endControlPoint = pointList[pointList.length-1]
@@ -183,12 +211,19 @@ function draw() {
     ANIM_PARAMS.value = (Math.sin(i*(2*Math.PI))+1)/2; //map sin to 0-1
   } else if (ANIM_PARAMS.function == "linear") {
     ANIM_PARAMS.value = i; //return 0-1 interpolater
+  } else if (ANIM_PARAMS.function == "mouse_x") {
+    ANIM_PARAMS.value = constrain(mouseX/canvasWidth,0,1);
+  } else if (ANIM_PARAMS.function == "mouse_y") {
+    ANIM_PARAMS.value = constrain(mouseY/canvasHeight,0,1);
   }
 
   let animValue = ANIM_PARAMS.value;
 
   //set point list 
-  updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,lerp(START_PARAMS.num_points_start,END_PARAMS.num_points_end,animValue))
+  let num_points = lerp(START_PARAMS.num_points_start,END_PARAMS.num_points_end,animValue);
+  // num_points = 30;
+  console.log(mouseX/canvasWidth)
+  updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,num_points)
 
   background(lerpColor(color(START_PARAMS.bg_color_start),color(END_PARAMS.bg_color_end),animValue))
   stroke(lerpColor(color(START_PARAMS.line_color_start),color(END_PARAMS.line_color_end),animValue))
@@ -226,4 +261,4 @@ function drawCircles() {
   for (let i = 0; i < pointList.length; i++) {
     circle(pointList[i][0],pointList[i][1],RADIUS)
   }
-}
+} 
