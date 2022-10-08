@@ -38,9 +38,19 @@ var SCATTER_PARAMS = {
     ['?', '/', '<'],
   ],
   variables: [
-    ['p', 'l', 'cw'],
-    ['ch',  '*', 'E'],
+    ['p', 'l', 'w'],
+    ['h',  '*', 'E'],
     ['SW', 'S', 'SE'],
+  ],
+  numbers: [
+    ['1', '2', '3'],
+    ['4',  '5', '6'],
+    ['7', '8', '9'],
+  ],
+  functions: [
+    ['random(', 'lerp(', '3'],
+    ['4',  '5', '6'],
+    ['7', '8', '9'],
   ],
   x_equation: "",
   y_equation: ""
@@ -49,6 +59,7 @@ var SCATTER_PARAMS = {
 var CONSOLE_PARAMS = {
   console: ""
 }
+
 
 var pointList = [];
 var startControlPoint;
@@ -78,7 +89,7 @@ function setup() {
 
   colorMode(RGB);
 
-  updatePointList("random(canvasWidth)","random(canvasHeight)",30)
+  updatePointList("random(w)","random(h)",30)
   startSet = true;
   setupUI();
 }
@@ -143,11 +154,7 @@ function setupUI() {
     view: 'buttongrid',
     size: [3, 3],
     cells: (x, y) => ({
-      title: [
-        ['+', '-', '*'],
-        ['%',  '(', ')'],
-        ['?', '/', '<'],
-      ][y][x],
+      title: SCATTER_PARAMS.math_operators[y][x],
     }),
     label: 'buttongrid',
   }).on('click', (ev) => {
@@ -159,17 +166,38 @@ function setupUI() {
     view: 'buttongrid',
     size: [3, 3],
     cells: (x, y) => ({
-      title: [
-        ['p', 'l', 'cw'],
-        ['ch',  '*', 'E'],
-        ['SW', 'S', 'SE'],
-      ][y][x],
+      title: SCATTER_PARAMS.variables[y][x],
     }),
     label: 'buttongrid',
   }).on('click', (ev) => {
     SCATTER_PARAMS.x_equation += SCATTER_PARAMS.variables[ev.index[1]][ev.index[0]]
     SCATTER_PARAMS.y_equation += SCATTER_PARAMS.variables[ev.index[1]][ev.index[0]]
   });
+
+  scatter_pane.addBlade({
+    view: 'buttongrid',
+    size: [3, 3],
+    cells: (x, y) => ({
+      title: SCATTER_PARAMS.numbers[y][x],
+    }),
+    label: 'buttongrid',
+  }).on('click', (ev) => {
+    SCATTER_PARAMS.x_equation += SCATTER_PARAMS.numbers[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.y_equation += SCATTER_PARAMS.numbers[ev.index[1]][ev.index[0]]
+  });
+
+  scatter_pane.addBlade({
+    view: 'buttongrid',
+    size: [3, 3],
+    cells: (x, y) => ({
+      title: SCATTER_PARAMS.functions[y][x],
+    }),
+    label: 'buttongrid',
+  }).on('click', (ev) => {
+    SCATTER_PARAMS.x_equation += SCATTER_PARAMS.functions[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.y_equation += SCATTER_PARAMS.functions[ev.index[1]][ev.index[0]]
+  });
+
 
   const compile_btn = scatter_pane.addButton({
     title: 'button',
@@ -180,17 +208,19 @@ function setupUI() {
     updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,30)
   });
 
-  const console_pane = new Tweakpane.Pane({
-    container: document.getElementById('UI_CONSOLE_CONTROLS')
+  const eq_console_pane = new Tweakpane.Pane({
+    container: document.getElementById('UI_EQ_CONSOLE_CONTROLS')
   });
 
-  //add monitor and graph for tracking the value 
-  console_pane.addMonitor(CONSOLE_PARAMS, 'console', {
+  eq_console_pane.addMonitor(SCATTER_PARAMS, 'x_equation', {
     multiline: true,
-    lineCount: 5
+    lineCount: 1
   });
 
-
+  eq_console_pane.addMonitor(SCATTER_PARAMS, 'y_equation', {
+    multiline: true,
+    lineCount: 1
+  });
 }
 
 //update the plot with the changed equation
@@ -215,8 +245,8 @@ function updatePointList(equationX,equationY,numPoints) {
     return Function.apply(null, variables.concat('return ' + equation));
   }	
 
-  var xScatter = toFunction(equationX,['p', 'l', 'cw','ch']);
-  var yScatter = toFunction(equationY,['p', 'l', 'cw','ch']);
+  var xScatter = toFunction(equationX,['p', 'l', 'w','h']);
+  var yScatter = toFunction(equationY,['p', 'l', 'w','h']);
 
   pointList = []
   for (let x = 0; x < numPoints; x++) {
@@ -231,18 +261,6 @@ function updatePointList(equationX,equationY,numPoints) {
   startControlPoint = pointList[0]
   endControlPoint = pointList[pointList.length-1]
 }
-// ((point_number % (num_points/10))/(num_points/10))*canvas_width
-// function updatePointList(numPoints) {
-//   pointList = []
-//   for (let x = 0; x < numPoints; x++) {
-//     //f(x) function
-
-//     pointList.push([random(canvasWidth),random(canvasHeight)])
-//     // pointList.push([sin(x/numPoints)*random(canvasWidth),random(canvasHeight)])
-//   }
-//   startControlPoint = pointList[0]
-//   endControlPoint = pointList[pointList.length-1]
-// }
 
 // onUpdate
 function draw() { 
@@ -269,7 +287,7 @@ function draw() {
   //set point list 
   let num_points = lerp(START_PARAMS.num_points_start,END_PARAMS.num_points_end,animValue);
 
-  // updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,30)
+  updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,30)
 
   background(lerpColor(color(START_PARAMS.bg_color_start),color(END_PARAMS.bg_color_end),animValue))
   stroke(lerpColor(color(START_PARAMS.line_color_start),color(END_PARAMS.line_color_end),animValue))
