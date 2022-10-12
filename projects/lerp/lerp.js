@@ -52,8 +52,10 @@ var SCATTER_PARAMS = {
     ['4',  '5', '6'],
     ['7', '8', '9'],
   ],
-  x_equation: "",
-  y_equation: ""
+  x_type: "",
+  y_type: "",
+  x_equation: "random(w)",
+  y_equation: "random(h)"
 }
 
 var CONSOLE_PARAMS = {
@@ -158,8 +160,8 @@ function setupUI() {
     }),
     label: 'buttongrid',
   }).on('click', (ev) => {
-    SCATTER_PARAMS.x_equation += SCATTER_PARAMS.math_operators[ev.index[1]][ev.index[0]]
-    SCATTER_PARAMS.y_equation += SCATTER_PARAMS.math_operators[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.x_type += SCATTER_PARAMS.math_operators[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.y_type += SCATTER_PARAMS.math_operators[ev.index[1]][ev.index[0]]
   });
 
   scatter_pane.addBlade({
@@ -170,8 +172,8 @@ function setupUI() {
     }),
     label: 'buttongrid',
   }).on('click', (ev) => {
-    SCATTER_PARAMS.x_equation += SCATTER_PARAMS.variables[ev.index[1]][ev.index[0]]
-    SCATTER_PARAMS.y_equation += SCATTER_PARAMS.variables[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.x_type += SCATTER_PARAMS.variables[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.y_type += SCATTER_PARAMS.variables[ev.index[1]][ev.index[0]]
   });
 
   scatter_pane.addBlade({
@@ -182,8 +184,8 @@ function setupUI() {
     }),
     label: 'buttongrid',
   }).on('click', (ev) => {
-    SCATTER_PARAMS.x_equation += SCATTER_PARAMS.numbers[ev.index[1]][ev.index[0]]
-    SCATTER_PARAMS.y_equation += SCATTER_PARAMS.numbers[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.x_type += SCATTER_PARAMS.numbers[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.y_type += SCATTER_PARAMS.numbers[ev.index[1]][ev.index[0]]
   });
 
   scatter_pane.addBlade({
@@ -194,30 +196,42 @@ function setupUI() {
     }),
     label: 'buttongrid',
   }).on('click', (ev) => {
-    SCATTER_PARAMS.x_equation += SCATTER_PARAMS.functions[ev.index[1]][ev.index[0]]
-    SCATTER_PARAMS.y_equation += SCATTER_PARAMS.functions[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.x_type += SCATTER_PARAMS.functions[ev.index[1]][ev.index[0]]
+    SCATTER_PARAMS.y_type += SCATTER_PARAMS.functions[ev.index[1]][ev.index[0]]
   });
 
+  const del_btn = scatter_pane.addButton({
+    title: 'del',
+    label: 'del'
+  });
+  
+  del_btn.on('click', () => {
+    // set
+    SCATTER_PARAMS.x_type = SCATTER_PARAMS.x_type.substring(0, SCATTER_PARAMS.x_type.length - 1); 
+    SCATTER_PARAMS.y_type = SCATTER_PARAMS.y_type.substring(0, SCATTER_PARAMS.y_type.length - 1); 
+  });
 
   const compile_btn = scatter_pane.addButton({
-    title: 'button',
+    title: 'compile',
     label: 'compile'
   });
   
   compile_btn.on('click', () => {
-    updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,30)
+    // set
+    SCATTER_PARAMS.x_equation = SCATTER_PARAMS.x_type;
+    SCATTER_PARAMS.y_equation = SCATTER_PARAMS.y_type;
   });
 
   const eq_console_pane = new Tweakpane.Pane({
     container: document.getElementById('UI_EQ_CONSOLE_CONTROLS')
   });
 
-  eq_console_pane.addMonitor(SCATTER_PARAMS, 'x_equation', {
+  eq_console_pane.addMonitor(SCATTER_PARAMS, 'x_type', {
     multiline: true,
     lineCount: 1
   });
 
-  eq_console_pane.addMonitor(SCATTER_PARAMS, 'y_equation', {
+  eq_console_pane.addMonitor(SCATTER_PARAMS, 'y_type', {
     multiline: true,
     lineCount: 1
   });
@@ -287,7 +301,7 @@ function draw() {
   //set point list 
   let num_points = lerp(START_PARAMS.num_points_start,END_PARAMS.num_points_end,animValue);
 
-  updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,30)
+  updatePointList(SCATTER_PARAMS.x_equation,SCATTER_PARAMS.y_equation,num_points)
 
   background(lerpColor(color(START_PARAMS.bg_color_start),color(END_PARAMS.bg_color_end),animValue))
   stroke(lerpColor(color(START_PARAMS.line_color_start),color(END_PARAMS.line_color_end),animValue))
