@@ -66,6 +66,7 @@
                 <p class="">I’ve always been fascinated by <a href="https://en.wikipedia.org/wiki/Path_tracing" target="_blank">path tracing</a> and physically based lighting models. I think that stems from my early admiration of films by <a href="http://www.ilm.com" target="_blank">ILM</a> and <a href="https://graphics.pixar.com/library/" target="_blank">Pixar</a>. Only when I was older did I start diving into learning about the years of R&D that went into production rendering.</p>
                 <p class="">Light scattering in a scene is something that you can feel. You know what it is right and wrong, there is a ground truth that we are all familiar with.</p>
                 <p class="">That ground truth is rooted in complex mathematics that simulate the transport of light to create imagery. It feels quite magical to witness how computation can be used to create something so physically authentic. That is what I find truly beautiful about it.</p>
+                <p class="">However, production rendering tools are expensive ($$$ hardware and computation) and therefore often inaccessible for independent artists.</p>
             </div>
         </div>
         <p>&nbsp;</p> 
@@ -73,7 +74,7 @@
             <div class="col-md-10" align="left">
                 <h4>The Artistic Acessibility of the Internet</h4>
                 <p class="">A lot of my artistic and technical exploration lately has been focused on mobile and the web. The accessibility of the internet as a medium has let me rapidly design, prototype, and publish my work using simple tools, no “high-end” equipment necessary.</p>
-                <p class="">The web/mobile has a deep history of anyone publishing information/art and is becoming an increasingly interactive space for computational artists. I feel like path tracing tools would perfectly empower web-artists to explore what interactions, art, and algorithms may look like when exactly simulated.</p>
+                <p class="">Web/mobile is becoming an increasingly interactive space for computational artists. I feel like path tracing tools would perfectly empower web-artists to explore what interactions, art, and algorithms may look like when exactly simulated.</p>
                 <p class="">This idea of combining the perfectly calculated beauty of path tracing along with the rapid prototyping culture of web exploration inspired my first exploration into web based light simulation.</p>
             </div>
         </div>
@@ -95,18 +96,21 @@
                 <p class="">The shader was engineered based on Peter Shirley’s <a href="https://raytracing.github.io/" target="_blank">Ray Tracing in One Weekend</a> series, focusing on integrating a global illumination path tracer, parallelized per pixel on the GPU.</p>
                 <p class="">The piece leverages features such as diffuse and dielectric materials, global illumination, texture mapping, <a href="https://iquilezles.org/articles/fbm/" target="_blank">Fractional Brownian Motion</a>, and progressive rendering to create a scene with a noisy glass ball.</p>
                 <p class="">The value to sample the Fractial Brownian Motion and glass color are the generative elements of the piece and are what allowed me to express the computational simulation as a piece of art.</p>
-                <p class="">Progressive rendering was one of my favorite features to integrate!</p>
+                <p class="">Progressive rendering was by far one of my favorite features to integrate! </p>
                 <p class="">It allows for the accumulation of noisy (low quality) renders to then be averaged to make a high quality image. A new noisy render is calculated every frame, which means that every frame the quality of the piece improves.</p>
                 <p class="">You can tell when you refresh the page that the piece starts noisy, and quickly improves in quality from there.</p>
                 <p class="">I find it really cool that you can accumulate many low quality simulations that are very easy to compute to average and create a high quality result.</p>
-                <p class="">Progressive rendering allows for us to build interactivity into web based path-tracing, something I am excited to explore as I advance the renderer and build my next piece. Interactive elements is what defines the line between computational art and a digital experience, so is vital to defining personality for your piece.</p>
             </div>
         </div>
         <p>&nbsp;</p> 
         <div class="row intro">
             <div class="col-md-10" align="left">
                 <h4>What's Next?!</h4>
-                <p class="">This piece was just the first step in exploring light simulation for interactive and generative art in the web! I am really excited to continue to advance the renderer and express my work in new ways. There are a lot of amazing artists and engineers exploring internet tools for physically based rendering. I think we are all working hard to empower internet artists/designers with tools to explore algorithmic and artistic expression with light simulation.</p>
+                <p class="">This piece was just a simple first step in exploring light simulation for interactive experiences and art in the web! I am really excited to continue to advance the renderer and elevate it from a shader based art piece to a bespoke light simulation web design tool.</p>
+                <p class="">As mentioned earlier, path tracing can get computationally expensive quickly. To create nimble path tracing powered interactive design tools acceleration structures and optimization features are vital.</p>
+                <p class="">Progressive rendering is a great example of a feature that enables a path tracer to be used as tool or an experience.</p>
+                <p class="">It allows you to iterate in the design process on your scene at an interactive framerate using low quality render settings, but still output a high quality result via accumulation.</p>
+                <p class="">There are a lot of amazing artists and engineers exploring internet tools for physically based rendering. We are all working hard to empower internet artists/designers with tools to explore algorithmic and artistic expression with light simulation.</p>
             </div>
         </div>
         <p>&nbsp;</p> 
