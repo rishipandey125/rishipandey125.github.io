@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>paint</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	</head>
+	<body>
+
+		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
+		<script src="THREE.MeshLine.js"></script>
+
+		<script type="module">
+			import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/ARButton.js';
+			let scene; 
+			let camera;
+			let renderer;
+			let cube;
+
+			init();
+			animate();
+			function init() {
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.xr.enabled = true
+				document.body.appendChild( renderer.domElement );
+
+				document.body.appendChild( ARButton.createButton( renderer ) );
+
+				const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+				const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+				cube = new THREE.Mesh( geometry, material );
+				scene.add( cube );
+
+				camera.position.z = 5;
+			}
+
+			function animate() {
+				renderer.setAnimationLoop( animate );
+				cube.rotation.x += 0.01;
+				cube.rotation.y += 0.01;
+
+				if (renderer.xr.isPresenting) {
+					cube.material.color = new THREE.Color('#ffffff');
+				}
+
+				renderer.render( scene, camera );
+			};
+
+		</script>
+	</body>
+</html>
