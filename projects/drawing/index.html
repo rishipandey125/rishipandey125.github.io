@@ -18,6 +18,7 @@
 			let camera;
 			let renderer;
 			let cube;
+			let controller;
 
 			init();
 			animate();
@@ -36,6 +37,14 @@
 				const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 				cube = new THREE.Mesh( geometry, material );
 				scene.add( cube );
+
+
+				controller = renderer.xr.getController( 0 );
+				// controller.addEventListener( 'selectstart', onSelectStart );
+				// controller.addEventListener( 'selectend', onSelectEnd );
+				controller.userData.skipFrames = 0;
+				
+				scene.add( controller );
 
 				camera.position.z = 5;
 			}
