@@ -26,7 +26,7 @@
 				scene = new THREE.Scene();
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
-				renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+				renderer = new THREE.WebGLRenderer( { antialias: true, alpha: false} );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.xr.enabled = true
 				document.body.appendChild( renderer.domElement );
@@ -34,7 +34,7 @@
 				document.body.appendChild( ARButton.createButton( renderer ) );
 
 				const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-				const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+				const material = new THREE.MeshBasicMaterial( { color: '#ffffff', side: THREE.DoubleSide } );
 				cube = new THREE.Mesh( geometry, material );
 				scene.add( cube );
 
@@ -55,7 +55,8 @@
 				cube.rotation.y += 0.01;
 
 				if (renderer.xr.isPresenting) {
-					cube.material.color = new THREE.Color('#ffffff');
+					renderer.alpha = true
+					// cube.material.color = new THREE.Color('#ffffff');
 				}
 
 				renderer.render( scene, camera );
