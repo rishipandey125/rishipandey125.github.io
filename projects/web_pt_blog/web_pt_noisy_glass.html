@@ -274,7 +274,7 @@
             material mat;
         };
         
-        vec3 reflect(vec3 v, vec3 n) {
+        vec3 reflect_vec(vec3 v, vec3 n) {
             return v - (2.0*dot(v,n)*n);
         }
 
@@ -307,13 +307,13 @@
                 attenuation = rec.mat.albedo;
                 return true;
             } else if (rec.mat.type == 1) { //metal
-                vec3 rd = reflect(r.direction, rec.normal);
+                vec3 rd = reflect_vec(r.direction, rec.normal);
                 r_scatter = ray(rec.point, normalize(rd + rec.mat.v*random_in_unit_sphere(seed)));
                 attenuation = rec.mat.albedo;
                 return true;
             } else if (rec.mat.type == 2) { //dielctric
                 vec3 outward_normal, refracted, 
-                reflected = reflect(r.direction, rec.normal);
+                reflected = reflect_vec(r.direction, rec.normal);
                 float ni_over_nt, reflect_prob, cosine;
                 attenuation = mix(rec.mat.albedo,vec3(1.0),sample_noise(rec.point)); // here is where we want to change the glass color
                 if (dot(r.direction, rec.normal) > 0.) {
