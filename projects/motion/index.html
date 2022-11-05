@@ -127,7 +127,7 @@
 				const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 				const material = new THREE.MeshBasicMaterial( { color: '#ffffff'} )
 				
-				material.color = new THREE.Color(1,0,0);
+				material.color = new THREE.Color(0,1,0);
 
 				cube = new THREE.Mesh( geometry, material );
 				scene.add( cube );
@@ -146,8 +146,9 @@
 				renderer.setAnimationLoop( animate );
 				
 				if (renderer.xr.isPresenting) {
-					renderer.alpha = true
-					cube.material.color = mixColor(startColor,endColor,alpha);
+					// renderer.alpha = true
+					cube.material.color =  new THREE.Color(0,0,1);
+					// cube.material.color = mixColor(startColor,endColor,alpha);
 				}
 
 				numFrames += 1
