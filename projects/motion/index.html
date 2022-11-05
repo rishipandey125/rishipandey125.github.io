@@ -19,6 +19,37 @@
 			let cube;
 			let controller;
 
+			let startScale = getRandomInt(4);
+			let endScale = getRandomInt(4);
+			let startColor = new THREE.Color(Math.random(),Math.random(),Math.random())
+			let endColor = new THREE.Color(Math.random(),Math.random(),Math.random())
+
+			let numFrames = 0 
+			function getRandomInt(max) {
+				return Math.ceil(Math.random() * max);
+			}
+
+			function easeOutCirc(x) {
+				return Math.sqrt(1 - Math.pow(x - 1, 2));
+			}
+
+			function mix(a,b,val) {
+				let alpha = easeOutCirc(val)
+				return a + (b-a)*alpha;
+			}
+
+			function mixColor(col1,col2,val) {
+				let alpha = easeOutCirc(val)
+				let r = mix(col1.r,col2.r,val);
+				let g = mix(col1.g,col2.g,val);
+				let b = mix(col1.b,col2.b,val);
+				return new THREE.Color(r,g,b);
+			}
+
+			// function easingCurves(index,a,b,val) {
+				
+			// }
+
 			init();
 			animate();
 			function init() {
@@ -33,7 +64,10 @@
 				document.body.appendChild( ARButton.createButton( renderer ) );
 
 				const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-				const material = new THREE.MeshBasicMaterial( { color: '#ffffff'} );
+				const material = new THREE.MeshBasicMaterial( { color: '#ffffff'} )
+				
+				material.color = new THREE.Color(1,0,0);
+
 				cube = new THREE.Mesh( geometry, material );
 				scene.add( cube );
 
@@ -47,14 +81,35 @@
 				camera.position.z = 5;
 			}
 
-			function animate(dt) {
+			function animate(time) {
 				renderer.setAnimationLoop( animate );
-				cube.rotation.x += 0.01;
-				cube.rotation.y += 0.01;
+
+				numFrames += 1
+
+				let alpha = numFrames / 100;
+
+				cube.scale.x = mix(startScale,endScale,alpha);
+				// cube.scale.y = mix(startScale,endScale,alpha);
+				// cube.scale.z = mix(startScale,endScale,alpha);
+
+				cube.material.color = mixColor(startColor,endColor,alpha);
+
+				if (alpha == 1) {
+					numFrames = 0
+					startScale = endScale 
+					endScale = getRandomInt(4)
+					startColor = endColor
+					endColor = new THREE.Color(Math.random(),Math.random(),Math.random())
+				}
+
+				// console.log(numFrames)
+				cube.rotation.x += 0.003;
+				cube.rotation.y += 0.003;
+				cube.rotation.z += 0.003;
+
 
 				if (renderer.xr.isPresenting) {
 					renderer.alpha = true
-					// cube.material.color = new THREE.Color('#ffffff');
 				}
 
 				renderer.render( scene, camera );
