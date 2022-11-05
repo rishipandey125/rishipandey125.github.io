@@ -9,11 +9,23 @@
 	<body>
 
 		
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
-		<script src="THREE.MeshLine.js"></script>
+		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script> -->
+		<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
 
 		<script type="module">
-			import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/ARButton.js';
+			import * as THREE from 'three';
+			// import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.146.0/examples/jsm/loaders/FontLoader.js';
+			// import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.146.0/examples/jsm/geometries/TextGeometry.js';
+			import { ARButton } from 'three/addons/webxr/ARButton.js';
 			let scene; 
 			let camera;
 			let renderer;
@@ -38,7 +50,22 @@
 				cube = new THREE.Mesh( geometry, material );
 				scene.add( cube );
 
+				// const loader = new FontLoader();
 
+				// loader.load( 'fonts/helvetiker_regular.typeface.json', function ( font ) {
+
+				// 	const geometry = new TextGeometry( 'Rishi!', {
+				// 		font: font,
+				// 		size: 80,
+				// 		height: 5,
+				// 		curveSegments: 12,
+				// 		bevelEnabled: true,
+				// 		bevelThickness: 10,
+				// 		bevelSize: 8,
+				// 		bevelOffset: 0,
+				// 		bevelSegments: 5
+				// 	} );
+				// } );
 				controller = renderer.xr.getController( 0 );
 				// controller.addEventListener( 'selectstart', onSelectStart );
 				// controller.addEventListener( 'selectend', onSelectEnd );
