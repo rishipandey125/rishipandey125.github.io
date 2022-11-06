@@ -13,6 +13,23 @@ let sketch;
 var PARAMS;
 
 
+//return a random pastel color
+function randomPastelColor() {
+  colorMode(HSB) //use hsb color space so I can saturate things
+  
+  var col = color(random(0,360),random(0,100),random(0,100)) //generate random color
+  
+  var saturationValue = 1.1 * saturation(col) //saturate 10%
+
+  var mixedHue = (0.5 * (hue(col))) + (0.5 * 210) //lerp hue with white in HSB
+  var mixedSat = (0.5 * saturationValue) + (0.5 * 1) //lerp saturation with white in HSB
+  var mixedBri = (0.5 * brightness(col)) + (0.5 * 100) //lerp brightness with white in HSB
+  var pastelColor = color(mixedHue,mixedSat,mixedBri) //random pastel color
+
+  return pastelColor
+}
+
+
 //setup the sketch -- runs on start
 function setup() {
   //setup canvas with correct aspect ratio
@@ -33,11 +50,12 @@ function setup() {
   canvas.parent('sketch') //parent the canvas to sketch
   //handle canvas click
   canvas.mouseClicked(createNewStroke)
-  setupUI()
   //set the background color of the canvas
   colorMode(RGB) //use hsb color space
   //set bg
-  background(PARAMS.background)
+  let bgColor = color(random(0,255),random(0,255),random(0,255)) //random background color
+
+  background(bgColor)
 
   //set the canvas stroke min & max thickness
   strokeSizeMin = 1
@@ -70,10 +88,10 @@ function createNewStroke() {
     sketch = false
   } else {
     //set the strokes color
-    strokeColor = PARAMS.line;
+    strokeColor = randomPastelColor()
     stroke(strokeColor)
     //set stroke thickness
-    let strokeThickness = lerp(strokeSizeMin,strokeSizeMax,PARAMS.thickness/100);
+    let strokeThickness = lerp(strokeSizeMin,strokeSizeMax,random());
     // random(strokeSizeMin,strokeSizeMax)
     strokeWeight(strokeThickness)
     //start position is where the user clicked
@@ -109,85 +127,4 @@ function enforceBoundaryConditions() {
 function saveImage(){
   save("tangle.png");
   sketch = false
-}
-
-
-//setup the UI
-function setupUI() {
-  //initial params
-  PARAMS = {
-    line: '#ffffff',
-    thickness: 25,
-    background: '#000000'
-  };
-
-  const pane = new Tweakpane.Pane({
-            container: document.getElementById('UI'),
-            expanded: true
-          });
-
-  const savePane = new Tweakpane.Pane({
-    container: document.getElementById('UI_SAVE'),
-    expanded: true
-  });
-
-  const tab = pane.addTab({pages: [
-                  {title: 'canvas'},
-                  {title: 'noodle'},
-                ],
-              });
-  
-
-
-
-  //set the bg color of the canvas
-  tab.pages[0].addInput(PARAMS, 'background',{
-              label: 'color',
-              picker: 'inline',
-              expanded: true,
-              });
-
-  // //button to generate new stroke
-  const newCanvasBtn = tab.pages[0].addButton({
-          title: 'generate canvas'
-          });
-  tab.pages[0].addSeparator();
-
-  const saveBtn = savePane.addButton({
-    title: 'save'
-  });
-  tab.pages[0].addSeparator();
-
-  //thickness controls for stroke
-  tab.pages[1].addInput(PARAMS, 'thickness',{
-          label: 'thickness',
-          min: 1,
-          max: 100,
-          step: 1
-          }
-        );
-
-  tab.pages[1].addSeparator();
-
-  //color controls for stroke
-  tab.pages[1].addInput(PARAMS, 'line',{
-              label: 'color',
-              picker: 'inline',
-              expanded: true,
-              });
-
-
-  // new stroke
-  newCanvasBtn.on('click', () => {
-    background(PARAMS.background)
-    sketch = false
-  });
-
-
-  saveBtn.on('click', () => {
-    sketch = false // stop rendering the line
-    saveImage()
-    console.log("Working!")
-  });
-
 }
