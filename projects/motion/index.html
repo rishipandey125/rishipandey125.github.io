@@ -11,91 +11,33 @@
 		
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
 		
-		<script id="vertexShader" type="x-shader/x-vertex">
-			varying vec3 vUv;
-			void main() {
-				vUv = position;
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-			}
-		</script>
-		<script id="fragmentShader" type="x-shader/x-fragment">
-			uniform vec2 u_resolution;
-			uniform float u_time;
-			varying vec3 vUv;
-			
-			void main() {
-				vec2 uv = gl_FragCoord.xy/u_resolution.xy;
-				vec3 col = mix(vec3(1.0,0.0,0.0),vec3(0.0,0.0,1.0),vUv.x);
-				//float alpha = step(mod(vUv.x,0.05),0.01);
-
-				gl_FragColor= vec4(col,1.0);
-			}
-		</script>
-		
 		<script type="module">
 			import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.146.0/examples/jsm/webxr/ARButton.js';
 			let scene; 
 			let camera;
 			let renderer;
-			let cube;
+			let mesh;
 			let controller;
 
 			let startScale = getRandomInt(4);
 			let endScale = getRandomInt(4);
+			let startRot = Math.random() * 0.01;
+			let endRot = Math.random() * 0.01;
+			let startDetail = getRandomInt(10)
+			let endDetail = getRandomInt(10)
 			let startColor = new THREE.Color(Math.random(),Math.random(),Math.random())
 			let endColor = new THREE.Color(Math.random(),Math.random(),Math.random())
+			
+			// 1 for scale 
+			// 2 for rotation
+			// 3 for isohedron detail  
+			// 4 for color
 
-			let uniforms; 
-			// start recording! 
-			function startRecording() {
-				const chunks = []; // here we will store our recorded media chunks (Blobs)
-				const stream = canvas.captureStream(); // grab our canvas MediaStream
-				var options;
-				var rec;
-				try { //this works for chrome
-					options = {
-						mimeType: 'video/webm',
-						videoBitsPerSecond : 8000000
-					};
-					rec = new MediaRecorder(stream, options);
-					// every time the recorder has new data, we will store it in our array
-					rec.ondataavailable = e => chunks.push(e.data);
-					// only when the recorder stops, we construct a complete Blob from all the chunks
-					rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/webm'}),'.webm');
-				}
-				catch (err1) {
-					try { //this works for safari
-						options = {
-							mimeType: 'video/mp4',
-							videoBitsPerSecond : 8000000
-						};
-						// Fallback for iOS
-						rec = new MediaRecorder(stream, options);
-						// every time the recorder has new data, we will store it in our array
-						rec.ondataavailable = e => chunks.push(e.data);
-						// only when the recorder stops, we construct a complete Blob from all the chunks
-						rec.onstop = e => exportVid(new Blob(chunks, {type: 'vid/mp4'}),'.mp4');
-					}
-					catch (err2) {
-						// If fallback doesn't work either. Log / process errors.
-						console.error({err1});
-						console.error({err2})
-					}
-				}
-				
-				rec.start(); //start the recording
-				setTimeout(()=>rec.stop(), 3000); // stop recording in 3s 
-			}
-
-			//export the video - let the user download
-			function exportVid(blob,extension) {
-				const link = document.createElement( 'a' );
-				link.href = URL.createObjectURL( blob );
-				link.download = 'motion' + extension;
-				link.dispatchEvent( new MouseEvent( 'click' ) );
-			}
+			let animState = 3
 
 			let numFrames = 0 
+
+
 			function getRandomInt(max) {
 				return Math.ceil(Math.random() * max);
 			}
@@ -116,40 +58,44 @@
 				let b = mix(col1.b,col2.b,val);
 				return new THREE.Color(r,g,b);
 			}
-			// function easingCurves(index,a,b,val) {
-				
-			// }
+
+			function updateGeometry(mesh, geo) {
+				mesh.geometry.dispose()
+				mesh.geometry = geo
+			}
 
 			init();
 			animate();
 			function init() {
+				//setup the scene 
 				scene = new THREE.Scene();
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
+				//setup the renderer
 				renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true} );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.xr.enabled = true
 				document.body.appendChild( renderer.domElement );
 
+				//add ar button to bottom of screen
 				document.body.appendChild( ARButton.createButton( renderer ) );
 
-				const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-				// const material = new THREE.MeshBasicMaterial( { color: '#ffffff'} )
-				uniforms = {
-					u_time: {type: 'f', value: 0.2},
-					u_resolution: {type: 'v2', value: new THREE.Vector2()},
-				};
+				//create icosahedron 
+				const geometry = new THREE.IcosahedronGeometry( 20, 4 );
 
-				const material = new THREE.ShaderMaterial({
-					uniforms: uniforms,
-					vertexShader: document.getElementById( 'vertexShader' ).textContent,
-					fragmentShader: document.getElementById( 'fragmentShader' ).textContent
-				});
+				const material = new THREE.MeshBasicMaterial( {
+					color: '#000000',
+					wireframe: true
+				} );
 
-				// material.color = new THREE.Color(1,0,0);
+				//add mesh to screen
+				mesh = new THREE.Mesh(
+					new THREE.IcosahedronGeometry( 1, 4 ),
+					material
+				);
+				scene.add( mesh );
 
-				cube = new THREE.Mesh( geometry, material );
-				scene.add( cube );
+				//ar controller
 
 				controller = renderer.xr.getController( 0 );
 				// controller.addEventListener( 'selectstart', onSelectStart );
@@ -162,42 +108,61 @@
 			}
 
 			function animate(time) {
+				//call anim loop
 				renderer.setAnimationLoop( animate );
 				
-				uniforms.u_resolution.value.x = window.innerWidth;
-        		uniforms.u_resolution.value.y = window.innerHeight;
-				// if (renderer.xr.isPresenting) {
-				// 	// renderer.alpha = true
-				// 	cube.material.color =  new THREE.Color(0,0,1);
-				// 	// cube.material.color = mixColor(startColor,endColor,alpha);
-				// }
-
-				numFrames += 1
-
-				let alpha = numFrames / 100;
-
-				cube.scale.x = mix(startScale,endScale,alpha);
-				cube.scale.y = mix(startScale,endScale,alpha);
-				cube.scale.z = mix(startScale,endScale,alpha);
-
-				// cube.material.color = mixColor(startColor,endColor,alpha);
-
-				if (alpha == 1) {
-					numFrames = 0
-					startScale = endScale 
-					endScale = getRandomInt(4)
-					startColor = endColor
-					endColor = new THREE.Color(Math.random(),Math.random(),Math.random())
+				// if the user is using AR
+				if (renderer.xr.isPresenting) {
+					// renderer.alpha = true
+					// mesh.material.color =  new THREE.Color(0,0,1);
+					// mesh.material.color = mixColor(startColor,endColor,alpha);
 				}
 
-				// console.log(numFrames)
-				cube.rotation.x += 0.003;
-				cube.rotation.y += 0.003;
-				cube.rotation.z += 0.003;
+				numFrames += 1 // update frames
 
+				let alpha = numFrames / 100; //how long the anim cycle lasts	
+				
+				// 1 for scale 
+				// 2 for rotation
+				// 3 for Icosahedron detail 
+				// 4 for color
 
+				if (animState == 1) {
+					let scale = mix(startScale,endScale,alpha)
+					mesh.scale.x = scale
+					mesh.scale.y = scale
+					mesh.scale.z = scale
+				} else if (animState == 2) {
+					let rot = mix(startRot,endRot,alpha);
+					mesh.rotation.x += rot;
+					mesh.rotation.y += rot;
+					mesh.rotation.z += rot;
+				} else if (animState == 3) {
+					updateGeometry(mesh, new THREE.IcosahedronGeometry( 1, Math.ceil(mix(startDetail,endDetail,alpha)))); 
+				} else if (animState == 4) {
+					mesh.material.color = mixColor(startColor,endColor,alpha);
+				}
 
+				// if the anim cycle is finished 
+				if (alpha == 1) {
+					numFrames = 0 //reset frame count
+					animState = getRandomInt(4) //change anim state
 
+					if (animState == 1) {
+						//update scale values
+						startScale = endScale 
+						endScale = getRandomInt(4)
+					} else if (animState == 2) {
+						startRot = endRot
+						endRot = Math.random() * 0.01
+					} else if (animState == 3) {
+						startDetail = endDetail
+						endDetail = getRandomInt(10)
+					} else if (animState == 4) {	
+						startColor = endColor
+						endColor = new THREE.Color(Math.random(),Math.random(),Math.random())
+					}
+				}
 				renderer.render( scene, camera );
 			};
 
