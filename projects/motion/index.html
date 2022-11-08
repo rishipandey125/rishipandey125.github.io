@@ -19,8 +19,8 @@
 			let mesh;
 			let controller;
 
-			let startScale = getRandomInt(4);
-			let endScale = getRandomInt(4);
+			let startScale = getRandomInt(3);
+			let endScale = getRandomInt(3);
 			let startRot = Math.random() * 0.01;
 			let endRot = Math.random() * 0.01;
 			let startDetail = getRandomInt(10)
@@ -113,6 +113,7 @@
 				
 				// if the user is using AR
 				if (renderer.xr.isPresenting) {
+					scene.scale.set( 0.3, 0.3, 0.3 );
 					// renderer.alpha = true
 					// mesh.material.color =  new THREE.Color(0,0,1);
 					// mesh.material.color = mixColor(startColor,endColor,alpha);
@@ -120,7 +121,7 @@
 
 				numFrames += 1 // update frames
 
-				let alpha = numFrames / 100; //how long the anim cycle lasts	
+				let alpha = numFrames / 40; //how long the anim cycle lasts	
 				
 				// 1 for scale 
 				// 2 for rotation
@@ -151,7 +152,7 @@
 					if (animState == 1) {
 						//update scale values
 						startScale = endScale 
-						endScale = getRandomInt(4)
+						endScale = getRandomInt(3)
 					} else if (animState == 2) {
 						startRot = endRot
 						endRot = Math.random() * 0.01
