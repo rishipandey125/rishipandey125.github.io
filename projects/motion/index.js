@@ -144,6 +144,8 @@ function init() {
   
   scene.add( controller );
 
+  //create icosahedron 
+  const geometry = new THREE.IcosahedronGeometry( 20, 4 );
 
   const material = new THREE.MeshBasicMaterial( {
     color: '#000000',
