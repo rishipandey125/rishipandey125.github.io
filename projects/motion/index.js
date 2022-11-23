@@ -144,6 +144,18 @@ function init() {
   
   scene.add( controller );
 
+
+  const material = new THREE.MeshBasicMaterial( {
+    color: '#000000',
+    wireframe: true
+  } );
+
+  //add mesh to screen
+  let mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(0.1,0.1,0.1),
+    material
+  );
+  scene.add( mesh );
   // //create the text at start
   updateFontSettings()
 
