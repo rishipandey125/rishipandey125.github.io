@@ -85,7 +85,7 @@ function init() {
  
   //create the renderer
   renderer = new THREE.WebGLRenderer({ 
-    alpha: false
+    alpha: true
   });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -133,6 +133,7 @@ function init() {
   textColor = particleTextPane.addInput(PARAMS,'color')
 
   totalTime = 0;
+  renderer.setClearColor (ev.value, 1); //set the bg color
 
   //ar controller
 
