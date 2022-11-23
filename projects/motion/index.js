@@ -70,7 +70,7 @@ textInputEl.innerHTML = string; //set the canvas text input default
 init(); //onStart
 createEvents(); //creates all necessary events
 refreshText(); //samples text coordinates and creates an instanced mesh
-render(); //onUpdate
+animate(); //onUpdate
 
 function init() {
   camera = new THREE.PerspectiveCamera( //create the camera
@@ -207,9 +207,8 @@ function handleInput(input) {
   stringBox.hScene = stringBox.hTexture * fontScaleFactor;
 }
 
-function render(time) {
-  requestAnimationFrame(render);
-
+function animate(time) {
+  renderer.setAnimationLoop( animate );
   // if the user is using AR
   if (renderer.xr.isPresenting) {
     // scene.scale.set( 0.3, 0.3, 0.3 );
