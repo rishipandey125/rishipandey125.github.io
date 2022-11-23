@@ -133,7 +133,7 @@ function init() {
   textColor = particleTextPane.addInput(PARAMS,'color')
 
   totalTime = 0;
-  renderer.setClearColor (ev.value, 1); //set the bg color
+  renderer.setClearColor (PARAMS.background, 1); //set the bg color
 
   //ar controller
 
