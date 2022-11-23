@@ -212,7 +212,7 @@ function render(time) {
 
   // if the user is using AR
   if (renderer.xr.isPresenting) {
-    scene.scale.set( 0.3, 0.3, 0.3 );
+    // scene.scale.set( 0.3, 0.3, 0.3 );
     orbit.enabled = false
     // renderer.alpha = true
     // mesh.material.color =  new THREE.Color(0,0,1);
