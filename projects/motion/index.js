@@ -386,8 +386,6 @@ function Particle([x, y]) {
     // this.rotationZ += this.deltaRotation;
     this.rotationZ += 0.01;
 
-    this.scale += mix(0.001,0.0001,Math.random())
-
     if (styleIndex == 0) {
 
     } else if (styleIndex == 1) {
