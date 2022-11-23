@@ -85,7 +85,7 @@ function init() {
  
   //create the renderer
   renderer = new THREE.WebGLRenderer({ 
-    alpha: true
+    alpha: false
   });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -216,7 +216,7 @@ function render(time) {
     // mesh.material.color =  new THREE.Color(0,0,1);
     // mesh.material.color = mixColor(startColor,endColor,alpha);
   }
-  
+
   updateParticlesMatrices();
   totalTime = time;
   renderer.render(scene, camera);
