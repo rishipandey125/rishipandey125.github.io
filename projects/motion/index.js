@@ -154,7 +154,7 @@ function init() {
 
   //add mesh to screen
   let mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(0.1,0.1,0.1),
+    new THREE.BoxGeometry( 0.1, 0.1, 0.1 ),
     material
   );
   scene.add( mesh );
