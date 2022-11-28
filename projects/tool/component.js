@@ -14,7 +14,7 @@ class Component {
         this.pane; //UI info for this component
 
         //create the div for this component
-        this.div = $('<div id=' + "'"+componentID+"'" + ' ></div>');
+        this.div = $('<div id=' + "'"+this.id+"'" + ' ></div>');
 
         this.div.width(componentWidth); //set the pane width to something normal 
 
@@ -36,6 +36,8 @@ class Component {
 export class World extends Component {
     constructor(componentID) {
         super(componentID,"world",250);
+
+        this.worldDict = {}
 
         // create objects for the overall scene
         this.camera = new THREE.PerspectiveCamera( //create the camera
@@ -64,7 +66,7 @@ export class World extends Component {
         this.orbit.maxDistance = 25;
         this.orbit.minDistance = 1;
 
-        this.objects = []
+        this.components = []
 
         //setup helper grid
         this.gridXZ = new THREE.GridHelper(10, 10);
@@ -110,6 +112,11 @@ export class World extends Component {
             title: 'add component'
         });
 
+        //create export button
+        const exportBtn = this.pane.addButton({
+            title: 'export'
+        });
+
         //set the background color 
         this.renderer.setClearColor( new THREE.Color(this.PARAMS.background), 1 );
 
@@ -124,7 +131,6 @@ export class World extends Component {
             //event.value -> what it was changed to
             if (event.presetKey == 'background') {
                 let color = event.value;
-                console.log(color)
                 this.renderer.setClearColor(color, 1 );
             } else if (event.presetKey == "grid") {
                 this.gridXY.visible = this.PARAMS.grid;
@@ -135,15 +141,61 @@ export class World extends Component {
 
         btn.on('click', () => {
             let comp = this.PARAMS.component;
-            if (comp == "cube") {
-                let cube = new Cube(this.objects.length+1);
-                cube.addMeshToScene(this.scene);
-                cube.createDragControls(this.scene,this.camera,this.renderer,this.orbit);
-                this.objects.push(cube)
-            } 
+            this.createComponent(comp,false,null);
         });
         
+        exportBtn.on('click', () => {
+            this.export() // export world as dict
+            let data = JSON.stringify(this.worldDict); //turn the dict into a string json  
+            let encoded = encodeURIComponent(data); //encode the string json 
+
+            let url = new URL(window.location.href); // the current URL
+            let search_params = url.searchParams; // get the search params
+            search_params.set('project', encoded); // write the encoded json to search params
+
+            //copy link to clipboard
+            navigator.clipboard.writeText(url.href);
+
+        });
     };
+
+    createComponent(comp, usePreset, preset) {
+        if (comp == "cube") {
+            let cube = new Cube(this.components.length+1);
+            cube.addMeshToScene(this.scene);
+            cube.createDragControls(this.scene,this.camera,this.renderer,this.orbit);
+            
+            if (usePreset) { //imports the preset for the cube
+                cube.pane.importPreset(preset);
+            }
+
+            this.components.push(cube);
+        } 
+    }
+
+    import(encodedWorld) {
+        let jsonString = decodeURIComponent(encodedWorld); //decode the url param
+        let worldDict = JSON.parse(jsonString); //turn the json string into a dictionary
+
+    
+        for (const [key, value] of Object.entries(worldDict)) { //iterate through the dictionary
+            if (key == "world") { // import world settings
+                this.pane.importPreset(value); 
+            } else { //create components in world 
+                let comp = key.substr(0, key.indexOf('_')); //get the component name (upto the _) ie: cube_1 -> cube
+                this.createComponent(comp,true,value); 
+            }
+        }
+    }
+
+    export() {
+        this.worldDict = {} //empty the dictionary
+        this.worldDict["world"] = this.pane.exportPreset() //export the world settings
+        // loop through every component
+        this.components.forEach(component => 
+            this.worldDict[component.title + "_" + component.id] = component.pane.exportPreset()
+        );
+    }
 }
 
 //cube component class
@@ -228,7 +280,6 @@ export class Cube extends Component {
         dragControls.addEventListener('dragend', function (event) {
             orbit.enabled = true
             event.object.material.opacity = 1.0
-            console.log(_self.PARAMS)
             _self.PARAMS.position = {x: event.object.position.x, y: event.object.position.y, z: event.object.position.z}
             _self.pane.refresh()
     
@@ -267,7 +318,6 @@ export class Cube extends Component {
         // convert the normalized position to CSS coordinates
         let x = (tempV.x *  .5 + .5) * window.innerWidth;
         let y = (tempV.y * -.5 + .5) * window.innerHeight;
-        // element.style.transform = `translate(-50%, -50%) translate(${x}px,${y}px)`;
 
         this.div.css({top: y, left: x , position:'absolute'}); 
     }

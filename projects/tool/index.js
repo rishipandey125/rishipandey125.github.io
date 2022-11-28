@@ -5,19 +5,23 @@ const containerEl = document.querySelector(".container"); // container for rende
 
 let world;
 
-// let cubes = []
-
-function mix(a,b,val) {
-  return a + ((b-a) * val);
-}
-
-
 init(); //onStart
 render(); //onUpdate
 
 function init() {
-  world = new World(0);
+  world = new World(0); //create the world object
 
+  //get the current URL and check it's search parameters
+  let url = new URL(window.location.href); 
+  let search_params = url.searchParams;  
+  let projectResult = search_params.get('project');
+
+  //if the search parameter exists load that project
+  if (projectResult != null) {
+    world.import(projectResult);
+  }
+
+  
   containerEl.appendChild(world.renderer.domElement);
 
   createEvents();
@@ -35,7 +39,7 @@ function createEvents() {
 function render(time) {
   requestAnimationFrame(render);
 
-  world.objects.forEach(object => object.animate(world.camera));
+  world.components.forEach(component => component.animate(world.camera));
 
   world.renderer.render(world.scene, world.camera);
 }
