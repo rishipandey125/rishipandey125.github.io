@@ -41,7 +41,7 @@ function render(time) {
   // requestAnimationFrame(render);
   world.renderer.setAnimationLoop( render );
   if (world.renderer.xr.isPresenting) {
-    world.renderer.alpha = 0; //transparent
+    world.renderer.alpha = true; //transparent
     world.scene.scale.set(0.03,0.03,0.03);
     world.orbit.enabled = false;
   }
