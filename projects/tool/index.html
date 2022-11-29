@@ -59,6 +59,7 @@
         gridYZ.setColors(new THREE.Color(0x660000), new THREE.Color(0x660000));
         scene.add(gridYZ);
 
+        renderer.setClearColor(new THREE.Color('#000000'))
 
 				//ar controller
 
@@ -75,10 +76,10 @@
 			function animate(time) {
 				//call anim loop
 				renderer.setAnimationLoop( animate );
-				
+
 				// if the user is using AR
 				if (renderer.xr.isPresenting) {
-					// scene.scale.set( 0.3, 0.3, 0.3 );
+					scene.scale.set( 0.03, 0.03, 0.03 );
           orbit.enabled = false;
 					// renderer.alpha = true
 				}
