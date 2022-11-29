@@ -42,7 +42,7 @@ function render(time) {
   world.renderer.setAnimationLoop( render );
   if (world.renderer.xr.isPresenting) {
     world.renderer.setClearColor( new THREE.Color(world.PARAMS.background), 0 );
-    world.scene.scale.set(0.03,0.03,0.03);
+    world.scene.scale.set(0.06,0.06,0.06);
     world.orbit.enabled = false;
   }
 
