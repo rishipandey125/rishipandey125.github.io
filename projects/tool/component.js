@@ -187,6 +187,24 @@ export class World extends Component {
         this.camera.position.z = 5; // do we need this? 
     }
 
+    handleARViewing() {
+        //make renderer transparent for camera passthrough
+        this.renderer.setClearColor( new THREE.Color(this.PARAMS.background), 0 );
+        
+        //scale down scene 
+        this.scene.scale.set(0.06,0.06,0.06);
+
+        //disable orbit controls
+        this.orbit.enabled = false;
+
+        //turn grid off
+        this.gridXY.visible = false;
+        this.gridXZ.visible = false;
+        this.gridYZ.visible = false;
+
+        //disable dragging 
+    }
+
     import(encodedWorld) {
         let jsonString = decodeURIComponent(encodedWorld); //decode the url param
         let worldDict = JSON.parse(jsonString); //turn the json string into a dictionary
@@ -340,3 +358,5 @@ export class Cube extends Component {
         this.updatePaneLocation(camera)
     }
 }
+
+

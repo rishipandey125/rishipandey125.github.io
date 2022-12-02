@@ -40,10 +40,10 @@ function createEvents() {
 function render(time) {
   // requestAnimationFrame(render);
   world.renderer.setAnimationLoop( render );
-  if (world.renderer.xr.isPresenting) {
-    world.renderer.setClearColor( new THREE.Color(world.PARAMS.background), 0 );
-    world.scene.scale.set(0.06,0.06,0.06);
-    world.orbit.enabled = false;
+  
+  if (world.renderer.xr.isPresenting) { //if the user is using AR 
+    //handle xr viewing 
+    world.handleARViewing();
   }
 
   world.components.forEach(component => component.animate(world.camera));
