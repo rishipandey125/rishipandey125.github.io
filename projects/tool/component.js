@@ -273,8 +273,8 @@ export class Typography extends Component {
         this.pane.addInput(this.PARAMS, 'font', {
             label: 'font',
             options: {
-                robotomono: "robotomono",
-                vt323: "vt323"
+                robotomono: "RobotoMono",
+                vt323: "VT323"
             }
         });
         this.pane.addInput(this.PARAMS, 'textAlign', {
