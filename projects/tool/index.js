@@ -1,4 +1,5 @@
-import { World, Cube } from './component.js';
+import { World } from './component.js';
+import ThreeMeshUI from 'https://cdn.skypack.dev/three-mesh-ui';
 
 // DOM selectors
 const containerEl = document.querySelector(".container"); // container for renderer
@@ -48,5 +49,8 @@ function render(time) {
 
   world.components.forEach(component => component.animate(world.camera));
 
+  ThreeMeshUI.update();
+
   world.renderer.render(world.scene, world.camera);
 }
+

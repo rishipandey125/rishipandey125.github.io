@@ -1,6 +1,8 @@
 import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.146.0/examples/jsm/webxr/ARButton.js';
 import { OrbitControls } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/controls/OrbitControls'
 import { DragControls } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/controls/DragControls'
+import ThreeMeshUI from 'https://cdn.skypack.dev/three-mesh-ui';
+
 
 //parent component class
 class Component {
@@ -105,7 +107,8 @@ export class World extends Component {
         this.pane.addInput(this.PARAMS, 'component', {
             label: 'component',
             options: {
-                cube: "cube"
+                cube: "cube",
+                typography: "typography"
             }
         });
 
@@ -164,7 +167,7 @@ export class World extends Component {
     createComponent(comp, usePreset, preset) {
         if (comp == "cube") {
             let cube = new Cube(this.components.length+1);
-            cube.addMeshToScene(this.scene);
+            this.scene.add(cube.mesh);
             cube.createDragControls(this.scene,this.camera,this.renderer,this.orbit);
             
             if (usePreset) { //imports the preset for the cube
@@ -172,7 +175,19 @@ export class World extends Component {
             }
 
             this.components.push(cube);
-        } 
+        } else if (comp == "typography") {
+            let typography = new Typography(this.components.length+1);
+            
+            this.scene.add(typography.bb);
+            this.scene.add(typography.textBox)
+
+            typography.createDragControls(this.scene, this.camera, this.renderer, this.orbit);
+            if (usePreset) { //imports the preset for the cube
+                typography.pane.importPreset(preset);
+            }
+
+            this.components.push(typography);
+        }
     }
 
     enableAR() {
@@ -181,7 +196,7 @@ export class World extends Component {
         console.log(this.renderer.xr)
         this.ARController = this.renderer.xr.getController(0);
         // controller.addEventListener( 'selectstart', onSelectStart );
-        // controller.addEventListener( 'selectend', onSelectEnd );
+        // controllexr.addEventListener( 'selectend', onSelectEnd );
         this.ARController.userData.skipFrames = 0;
         this.scene.add(this.ARController);
         this.camera.position.z = 5; // do we need this? 
@@ -228,6 +243,212 @@ export class World extends Component {
             this.worldDict[component.title + "_" + component.id] = component.pane.exportPreset()
         );
     }
+}
+
+export class Typography extends Component {
+    constructor(componentID) {
+        super(componentID,"typography",250);
+
+        //setup the UI for the cube
+        this.PARAMS = {
+            text: "text",
+            fontColor: '#000000',
+            fontSize: 0.3,
+            containerWidth: 2.0,
+            letterSpacing: 0.03,
+            position: {x: 0, y: 0, z: 0},
+            rotation: {x: 0, y: 0, z: 0},
+            textAlign: "center",
+            font: "robotomono"
+        }
+
+        this.pane = new Tweakpane.Pane({
+            title: this.title,
+            container: this.element, //gets the HTML element of the pane div
+            expanded: true
+        }); //create the pane and parent it to the draggable div
+
+        this.pane.addInput(this.PARAMS, 'text');
+        this.pane.addInput(this.PARAMS, 'font', {
+            label: 'font',
+            options: {
+                robotomono: "robotomono",
+                vt323: "vt323"
+            }
+        });
+        this.pane.addInput(this.PARAMS, 'textAlign', {
+            label: 'align',
+            options: {
+                left: "left",
+                center: "center",
+                right: "right"
+            }
+        });
+
+        this.pane.addInput(this.PARAMS,'fontColor', {
+            label: "color"
+        }); 
+        this.pane.addSeparator();
+
+        this.pane.addInput(this.PARAMS, 'fontSize', {
+            label: "font size",
+            min: 0.1,
+            max: 1.0,
+        });
+        this.pane.addInput(this.PARAMS, 'containerWidth', {
+            label: "container width",
+            min: 1.0,
+            max: 10.0,
+        });
+        this.pane.addInput(this.PARAMS, 'letterSpacing', {
+            label: "letter spacing",
+            min: 0.01,
+            max: 1.0,
+        });
+
+        this.pane.addSeparator();
+
+        this.pane.addInput(this.PARAMS, 'position', {
+            x: {step: 1},
+            y: {step: 1},
+            z: {step: 1}
+        });
+
+        this.pane.addInput(this.PARAMS, 'rotation', {
+            x: {min: 0, max: 360},
+            y: {min: 0, max: 360},
+            z: {min: 0, max: 360}
+        });
+
+    	this.textBox = new ThreeMeshUI.Block({
+                backgroundSide: THREE.DoubleSide,
+                width: 1.2,
+                height: 0.5,
+                padding: 0.03,
+                justifyContent: 'center',
+                textAlign: this.PARAMS.textAlign,
+                backgroundOpacity: 0.0,
+                fontColor: new THREE.Color(this.PARAMS.fontColor),
+                fontFamily: "./fonts/" + this.PARAMS.font + "/" + this.PARAMS.font + ".json",
+                fontTexture: "./fonts/" + this.PARAMS.font + "/" + this.PARAMS.font + ".png"
+        });
+
+        let t = new ThreeMeshUI.Text({
+            content: this.PARAMS.text,
+            fontSize: this.PARAMS.fontSize,
+            letterSpacing: this.PARAMS.letterSpacing
+        });
+        
+        this.textBox.add(t);
+
+        //text box event
+        this.textBox.onAfterUpdate = () => {
+            if (t.children.length > 0) {
+                t.children[0].material.side = THREE.DoubleSide;
+            }
+        }; 
+
+        //create the bounding box 
+        const box = new THREE.Box3().setFromObject(this.textBox);
+        const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
+        const edges = new THREE.EdgesGeometry( geometry );
+        this.bb = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: new THREE.Color('#000000') } ) );
+
+        //pane events 
+        this.pane.on('change', (event) => { //if the pane changes
+            //event.presetKey -> key that was changed
+            //event.value -> what it was changed to
+
+            if (event.value == NaN) {
+                event.value = 1.0;
+            }
+            if (event.presetKey == "text") {
+                this.textBox.children[1].set({content: event.value});
+            } else if (event.presetKey == "font") {
+                this.textBox.set({fontFamily: "./fonts/" + event.value + "/" + event.value + ".json"})
+                this.textBox.set({fontTexture: "./fonts/" + event.value + "/" + event.value + ".png"})
+            } else if (event.presetKey == "textAlign") {
+                this.textBox.set({textAlign: event.value})
+            } else if (event.presetKey == "fontColor") {
+                this.textBox.set({fontColor: new THREE.Color(event.value)});
+            } else if (event.presetKey == "fontSize") {
+                this.textBox.children[1].set({fontSize: event.value});
+            } else if (event.presetKey == "containerWidth") {
+                this.textBox.set({width: event.value});
+            } else if (event.presetKey == "letterSpacing") {
+                this.textBox.children[1].set({letterSpacing: event.value});
+            } else if (event.presetKey == 'position') {
+                let position = event.value;
+                this.textBox.position.set(position.x,position.y,position.z);
+            } else if (event.presetKey == 'rotation') {
+                let rotation = event.value;
+                this.textBox.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
+            }
+            this.updateBoundingBox() 
+        });		
+    };
+    
+    updateBoundingBox() {
+        const box = new THREE.Box3().setFromObject(this.textBox);
+        const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
+        const edges = new THREE.EdgesGeometry( geometry );
+        this.bb.geometry = edges;
+        this.bb.position.set(this.PARAMS.position.x,this.PARAMS.position.y,this.PARAMS.position.z);
+    }
+
+    createDragControls(scene, camera, renderer, orbit) {
+        //add drag orbits for the cube
+        let dragControls = new DragControls([this.bb], camera, renderer.domElement);
+
+        //drag events 
+        var _self = this;
+        dragControls.addEventListener('dragstart', function (event) {
+            orbit.enabled = false
+        })
+        
+        dragControls.addEventListener('dragend', function (event) {
+            orbit.enabled = true
+            _self.PARAMS.position = {x: event.object.position.x, y: event.object.position.y, z: event.object.position.z}
+            _self.textBox.position.set(event.object.position.x,event.object.position.y,event.object.position.z);
+            _self.pane.refresh()
+        })
+    
+        dragControls.addEventListener('hoveron', function (event) {
+            orbit.enabled = false
+            event.object.material.opacity = 1.0
+            _self.div.show();
+        })
+    
+        dragControls.addEventListener('hoveroff', function (event) {
+            orbit.enabled = true
+            event.object.material.opacity = 0.0;
+            _self.div.hide();
+        })
+    }
+
+    updatePaneLocation(camera) {
+        //update the pane of the location every tick 
+
+        let tempV = new THREE.Vector3();
+        // get the position of the center of the cube
+        this.bb.updateWorldMatrix(true, false);
+        this.bb.getWorldPosition(tempV);
+        // get the normalized screen coordinate of that position
+        // x and y will be in the -1 to +1 range with x = -1 being
+        // on the left and y = -1 being on the bottom
+        tempV.project(camera);
+        
+        // convert the normalized position to CSS coordinates
+        let x = (tempV.x *  .5 + .5) * window.innerWidth;
+        let y = (tempV.y * -.5 + .5) * window.innerHeight;
+
+        this.div.css({top: y, left: x , position:'absolute'}); 
+    }
+
+    animate(camera) {
+        this.updatePaneLocation(camera)
+    }
+
 }
 
 //cube component class
@@ -328,10 +549,6 @@ export class Cube extends Component {
             event.object.material.opacity = 1.0
             _self.div.hide();
         })
-    }
-
-    addMeshToScene(scene) {
-        scene.add(this.mesh);
     }
 
     updatePaneLocation(camera) {
