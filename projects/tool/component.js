@@ -249,6 +249,7 @@ export class Typography extends Component {
     constructor(componentID) {
         super(componentID,"typography",250);
 
+        this.fontURL = "https://raw.githubusercontent.com/rishipandey125/rishipandey125.github.io/master/projects/tool/fonts/"
         //setup the UI for the cube
         this.PARAMS = {
             text: "text",
@@ -329,8 +330,8 @@ export class Typography extends Component {
                 textAlign: this.PARAMS.textAlign,
                 backgroundOpacity: 0.0,
                 fontColor: new THREE.Color(this.PARAMS.fontColor),
-                fontFamily: "./fonts/" + this.PARAMS.font + "/" + this.PARAMS.font + ".json",
-                fontTexture: "./fonts/" + this.PARAMS.font + "/" + this.PARAMS.font + ".png"
+                fontFamily: this.fontURL + this.PARAMS.font + "/" + this.PARAMS.font + ".json",
+                fontTexture: this.fontURL + this.PARAMS.font + "/" + this.PARAMS.font + ".png"
         });
 
         let t = new ThreeMeshUI.Text({
@@ -365,8 +366,8 @@ export class Typography extends Component {
             if (event.presetKey == "text") {
                 this.textBox.children[1].set({content: event.value});
             } else if (event.presetKey == "font") {
-                this.textBox.set({fontFamily: "./fonts/" + event.value + "/" + event.value + ".json"})
-                this.textBox.set({fontTexture: "./fonts/" + event.value + "/" + event.value + ".png"})
+                this.textBox.set({fontFamily: this.fontURL + event.value + "/" + event.value + ".json"})
+                this.textBox.set({fontTexture: this.fontURL + event.value + "/" + event.value + ".png"})
             } else if (event.presetKey == "textAlign") {
                 this.textBox.set({textAlign: event.value})
             } else if (event.presetKey == "fontColor") {
