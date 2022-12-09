@@ -67,22 +67,22 @@ export class World extends Component {
         //create orbit controls
         this.orbit = new OrbitControls(this.camera, this.renderer.domElement);
         this.orbit.enablePan = false;
-        this.orbit.maxDistance = 25;
+        this.orbit.maxDistance = 100;
         this.orbit.minDistance = 1;
 
         this.components = []
 
         //setup helper grid
-        this.gridXZ = new THREE.GridHelper(10, 10);
+        this.gridXZ = new THREE.GridHelper(30, 10);
         this.gridXZ.setColors(new THREE.Color(0x006600), new THREE.Color(0x006600));
         this.scene.add(this.gridXZ);
     
-        this.gridXY = new THREE.GridHelper(10, 10);
+        this.gridXY = new THREE.GridHelper(30, 10);
         this.gridXY.rotation.x = Math.PI / 2;
         this.gridXY.setColors(new THREE.Color(0x000066), new THREE.Color(0x000066));
         this.scene.add(this.gridXY);
     
-        this.gridYZ = new THREE.GridHelper(10, 10);
+        this.gridYZ = new THREE.GridHelper(30, 10);
         this.gridYZ.rotation.z = Math.PI / 2;
         this.gridYZ.setColors(new THREE.Color(0x660000), new THREE.Color(0x660000));
         this.scene.add(this.gridYZ);
@@ -199,7 +199,7 @@ export class World extends Component {
         // controllexr.addEventListener( 'selectend', onSelectEnd );
         this.ARController.userData.skipFrames = 0;
         this.scene.add(this.ARController);
-        this.camera.position.z = 5; // do we need this? 
+        this.camera.position.z = 40; // do we need this? 
     }
 
     handleARViewing() {
@@ -354,6 +354,7 @@ export class Typography extends Component {
         const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
         const edges = new THREE.EdgesGeometry( geometry );
         this.bb = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: new THREE.Color('#000000') } ) );
+        this.bb.material.transparent = true;
 
         //pane events 
         this.pane.on('change', (event) => { //if the pane changes

@@ -5,12 +5,39 @@
     <meta charset="UTF-8" />
     <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      :root {
+        --tp-font-family: Roboto Mono;
+        --tp-base-background-color: hsla(230, 5%, 90%, 0.80);
+        --tp-base-shadow-color: hsla(0, 0%, 0%, 0.08);
+        --tp-button-background-color: hsla(230, 7%, 75%, 0.90);
+        --tp-button-background-color-active: hsla(231, 7%, 60%, 0.90);
+        --tp-button-background-color-focus: hsla(230, 7%, 65%, 0.90);
+        --tp-button-background-color-hover: hsla(229, 7%, 70%, 0.90);
+        --tp-button-foreground-color: hsla(230, 10%, 30%, 0.90);
+        --tp-container-background-color: hsla(230, 15%, 30%, 0.18);
+        --tp-container-background-color-active: hsla(231, 15%, 45%, 0.18);
+        --tp-container-background-color-focus: hsla(230, 15%, 40%, 0.18);
+        --tp-container-background-color-hover: hsla(231, 15%, 35%, 0.18);
+        --tp-container-foreground-color: hsla(230, 10%, 30%, 0.90);
+        --tp-groove-foreground-color: hsla(230, 15%, 30%, 0.10);
+        --tp-input-background-color: hsla(230, 15%, 30%, 0.09);
+        --tp-input-background-color-active: hsla(231, 15%, 45%, 0.09);
+        --tp-input-background-color-focus: hsla(230, 15%, 40%, 0.09);
+        --tp-input-background-color-hover: hsla(231, 15%, 35%, 0.09);
+        --tp-input-foreground-color: hsla(230, 10%, 30%, 0.90);
+        --tp-label-foreground-color: hsla(230, 14%, 37%, 0.70);
+        --tp-monitor-background-color: hsla(230, 15%, 30%, 0.10);
+        --tp-monitor-foreground-color: hsla(230, 10%, 30%, 0.50);
+      }
+      </style>
   </head>
 
   <body>
     <div id="text-input" contenteditable="true"></div>
     <div class="container"></div>
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.0/dist/tweakpane.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.js"></script>
     <script type="module" src="component.js"></script>
