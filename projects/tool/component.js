@@ -50,7 +50,9 @@ export class World extends Component {
             0.1,
             1000
          );
-        this.camera.position.z = 5;
+        this.camera.position.x = -10;
+        this.camera.position.y = 5;
+        this.camera.position.z = 30;
 
         this.scene = new THREE.Scene(); //create the scene
 
@@ -199,7 +201,6 @@ export class World extends Component {
         // controllexr.addEventListener( 'selectend', onSelectEnd );
         this.ARController.userData.skipFrames = 0;
         this.scene.add(this.ARController);
-        this.camera.position.z = 40; // do we need this? 
     }
 
     handleARViewing() {
@@ -213,9 +214,9 @@ export class World extends Component {
         this.orbit.enabled = false;
 
         //turn grid off
-        this.gridXY.visible = false;
-        this.gridXZ.visible = false;
-        this.gridYZ.visible = false;
+        // this.gridXY.visible = false;
+        // this.gridXZ.visible = false;
+        // this.gridYZ.visible = false;
 
         //disable dragging 
     }
@@ -249,7 +250,7 @@ export class Typography extends Component {
     constructor(componentID) {
         super(componentID,"typography",250);
 
-        this.fontURL = "https://raw.githubusercontent.com/rishipandey125/rishipandey125.github.io/master/projects/tool/fonts/"
+        this.fontURL = "https://raw.githubusercontent.com/shaheelm/shaheelm.github.io/main/fonts/"
         //setup the UI for the cube
         this.PARAMS = {
             text: "text",
@@ -274,7 +275,9 @@ export class Typography extends Component {
             label: 'font',
             options: {
                 robotomono: "RobotoMono",
-                vt323: "VT323"
+                vt323: "VT323",
+                timesnewroman: "TimesNewRoman",
+                inter: "Inter"
             }
         });
         this.pane.addInput(this.PARAMS, 'textAlign', {
@@ -355,6 +358,7 @@ export class Typography extends Component {
         const edges = new THREE.EdgesGeometry( geometry );
         this.bb = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: new THREE.Color('#000000') } ) );
         this.bb.material.transparent = true;
+        this.bb.material.opacity = 0;
 
         //pane events 
         this.pane.on('change', (event) => { //if the pane changes
@@ -524,7 +528,7 @@ export class Cube extends Component {
     createDragControls(scene, camera, renderer, orbit) {
         //add drag orbits for the cube
         let dragControls = new DragControls([this.mesh], camera, renderer.domElement);
-        // scene.add(dragControls);
+        
         //drag events 
         var _self = this;
         dragControls.addEventListener('dragstart', function (event) {
@@ -544,14 +548,23 @@ export class Cube extends Component {
             orbit.enabled = false
             event.object.material.opacity *= 0.90
             _self.div.show();
+            console.log("hoveron")
         })
     
         dragControls.addEventListener('hoveroff', function (event) {
             orbit.enabled = true
             event.object.material.opacity = 1.0
             _self.div.hide();
+            console.log("hoveroff")
         })
     }
+
+    // publishMode(enabled) {
+    //     if (enabled) {
+    //         this.dragControls = 
+    //     }
+
+    // }
 
     updatePaneLocation(camera) {
         //update the pane of the location every tick 
@@ -577,5 +590,4 @@ export class Cube extends Component {
         this.updatePaneLocation(camera)
     }
 }
-
 
