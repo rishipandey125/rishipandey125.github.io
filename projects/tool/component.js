@@ -1,7 +1,11 @@
-import { ARButton } from 'https://cdn.jsdelivr.net/npm/three@0.146.0/examples/jsm/webxr/ARButton.js';
-import { OrbitControls } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/controls/OrbitControls'
-import { DragControls } from 'https://cdn.skypack.dev/three@0.133.1/examples/jsm/controls/DragControls'
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { DragControls } from 'three/addons/controls/DragControls.js';
+import { ARButton } from 'three/addons/webxr/ARButton.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader';
 import ThreeMeshUI from 'https://cdn.skypack.dev/three-mesh-ui';
+
+const MAX_GRID_DISTANCE = 30;
 
 
 //parent component class
@@ -15,7 +19,7 @@ class Component {
         this.element; 
 
         this.pane; //UI info for this component
-
+        
         //create the div for this component
         this.div = $('<div id=' + "'"+this.id+"'" + ' ></div>');
 
@@ -26,9 +30,35 @@ class Component {
         this.element = this.div[0]; // save the element 
         
         this.div.hide(); // hide the element to start
+
+        this.draggableMesh = new THREE.Object3D(); // the draggable mesh for each component
         
     };
 
+    handleDragStart() {
+        console.log("drag start!")
+    }
+
+    handleDragEnd() {
+        console.log("drag end!")
+    }
+
+    handleHoverStart() {
+        console.log("hover start!")
+    }
+
+    handleHoverEnd() {
+        console.log("hover end!")
+    }
+    
+    add(scene) {
+        console.log("add to scene!")
+    }
+
+    delete(scene) {
+        console.log("delete!")
+    }
+    
     //animate function for every component
     animate(camera) {
         console.log("animate!")
@@ -72,22 +102,32 @@ export class World extends Component {
         this.orbit.maxDistance = 100;
         this.orbit.minDistance = 1;
 
+        //create drag controls 
+        this.dragControls = new DragControls([], this.camera, this.renderer.domElement);
+        this.hoverComponentIdx = -1; //no component is selected
+
         this.components = []
 
         //setup helper grid
-        this.gridXZ = new THREE.GridHelper(30, 10);
-        this.gridXZ.setColors(new THREE.Color(0x006600), new THREE.Color(0x006600));
+        this.gridXZ = new THREE.GridHelper(MAX_GRID_DISTANCE, 10);
         this.scene.add(this.gridXZ);
     
-        this.gridXY = new THREE.GridHelper(30, 10);
+        this.gridXY = new THREE.GridHelper(MAX_GRID_DISTANCE, 10);
         this.gridXY.rotation.x = Math.PI / 2;
-        this.gridXY.setColors(new THREE.Color(0x000066), new THREE.Color(0x000066));
         this.scene.add(this.gridXY);
     
-        this.gridYZ = new THREE.GridHelper(30, 10);
+        this.gridYZ = new THREE.GridHelper(MAX_GRID_DISTANCE, 10);
         this.gridYZ.rotation.z = Math.PI / 2;
-        this.gridYZ.setColors(new THREE.Color(0x660000), new THREE.Color(0x660000));
         this.scene.add(this.gridYZ);
+
+        //setup the scene lighting 
+        const light = new THREE.DirectionalLight(0xfff0dd, 1);
+        light.position.set(0, 25, 50);
+
+        const ambientLight = new THREE.AmbientLight( 0x404040 ); // soft white light
+
+        this.scene.add(light);
+        this.scene.add(ambientLight);
 
         //create the pane 
         this.PARAMS = {
@@ -164,32 +204,149 @@ export class World extends Component {
             navigator.clipboard.writeText(url.href);
 
         });
+
+        // create right click pane 
+        this.righClickPane = new Tweakpane.Pane({
+            // title: "right click",
+            container: this.element, //gets the HTML element of the pane div
+            expanded: true
+        }); //create the pane and parent it to the draggable div
+
+        //create delete button
+        const deleteBtn = this.righClickPane.addButton({
+            title: 'delete'
+        });
+
+        //create duplicate button
+        const duplicateBtn = this.righClickPane.addButton({
+            title: 'duplicate'
+        });
+
+        this.div.width(100); //size the popup menu 
+        this.div.hide(); //hide it on start
+
+        deleteBtn.on('click', () => {
+            if (this.hoverComponentIdx > -1 ) {
+                let comp = this.components[this.hoverComponentIdx]; // get the component to delete
+                comp.delete(this.scene);
+    
+                this.components.splice(this.hoverComponentIdx,1); // remove the component from the component list 
+                this.orbit.enabled = true;
+    
+                this.hoverComponentIdx = -1;
+    
+                this.updateDragControls();
+    
+                this.div.hide();
+            }
+        });
+
+        duplicateBtn.on('click', () => {
+            if (this.hoverComponentIdx > -1 ) {
+                let comp = this.components[this.hoverComponentIdx]; // get the component to delete
+                this.createComponent(comp.title,true,comp.pane.exportPreset());
+                this.hoverComponentIdx = -1;
+                
+                _self.orbit.enabled = true;
+                this.div.hide();
+            }
+        });
+
+        //document events 
+        let _self = this;
+
+
+        //override the right click
+        document.addEventListener('contextmenu', function(e) {
+            _self.div.hide();
+            _self.orbit.enabled = true;
+            if (_self.hoverComponentIdx > -1) { 
+                let comp = _self.components[_self.hoverComponentIdx]; // get the component to delete
+
+                _self.div.css({top: comp.div.offset().top, left: comp.div.offset().left , position:'absolute'}); 
+                comp.div.hide() // hide the ui of the component
+                _self.div.show(); //show the right click ui
+                _self.orbit.enabled = false;
+            }
+            e.preventDefault();
+        }, false);
+     
     };
 
     createComponent(comp, usePreset, preset) {
+        let component = null; 
+
         if (comp == "cube") {
-            let cube = new Cube(this.components.length+1);
-            this.scene.add(cube.mesh);
-            cube.createDragControls(this.scene,this.camera,this.renderer,this.orbit);
-            
-            if (usePreset) { //imports the preset for the cube
-                cube.pane.importPreset(preset);
-            }
-
-            this.components.push(cube);
+            component = new Cube(this.components.length);
         } else if (comp == "typography") {
-            let typography = new Typography(this.components.length+1);
-            
-            this.scene.add(typography.bb);
-            this.scene.add(typography.textBox)
-
-            typography.createDragControls(this.scene, this.camera, this.renderer, this.orbit);
-            if (usePreset) { //imports the preset for the cube
-                typography.pane.importPreset(preset);
-            }
-
-            this.components.push(typography);
+            component = new Typography(this.components.length);
         }
+
+        if (component != null) {
+            component.add(this.scene);
+            if (usePreset) {
+                component.pane.importPreset(preset);
+            }
+            this.components.push(component);
+        }
+
+        this.updateDragControls()
+    }
+
+    updateDragControls() { //update the drag controls when a change happens in the world components 
+        let meshes = []
+
+        for (let i = 0; i < this.components.length; i++) {
+            let component = this.components[i];
+            component.id = i;
+            component.draggableMesh.name = i;
+            meshes.push(component.draggableMesh);
+        }
+
+        this.dragControls.dispose(); //dispose the prev drag controls and create a new one 
+        this.dragControls = new DragControls(meshes, this.camera, this.renderer.domElement);
+
+        let _self = this;
+        // drag events 
+        this.dragControls.addEventListener('dragstart', function (event) {
+            _self.orbit.enabled = false
+            let idx = parseInt(event.object.name); // get the index of the mesh
+            let component = _self.components[idx]; // get the corresponding component
+            _self.div.hide();
+            if (component != null)
+                component.handleDragStart();
+        })
+        
+        this.dragControls.addEventListener('dragend', function (event) {
+            _self.orbit.enabled = true
+            let idx = parseInt(event.object.name); // get the index of the mesh
+            let component = _self.components[idx]; // get the corresponding component
+            // _self.div.hide();
+            if (component != null)
+                component.handleDragEnd();
+        })
+    
+        this.dragControls.addEventListener('hoveron', function (event) {
+            _self.orbit.enabled = false
+            let idx = parseInt(event.object.name); // get the index of the mesh
+            let component = _self.components[idx]; // get the corresponding component   
+            _self.div.hide();
+            if (component != null)
+                component.handleHoverStart();
+
+            _self.hoverComponentIdx = idx;
+        })
+    
+        this.dragControls.addEventListener('hoveroff', function (event) {
+            _self.orbit.enabled = true
+            let idx = parseInt(event.object.name); // get the index of the mesh
+            let component = _self.components[idx]; // get the corresponding component
+            // _self.div.hide();
+            if (component != null)
+                component.handleHoverEnd();
+
+            _self.hoverComponentIdx = -1;
+        })
     }
 
     enableAR() {
@@ -214,9 +371,9 @@ export class World extends Component {
         this.orbit.enabled = false;
 
         //turn grid off
-        // this.gridXY.visible = false;
-        // this.gridXZ.visible = false;
-        // this.gridYZ.visible = false;
+        this.gridXY.visible = false;
+        this.gridXZ.visible = false;
+        this.gridYZ.visible = false;
 
         //disable dragging 
     }
@@ -271,14 +428,32 @@ export class Typography extends Component {
         }); //create the pane and parent it to the draggable div
 
         this.pane.addInput(this.PARAMS, 'text');
+
+        let fontDict = {
+            robotomono: "RobotoMono",
+            vt323: "VT323",
+            timesnewroman: "TimesNewRoman",
+            inter: "Inter",
+            bangers: "Bangers",
+            bodono: "Bodoni",
+            cinzelblack: "CinzelBlack",
+            didactgothic: "DidactGothic",
+            diplomatasc: "DiplomataSC",
+            fredokaone: "FredokaOne",
+            garamond: "Garamond",
+            luckiestguy: "LuckiestGuy",
+            monoton: "Monoton",
+            montserrat: "Montserrat",
+            newrocker: "NewRocker",
+            permanentmarket: "PermanentMarker",
+            pressstart: "PressStart",
+            rougescript: "RougeScript",
+            rubikspraypaint: "RubikSprayPaint"
+        };
+
         this.pane.addInput(this.PARAMS, 'font', {
             label: 'font',
-            options: {
-                robotomono: "RobotoMono",
-                vt323: "VT323",
-                timesnewroman: "TimesNewRoman",
-                inter: "Inter"
-            }
+            options: fontDict
         });
         this.pane.addInput(this.PARAMS, 'textAlign', {
             label: 'align',
@@ -351,14 +526,16 @@ export class Typography extends Component {
                 t.children[0].material.side = THREE.DoubleSide;
             }
         }; 
-
+        
+        console.log(this.textBox)
         //create the bounding box 
         const box = new THREE.Box3().setFromObject(this.textBox);
         const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
         const edges = new THREE.EdgesGeometry( geometry );
-        this.bb = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: new THREE.Color('#000000') } ) );
-        this.bb.material.transparent = true;
-        this.bb.material.opacity = 0;
+        this.draggableMesh = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: new THREE.Color('#000000') } ) );
+        this.draggableMesh.name = (this.id).toString();
+        this.draggableMesh.material.transparent = true;
+        this.draggableMesh.material.opacity = 0;
 
         //pane events 
         this.pane.on('change', (event) => { //if the pane changes
@@ -368,6 +545,7 @@ export class Typography extends Component {
             if (event.value == NaN) {
                 event.value = 1.0;
             }
+
             if (event.presetKey == "text") {
                 this.textBox.children[1].set({content: event.value});
             } else if (event.presetKey == "font") {
@@ -398,38 +576,40 @@ export class Typography extends Component {
         const box = new THREE.Box3().setFromObject(this.textBox);
         const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
         const edges = new THREE.EdgesGeometry( geometry );
-        this.bb.geometry = edges;
-        this.bb.position.set(this.PARAMS.position.x,this.PARAMS.position.y,this.PARAMS.position.z);
+        this.draggableMesh.geometry = edges;
+        this.draggableMesh.position.set(this.PARAMS.position.x,this.PARAMS.position.y,this.PARAMS.position.z);
     }
 
-    createDragControls(scene, camera, renderer, orbit) {
-        //add drag orbits for the cube
-        let dragControls = new DragControls([this.bb], camera, renderer.domElement);
+    //handle hover events
+    handleDragStart() {
 
-        //drag events 
-        var _self = this;
-        dragControls.addEventListener('dragstart', function (event) {
-            orbit.enabled = false
-        })
-        
-        dragControls.addEventListener('dragend', function (event) {
-            orbit.enabled = true
-            _self.PARAMS.position = {x: event.object.position.x, y: event.object.position.y, z: event.object.position.z}
-            _self.textBox.position.set(event.object.position.x,event.object.position.y,event.object.position.z);
-            _self.pane.refresh()
-        })
+    }
     
-        dragControls.addEventListener('hoveron', function (event) {
-            orbit.enabled = false
-            event.object.material.opacity = 1.0
-            _self.div.show();
-        })
-    
-        dragControls.addEventListener('hoveroff', function (event) {
-            orbit.enabled = true
-            event.object.material.opacity = 0.0;
-            _self.div.hide();
-        })
+    handleDragEnd() {
+        this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
+        this.textBox.position.set(this.draggableMesh.position.x,this.draggableMesh.position.y,this.draggableMesh.position.z);
+        this.pane.refresh()
+    }
+
+    handleHoverStart() {
+        this.draggableMesh.material.opacity = 1.0
+        this.div.show();
+    }
+
+    handleHoverEnd() {
+        this.draggableMesh.material.opacity = 0.0;
+        this.div.hide();
+    }   
+
+    add(scene) {
+        scene.add(this.draggableMesh);
+        scene.add(this.textBox);
+    }
+
+    delete(scene) {
+        scene.remove(this.draggableMesh);
+        scene.remove(this.textBox);
+        this.div.remove();
     }
 
     updatePaneLocation(camera) {
@@ -437,8 +617,8 @@ export class Typography extends Component {
 
         let tempV = new THREE.Vector3();
         // get the position of the center of the cube
-        this.bb.updateWorldMatrix(true, false);
-        this.bb.getWorldPosition(tempV);
+        this.draggableMesh.updateWorldMatrix(true, false);
+        this.draggableMesh.getWorldPosition(tempV);
         // get the normalized screen coordinate of that position
         // x and y will be in the -1 to +1 range with x = -1 being
         // on the left and y = -1 being on the bottom
@@ -467,6 +647,7 @@ export class Cube extends Component {
             position: {x: 0, y: 0, z: 0},
             rotation: {x: 0, y: 0, z: 0},
             scale: {x: 1, y: 1, z: 1},
+            material: "basic",
             color: '#000000'
         }
 
@@ -494,14 +675,30 @@ export class Cube extends Component {
             z: {step: 0.1}
         });
 
+        this.pane.addSeparator();
+
+        this.pane.addInput(this.PARAMS, 'material', {
+            label: 'material',
+            options: {
+                basic: "basic",
+                glass: "glass"
+            }
+        });
+
         this.pane.addInput(this.PARAMS, 'color');
 
         //setup the cube mesh
         const geometry = new THREE.BoxGeometry(1,1,1);
+
         const material = new THREE.MeshBasicMaterial( {color: new THREE.Color(this.PARAMS.color)} );
 
-        this.mesh = new THREE.Mesh( geometry, material );
-        
+
+        this.draggableMesh = new THREE.Mesh( geometry, material );
+
+        this.materialChange(this.PARAMS.material);
+
+        this.draggableMesh.name = (this.id).toString();
+
         //handle events 
         //pane events - change attributes of mesh 
 
@@ -509,70 +706,94 @@ export class Cube extends Component {
             //event.presetKey -> key that was changed
             //event.value -> what it was changed to
             if (event.presetKey == 'position') {
-                let position = event.value;
-                this.mesh.position.set(position.x,position.y,position.z);
+                this.draggableMesh.position.set(event.value.x, event.value.y, event.value.z);
             } 
             else if (event.presetKey == 'rotation') {
                 let rotation = event.value;
-                this.mesh.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
+                this.draggableMesh.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
             } else if (event.presetKey == 'scale') {
                 let scale = event.value;
-                this.mesh.scale.set(scale.x, scale.y, scale.z);
+                this.draggableMesh.scale.set(scale.x, scale.y, scale.z);
+            } else if (event.presetKey == 'material') {
+                this.materialChange(event.value);
             } else if (event.presetKey == 'color') {
                 let color = event.value;
-                this.mesh.material.color = new THREE.Color(color);
+                this.draggableMesh.material.color = new THREE.Color(color);
             }
         });		
     };
-
-    createDragControls(scene, camera, renderer, orbit) {
-        //add drag orbits for the cube
-        let dragControls = new DragControls([this.mesh], camera, renderer.domElement);
-        
-        //drag events 
-        var _self = this;
-        dragControls.addEventListener('dragstart', function (event) {
-            orbit.enabled = false
-            event.object.material.opacity *= 0.90
-        })
-        
-        dragControls.addEventListener('dragend', function (event) {
-            orbit.enabled = true
-            event.object.material.opacity = 1.0
-            _self.PARAMS.position = {x: event.object.position.x, y: event.object.position.y, z: event.object.position.z}
-            _self.pane.refresh()
+    //handle hover events
+    handleDragStart() {
+        // this.draggableMesh.material.opacity *= 0.80
+    }
     
-        })
-    
-        dragControls.addEventListener('hoveron', function (event) {
-            orbit.enabled = false
-            event.object.material.opacity *= 0.90
-            _self.div.show();
-            console.log("hoveron")
-        })
-    
-        dragControls.addEventListener('hoveroff', function (event) {
-            orbit.enabled = true
-            event.object.material.opacity = 1.0
-            _self.div.hide();
-            console.log("hoveroff")
-        })
+    handleDragEnd() {
+        // this.draggableMesh.material.opacity = 1.0;
+        this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
+        this.pane.refresh()
     }
 
-    // publishMode(enabled) {
-    //     if (enabled) {
-    //         this.dragControls = 
-    //     }
+    handleHoverStart() {
+        // this.draggableMesh.material.opacity *= 0.80
+        this.div.show();
+    }
 
-    // }
+    handleHoverEnd() {
+        // this.draggableMesh.material.opacity = 1.0;
+        this.div.hide();
+    }
+
+    add(scene) {
+        scene.add(this.draggableMesh);
+    }
+
+    delete(scene) {
+        scene.remove(this.draggableMesh);
+        this.div.remove();
+    }
+
+    materialChange(materialString){
+        let material = null; 
+        if (materialString == "basic") {
+            material = new THREE.MeshBasicMaterial( {color: new THREE.Color(this.PARAMS.color)} );
+        } else if (materialString == "glass") {
+            const textureLoader = new THREE.TextureLoader();
+            //normal map
+            const normalMapTexture = textureLoader.load("bumpmap.jpeg");
+            normalMapTexture.wrapS = THREE.RepeatWrapping;
+            normalMapTexture.wrapT = THREE.RepeatWrapping;
+
+            const hdrEquirect = new RGBELoader().load(
+                "./hdr_lights.hdr",  
+                () => { 
+                  hdrEquirect.mapping = THREE.EquirectangularReflectionMapping; 
+                }
+              );
+
+            material = new THREE.MeshPhysicalMaterial({
+                color: new THREE.Color(this.PARAMS.color),
+                roughness: 0.15,
+                transmission: 1, // Add transparency
+                thickness: 0.5, // Add refraction!
+                clearcoat: 1.0,
+                normalScale: new THREE.Vector2(0.1),
+                normalMap: normalMapTexture,  
+                clearcoatNormalMap: normalMapTexture,
+                envMap: hdrEquirect
+            });
+        }
+        if (material != null) {
+            this.draggableMesh.material = material;
+        }
+    }
 
     updatePaneLocation(camera) {
         //update the pane of the location every tick 
 
         let tempV = new THREE.Vector3();
         // get the position of the center of the cube
-        this.mesh.updateWorldMatrix(true, false);
-        this.mesh.getWorldPosition(tempV);
+        this.draggableMesh.updateWorldMatrix(true, false);
+        this.draggableMesh.getWorldPosition(tempV);
             
         // get the normalized screen coordinate of that position
         // x and y will be in the -1 to +1 range with x = -1 being
