@@ -121,12 +121,12 @@ export class World extends Component {
         this.scene.add(this.gridYZ);
 
         //setup the scene lighting 
-        const light = new THREE.DirectionalLight(0xfff0dd, 1);
-        light.position.set(0, 25, 50);
+        // const light = new THREE.DirectionalLight(0xfff0dd, 1);
+        // light.position.set(0, 25, 50);
 
         const ambientLight = new THREE.AmbientLight( 0x404040 ); // soft white light
 
-        this.scene.add(light);
+        // this.scene.add(light);
         this.scene.add(ambientLight);
 
         //create the pane 
@@ -523,11 +523,14 @@ export class Typography extends Component {
         //text box event
         this.textBox.onAfterUpdate = () => {
             if (t.children.length > 0) {
+                console.log(t.children)
                 t.children[0].material.side = THREE.DoubleSide;
+                t.children[0].material.transparent = false; //basic transparency for glass & typography
             }
         }; 
         
-        console.log(this.textBox)
+        // this.textBox.children[1].fontMaterial.transparent = false;
+        console.log(this.textBox.children[1])
         //create the bounding box 
         const box = new THREE.Box3().setFromObject(this.textBox);
         const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
