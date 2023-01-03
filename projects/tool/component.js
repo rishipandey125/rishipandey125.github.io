@@ -14,6 +14,22 @@ const FONT_DICT = {
     inter: "Inter",
 };
 
+//LOAD THE MATERIAL MAPS
+const textureLoader = new THREE.TextureLoader();
+//normal map
+const NORMAL_MAP_TEXTURE = textureLoader.load("bumpmap.jpeg");
+NORMAL_MAP_TEXTURE.wrapS = THREE.RepeatWrapping;
+NORMAL_MAP_TEXTURE.wrapT = THREE.RepeatWrapping;
+
+const HDR_EQUIRECT = new RGBELoader().load(
+    "./hdr_lights.hdr",  
+    () => { 
+        HDR_EQUIRECT.mapping = THREE.EquirectangularReflectionMapping; 
+    }
+  );
+
+
+
 //parent component class
 class Component {
     // constructor
@@ -828,19 +844,6 @@ export class Mesh extends Component {
         if (materialString == "basic") {
             material = new THREE.MeshBasicMaterial( {color: new THREE.Color(this.PARAMS.color)} );
         } else if (materialString == "glass") {
-            const textureLoader = new THREE.TextureLoader();
-            //normal map
-            const normalMapTexture = textureLoader.load("bumpmap.jpeg");
-            normalMapTexture.wrapS = THREE.RepeatWrapping;
-            normalMapTexture.wrapT = THREE.RepeatWrapping;
-
-            const hdrEquirect = new RGBELoader().load(
-                "./hdr_lights.hdr",  
-                () => { 
-                  hdrEquirect.mapping = THREE.EquirectangularReflectionMapping; 
-                }
-              );
-
             material = new THREE.MeshPhysicalMaterial({
                 color: new THREE.Color(this.PARAMS.color),
                 roughness: 0.1,
@@ -848,42 +851,29 @@ export class Mesh extends Component {
                 thickness: 0.5, // Add refraction!
                 clearcoat: 1.0,
                 normalScale: new THREE.Vector2(0.1),
-                normalMap: normalMapTexture,  
+                normalMap: NORMAL_MAP_TEXTURE,  
                 normalScale: new THREE.Vector2(0.1),
-                clearcoatNormalMap: normalMapTexture,
+                clearcoatNormalMap: NORMAL_MAP_TEXTURE,
                 clearcoatRoughness: 0.1,
-                envMap: hdrEquirect
+                envMap: HDR_EQUIRECT
             });
         } else if (materialString == "metal") {
-
-            const hdrEquirect = new RGBELoader().load(
-                "./hdr_lights.hdr",  
-                () => { 
-                  hdrEquirect.mapping = THREE.EquirectangularReflectionMapping; 
-                }
-              );
 
             material = new THREE.MeshPhysicalMaterial({
                 color: new THREE.Color(this.PARAMS.color),
                 roughness: 0.35,
                 metalness: 1,
                 clearcoat: 0.35,
-                envMap: hdrEquirect
+                envMap: HDR_EQUIRECT
             });
         } else if (materialString == "diffuse") {
-            const hdrEquirect = new RGBELoader().load(
-                "./hdr_lights.hdr",  
-                () => { 
-                  hdrEquirect.mapping = THREE.EquirectangularReflectionMapping; 
-                }
-              );
 
             material = new THREE.MeshPhysicalMaterial({
                 color: new THREE.Color(this.PARAMS.color),
                 roughness: 1.0,
                 metalness: 0,
                 clearcoat: 0.0,
-                envMap: hdrEquirect,
+                envMap: HDR_EQUIRECT,
                 envMapIntensity: 0.1,
             });
         } 
