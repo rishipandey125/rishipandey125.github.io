@@ -19,7 +19,25 @@ function init() {
 
   //if the search parameter exists load that project
   if (projectResult != null) {
-    world.import(projectResult);
+
+    // load the corresponding json file url  
+    function Get(yourUrl){
+      var Httpreq = new XMLHttpRequest(); // a new request
+      Httpreq.open("GET",yourUrl,false);
+      Httpreq.send(null);     
+      return Httpreq.responseText;          
+    }
+
+    // the path where we are hosting spatial files
+    var githubPath = 'https://raw.githubusercontent.com/rishipandey125/rishipandey125.github.io/master/projects/spatial/';
+
+    //load the spatial file 
+    var spatialFile = JSON.parse(Get(githubPath + projectResult));
+
+    world.import(spatialFile);
+
+    world.presentationMode();
+
     world.enableAR();
   }
 

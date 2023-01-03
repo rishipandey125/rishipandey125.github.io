@@ -6,7 +6,13 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader';
 import ThreeMeshUI from 'https://cdn.skypack.dev/three-mesh-ui';
 
 const MAX_GRID_DISTANCE = 30;
-
+const FONT_URL = "https://raw.githubusercontent.com/shaheelm/shaheelm.github.io/main/fonts/";
+const FONT_DICT = {
+    robotomono: "RobotoMono",
+    vt323: "VT323",
+    timesnewroman: "TimesNewRoman",
+    inter: "Inter",
+};
 
 //parent component class
 class Component {
@@ -32,24 +38,41 @@ class Component {
         this.div.hide(); // hide the element to start
 
         this.draggableMesh = new THREE.Object3D(); // the draggable mesh for each component
-        
+        this.trackPosition = new THREE.Vector3();  //track the draggable mesh position 
+
+
     };
 
+    //handle hover events
     handleDragStart() {
-        console.log("drag start!")
+        this.trackPosition.copy(this.draggableMesh.position);
     }
-
+    
     handleDragEnd() {
-        console.log("drag end!")
+        this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
+        this.pane.refresh()
+
+        //this is how we differentiate tap vs no tap 
+        if (this.trackPosition.equals(this.draggableMesh.position)) {
+            if (this.div.is(":visible")) {
+                this.div.hide();
+                this.draggableMesh.material.opacity = 0.0
+            } else {
+                this.div.show();
+                this.draggableMesh.material.opacity = 1.0
+            }
+        }
+
     }
 
     handleHoverStart() {
-        console.log("hover start!")
+        this.draggableMesh.material.opacity = 1.0
     }
 
     handleHoverEnd() {
-        console.log("hover end!")
-    }
+        if (! this.div.is(":visible")) 
+            this.draggableMesh.material.opacity = 0.0;
+    }   
     
     add(scene) {
         console.log("add to scene!")
@@ -58,7 +81,27 @@ class Component {
     delete(scene) {
         console.log("delete!")
     }
-    
+
+    updatePaneLocation(camera) {
+        //update the pane of the location every tick 
+
+        let tempV = new THREE.Vector3();
+        // get the position of the center of the cube
+        this.draggableMesh.updateWorldMatrix(true, false);
+        this.draggableMesh.getWorldPosition(tempV);
+            
+        // get the normalized screen coordinate of that position
+        // x and y will be in the -1 to +1 range with x = -1 being
+        // on the left and y = -1 being on the bottom
+        tempV.project(camera);
+        
+        // convert the normalized position to CSS coordinates
+        let x = (tempV.x *  .5 + .5) * window.innerWidth;
+        let y = (tempV.y * -.5 + .5) * window.innerHeight;
+
+        this.div.css({top: y, left: x , position:'absolute'}); 
+    }
+
     //animate function for every component
     animate(camera) {
         console.log("animate!")
@@ -120,47 +163,56 @@ export class World extends Component {
         this.gridYZ.rotation.z = Math.PI / 2;
         this.scene.add(this.gridYZ);
 
-        //setup the scene lighting 
-        // const light = new THREE.DirectionalLight(0xfff0dd, 1);
-        // light.position.set(0, 25, 50);
-
         const ambientLight = new THREE.AmbientLight( 0x404040 ); // soft white light
 
-        // this.scene.add(light);
         this.scene.add(ambientLight);
 
         //create the pane 
         this.PARAMS = {
             background: '#ffffff',
             grid: false,
-            component: "cube"
+            component: "mesh"
         }   
 
         this.pane = new Tweakpane.Pane({
-            title: this.title,
+            // title: this.title,
             expanded: true
         });
 
-        this.pane.addInput(this.PARAMS,"background");  // control the background color of the world
+        const tab = this.pane.addTab({
+            pages: [
+              {title: 'scene'},
+              {title: 'file'},
+            ],
+          });
 
-        this.pane.addInput(this.PARAMS, 'grid');
+        tab.pages[0].addInput(this.PARAMS,"background");  // control the background color of the world
+
+        tab.pages[0].addInput(this.PARAMS, 'grid');
 
         //list of components
-        this.pane.addInput(this.PARAMS, 'component', {
+        tab.pages[0].addInput(this.PARAMS, 'component', {
             label: 'component',
             options: {
-                cube: "cube",
-                typography: "typography"
+                mesh: "mesh",
+                typography: "typography",
+                particlesphere: "particle sphere",
             }
         });
 
         //create component button
-        const btn = this.pane.addButton({
+        const btn = tab.pages[0].addButton({
             title: 'add component'
         });
 
         //create export button
-        const exportBtn = this.pane.addButton({
+        const importBtn = tab.pages[1].addButton({
+            title: 'import'
+        });
+
+                
+        //create export button
+        const exportBtn = tab.pages[1].addButton({
             title: 'export'
         });
 
@@ -191,17 +243,34 @@ export class World extends Component {
             this.createComponent(comp,false,null);
         });
         
+        importBtn.on('click', () => {
+            var importFiles = document.getElementById('selectFiles');
+            var worldDict = null;
+            var _self = this;
+            importFiles.addEventListener('input', (ev) => {
+                console.log("import files")
+                var fr = new FileReader();
+
+                fr.onload = function(e) { 
+                  worldDict = JSON.parse(e.target.result);
+                  if (worldDict != null) {
+                    _self.import(worldDict);
+                  }
+                }
+                fr.readAsText(importFiles.files.item(0));  
+            })
+            importFiles.click();
+        });
+
         exportBtn.on('click', () => {
             this.export() // export world as dict
             let data = JSON.stringify(this.worldDict); //turn the dict into a string json  
-            let encoded = encodeURIComponent(data); //encode the string json 
-
-            let url = new URL(window.location.href); // the current URL
-            let search_params = url.searchParams; // get the search params
-            search_params.set('project', encoded); // write the encoded json to search params
-
-            //copy link to clipboard
-            navigator.clipboard.writeText(url.href);
+            //download the .spatial file
+            var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+            var dlAnchorElem = document.getElementById('downloadAnchorElem');
+            dlAnchorElem.setAttribute("href",     dataStr     );
+            dlAnchorElem.setAttribute("download", "project.spatial");
+            dlAnchorElem.click();
 
         });
 
@@ -234,8 +303,8 @@ export class World extends Component {
                 this.orbit.enabled = true;
     
                 this.hoverComponentIdx = -1;
-    
-                this.updateDragControls();
+                
+                this.updateDragControls(); // drag controsl re-enabled here
     
                 this.div.hide();
             }
@@ -244,7 +313,7 @@ export class World extends Component {
         duplicateBtn.on('click', () => {
             if (this.hoverComponentIdx > -1 ) {
                 let comp = this.components[this.hoverComponentIdx]; // get the component to delete
-                this.createComponent(comp.title,true,comp.pane.exportPreset());
+                this.createComponent(comp.title,true,comp.pane.exportPreset()); // drag controsl re-enabled here
                 this.hoverComponentIdx = -1;
                 
                 _self.orbit.enabled = true;
@@ -258,28 +327,42 @@ export class World extends Component {
 
         //override the right click
         document.addEventListener('contextmenu', function(e) {
-            _self.div.hide();
-            _self.orbit.enabled = true;
             if (_self.hoverComponentIdx > -1) { 
-                let comp = _self.components[_self.hoverComponentIdx]; // get the component to delete
+                let comp = _self.components[_self.hoverComponentIdx]; // get the component that you right clicked on 
+                if (_self.div.is(":visible")) { // if right click menu is activated 
+                    _self.div.hide();
+                    _self.updateDragControls(); //this really shouldn't be the solution - take a look in alpha pls 
+                    _self.orbit.enabled = true;
+                } else {
+                    _self.div.css({top: comp.div.css("top"), left: comp.div.css("left") , position:'absolute'}); 
+                    _self.div.show(); //show the right click ui
+                    comp.div.hide(); 
+                    _self.dragControls.enabled = false;
+                    _self.orbit.enabled = false;
+                }
 
-                _self.div.css({top: comp.div.offset().top, left: comp.div.offset().left , position:'absolute'}); 
-                comp.div.hide() // hide the ui of the component
-                _self.div.show(); //show the right click ui
-                _self.orbit.enabled = false;
+            } else {
+                _self.div.hide();
+                _self.orbit.enabled = true;
+                _self.dragControls.enabled = true;
             }
             e.preventDefault();
         }, false);
-     
+        
+        document.addEventListener('pointerup', function(e) {
+
+        }, false);
     };
 
     createComponent(comp, usePreset, preset) {
         let component = null; 
 
-        if (comp == "cube") {
-            component = new Cube(this.components.length);
+        if (comp == "mesh") {
+            component = new Mesh(this.components.length);
         } else if (comp == "typography") {
             component = new Typography(this.components.length);
+        } else if (comp == "particle sphere") {
+            component = new ParticleSphere(this.components.length);
         }
 
         if (component != null) {
@@ -316,7 +399,7 @@ export class World extends Component {
             if (component != null)
                 component.handleDragStart();
         })
-        
+
         this.dragControls.addEventListener('dragend', function (event) {
             _self.orbit.enabled = true
             let idx = parseInt(event.object.name); // get the index of the mesh
@@ -349,6 +432,23 @@ export class World extends Component {
         })
     }
 
+    presentationMode() {
+        //turn grid off
+        this.gridXY.visible = false;
+        this.gridXZ.visible = false;
+        this.gridYZ.visible = false;
+
+        //disable all panes visiblity
+        this.pane.hidden = true;
+
+        //disable all drag controls 
+        this.dragControls.enabled = false;
+
+        //fix orbit controls 
+        this.orbit.maxDistance = 100;
+        this.orbit.minDistance = 100;
+    }
+
     enableAR() {
         this.renderer.xr.enabled = true;
         document.body.appendChild( ARButton.createButton( this.renderer ) );
@@ -378,16 +478,13 @@ export class World extends Component {
         //disable dragging 
     }
 
-    import(encodedWorld) {
-        let jsonString = decodeURIComponent(encodedWorld); //decode the url param
-        let worldDict = JSON.parse(jsonString); //turn the json string into a dictionary
-
-    
+    import(worldDict) {  
+        console.log(worldDict)
         for (const [key, value] of Object.entries(worldDict)) { //iterate through the dictionary
             if (key == "world") { // import world settings
                 this.pane.importPreset(value); 
             } else { //create components in world 
-                let comp = key.substr(0, key.indexOf('_')); //get the component name (upto the _) ie: cube_1 -> cube
+                let comp = key.substr(0, key.indexOf('_')); //get the component name (upto the _) ie: mesh_1 -> mesh
                 this.createComponent(comp,true,value); 
             }
         }
@@ -408,12 +505,12 @@ export class Typography extends Component {
         super(componentID,"typography",250);
 
         this.fontURL = "https://raw.githubusercontent.com/shaheelm/shaheelm.github.io/main/fonts/"
-        //setup the UI for the cube
+        //setup the UI for the typography
         this.PARAMS = {
             text: "text",
             fontColor: '#000000',
-            fontSize: 0.3,
-            containerWidth: 2.0,
+            fontSize: 3.0,
+            containerWidth: 10.0,
             letterSpacing: 0.03,
             position: {x: 0, y: 0, z: 0},
             rotation: {x: 0, y: 0, z: 0},
@@ -429,31 +526,9 @@ export class Typography extends Component {
 
         this.pane.addInput(this.PARAMS, 'text');
 
-        let fontDict = {
-            robotomono: "RobotoMono",
-            vt323: "VT323",
-            timesnewroman: "TimesNewRoman",
-            inter: "Inter",
-            bangers: "Bangers",
-            bodono: "Bodoni",
-            cinzelblack: "CinzelBlack",
-            didactgothic: "DidactGothic",
-            diplomatasc: "DiplomataSC",
-            fredokaone: "FredokaOne",
-            garamond: "Garamond",
-            luckiestguy: "LuckiestGuy",
-            monoton: "Monoton",
-            montserrat: "Montserrat",
-            newrocker: "NewRocker",
-            permanentmarket: "PermanentMarker",
-            pressstart: "PressStart",
-            rougescript: "RougeScript",
-            rubikspraypaint: "RubikSprayPaint"
-        };
-
         this.pane.addInput(this.PARAMS, 'font', {
             label: 'font',
-            options: fontDict
+            options: FONT_DICT
         });
         this.pane.addInput(this.PARAMS, 'textAlign', {
             label: 'align',
@@ -472,12 +547,12 @@ export class Typography extends Component {
         this.pane.addInput(this.PARAMS, 'fontSize', {
             label: "font size",
             min: 0.1,
-            max: 1.0,
+            max: 10.0,
         });
         this.pane.addInput(this.PARAMS, 'containerWidth', {
             label: "container width",
             min: 1.0,
-            max: 10.0,
+            max: 100.0,
         });
         this.pane.addInput(this.PARAMS, 'letterSpacing', {
             label: "letter spacing",
@@ -501,15 +576,15 @@ export class Typography extends Component {
 
     	this.textBox = new ThreeMeshUI.Block({
                 backgroundSide: THREE.DoubleSide,
-                width: 1.2,
+                width: this.PARAMS.containerWidth,
                 height: 0.5,
                 padding: 0.03,
                 justifyContent: 'center',
                 textAlign: this.PARAMS.textAlign,
                 backgroundOpacity: 0.0,
                 fontColor: new THREE.Color(this.PARAMS.fontColor),
-                fontFamily: this.fontURL + this.PARAMS.font + "/" + this.PARAMS.font + ".json",
-                fontTexture: this.fontURL + this.PARAMS.font + "/" + this.PARAMS.font + ".png"
+                fontFamily: FONT_URL + this.PARAMS.font + "/" + this.PARAMS.font + ".json",
+                fontTexture: FONT_URL + this.PARAMS.font + "/" + this.PARAMS.font + ".png"
         });
 
         let t = new ThreeMeshUI.Text({
@@ -523,22 +598,22 @@ export class Typography extends Component {
         //text box event
         this.textBox.onAfterUpdate = () => {
             if (t.children.length > 0) {
-                console.log(t.children)
                 t.children[0].material.side = THREE.DoubleSide;
                 t.children[0].material.transparent = false; //basic transparency for glass & typography
             }
         }; 
-        
-        // this.textBox.children[1].fontMaterial.transparent = false;
-        console.log(this.textBox.children[1])
+
         //create the bounding box 
         const box = new THREE.Box3().setFromObject(this.textBox);
         const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
         const edges = new THREE.EdgesGeometry( geometry );
-        this.draggableMesh = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: new THREE.Color('#000000') } ) );
+        this.draggableMesh = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: new THREE.Color('#3682df') } ) );
         this.draggableMesh.name = (this.id).toString();
         this.draggableMesh.material.transparent = true;
         this.draggableMesh.material.opacity = 0;
+
+        //track the draggable mesh position 
+        this.trackPosition = new THREE.Vector3();
 
         //pane events 
         this.pane.on('change', (event) => { //if the pane changes
@@ -583,27 +658,6 @@ export class Typography extends Component {
         this.draggableMesh.position.set(this.PARAMS.position.x,this.PARAMS.position.y,this.PARAMS.position.z);
     }
 
-    //handle hover events
-    handleDragStart() {
-
-    }
-    
-    handleDragEnd() {
-        this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
-        this.textBox.position.set(this.draggableMesh.position.x,this.draggableMesh.position.y,this.draggableMesh.position.z);
-        this.pane.refresh()
-    }
-
-    handleHoverStart() {
-        this.draggableMesh.material.opacity = 1.0
-        this.div.show();
-    }
-
-    handleHoverEnd() {
-        this.draggableMesh.material.opacity = 0.0;
-        this.div.hide();
-    }   
-
     add(scene) {
         scene.add(this.draggableMesh);
         scene.add(this.textBox);
@@ -615,41 +669,23 @@ export class Typography extends Component {
         this.div.remove();
     }
 
-    updatePaneLocation(camera) {
-        //update the pane of the location every tick 
-
-        let tempV = new THREE.Vector3();
-        // get the position of the center of the cube
-        this.draggableMesh.updateWorldMatrix(true, false);
-        this.draggableMesh.getWorldPosition(tempV);
-        // get the normalized screen coordinate of that position
-        // x and y will be in the -1 to +1 range with x = -1 being
-        // on the left and y = -1 being on the bottom
-        tempV.project(camera);
-        
-        // convert the normalized position to CSS coordinates
-        let x = (tempV.x *  .5 + .5) * window.innerWidth;
-        let y = (tempV.y * -.5 + .5) * window.innerHeight;
-
-        this.div.css({top: y, left: x , position:'absolute'}); 
-    }
-
     animate(camera) {
         this.updatePaneLocation(camera)
     }
 
 }
 
-//cube component class
-export class Cube extends Component {
+//mesh component class
+export class Mesh extends Component {
     constructor(componentID) {
-        super(componentID,"cube",250);
+        super(componentID,"mesh",250);
 
         //setup the UI for the cube
         this.PARAMS = {
             position: {x: 0, y: 0, z: 0},
             rotation: {x: 0, y: 0, z: 0},
             scale: {x: 1, y: 1, z: 1},
+            geometry: "cube",
             material: "basic",
             color: '#000000'
         }
@@ -659,6 +695,15 @@ export class Cube extends Component {
             container: this.element, //gets the HTML element of the pane div
             expanded: true
         }); //create the pane and parent it to the draggable div
+
+        this.pane.addInput(this.PARAMS, 'geometry', {
+            label: 'geometry',
+            options: {  
+                cube: "cube",
+                sphere: "sphere",
+                icosahedron: "icosahedron"
+            }
+        });
 
         this.pane.addInput(this.PARAMS, 'position', {
             x: {step: 1},
@@ -684,7 +729,9 @@ export class Cube extends Component {
             label: 'material',
             options: {
                 basic: "basic",
-                glass: "glass"
+                glass: "glass",
+                metal: "metal",
+                diffuse: "diffuse",
             }
         });
 
@@ -696,11 +743,25 @@ export class Cube extends Component {
         const material = new THREE.MeshBasicMaterial( {color: new THREE.Color(this.PARAMS.color)} );
 
 
-        this.draggableMesh = new THREE.Mesh( geometry, material );
+        this.mesh = new THREE.Mesh( geometry, material );
+
+        this.geometryChange(this.PARAMS.geometry);
 
         this.materialChange(this.PARAMS.material);
 
+        // this.draggableMesh.name = (this.id).toString();
+
+        //create the bounding box 
+        const box = new THREE.Box3().setFromObject(this.mesh);
+        const boxgeo = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
+        const edges = new THREE.EdgesGeometry( boxgeo );
+        this.draggableMesh = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: new THREE.Color('#3682df') } ) );
         this.draggableMesh.name = (this.id).toString();
+        this.draggableMesh.material.transparent = true;
+        this.draggableMesh.material.opacity = 0;
+
+        //track the draggable mesh position 
+        this.trackPosition = new THREE.Vector3();
 
         //handle events 
         //pane events - change attributes of mesh 
@@ -708,51 +769,58 @@ export class Cube extends Component {
         this.pane.on('change', (event) => { //if the pane changes
             //event.presetKey -> key that was changed
             //event.value -> what it was changed to
-            if (event.presetKey == 'position') {
-                this.draggableMesh.position.set(event.value.x, event.value.y, event.value.z);
-            } 
-            else if (event.presetKey == 'rotation') {
+            if (event.presetKey == 'geometry') {
+                this.geometryChange(event.value);
+            } else if (event.presetKey == 'position') {
+                this.mesh.position.set(event.value.x, event.value.y, event.value.z);
+            } else if (event.presetKey == 'rotation') {
                 let rotation = event.value;
-                this.draggableMesh.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
+                this.mesh.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
             } else if (event.presetKey == 'scale') {
                 let scale = event.value;
-                this.draggableMesh.scale.set(scale.x, scale.y, scale.z);
+                this.mesh.scale.set(scale.x, scale.y, scale.z);
             } else if (event.presetKey == 'material') {
                 this.materialChange(event.value);
             } else if (event.presetKey == 'color') {
                 let color = event.value;
-                this.draggableMesh.material.color = new THREE.Color(color);
+                this.mesh.material.color = new THREE.Color(color);
             }
+            this.updateBoundingBox();
         });		
     };
-    //handle hover events
-    handleDragStart() {
-        // this.draggableMesh.material.opacity *= 0.80
-    }
-    
-    handleDragEnd() {
-        // this.draggableMesh.material.opacity = 1.0;
-        this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
-        this.pane.refresh()
-    }
 
-    handleHoverStart() {
-        // this.draggableMesh.material.opacity *= 0.80
-        this.div.show();
-    }
-
-    handleHoverEnd() {
-        // this.draggableMesh.material.opacity = 1.0;
-        this.div.hide();
+    updateBoundingBox() {
+        const box = new THREE.Box3().setFromObject(this.mesh);
+        const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
+        const edges = new THREE.EdgesGeometry( geometry );
+        this.draggableMesh.geometry = edges;
+        this.draggableMesh.position.set(this.PARAMS.position.x,this.PARAMS.position.y,this.PARAMS.position.z);
     }
 
     add(scene) {
         scene.add(this.draggableMesh);
+        scene.add(this.mesh);
+
     }
 
     delete(scene) {
         scene.remove(this.draggableMesh);
+        scene.remove(this.mesh);
         this.div.remove();
+    }
+
+    geometryChange(geometryString) {
+        let geometry = null;
+        if (geometryString == "cube") {
+            geometry = new THREE.BoxGeometry(1,1,1);
+        } else if (geometryString == "sphere") {
+            geometry = new THREE.SphereGeometry(1,64,32);
+        } else if (geometryString == "icosahedron") {
+            geometry = new THREE.IcosahedronGeometry(1,0);
+        }
+        if (geometry != null) {
+            this.mesh.geometry = geometry;
+        }
     }
 
     materialChange(materialString){
@@ -775,39 +843,54 @@ export class Cube extends Component {
 
             material = new THREE.MeshPhysicalMaterial({
                 color: new THREE.Color(this.PARAMS.color),
-                roughness: 0.15,
+                roughness: 0.1,
                 transmission: 1, // Add transparency
                 thickness: 0.5, // Add refraction!
                 clearcoat: 1.0,
                 normalScale: new THREE.Vector2(0.1),
                 normalMap: normalMapTexture,  
+                normalScale: new THREE.Vector2(0.1),
                 clearcoatNormalMap: normalMapTexture,
+                clearcoatRoughness: 0.1,
                 envMap: hdrEquirect
             });
-        }
+        } else if (materialString == "metal") {
+
+            const hdrEquirect = new RGBELoader().load(
+                "./hdr_lights.hdr",  
+                () => { 
+                  hdrEquirect.mapping = THREE.EquirectangularReflectionMapping; 
+                }
+              );
+
+            material = new THREE.MeshPhysicalMaterial({
+                color: new THREE.Color(this.PARAMS.color),
+                roughness: 0.35,
+                metalness: 1,
+                clearcoat: 0.35,
+                envMap: hdrEquirect
+            });
+        } else if (materialString == "diffuse") {
+            const hdrEquirect = new RGBELoader().load(
+                "./hdr_lights.hdr",  
+                () => { 
+                  hdrEquirect.mapping = THREE.EquirectangularReflectionMapping; 
+                }
+              );
+
+            material = new THREE.MeshPhysicalMaterial({
+                color: new THREE.Color(this.PARAMS.color),
+                roughness: 1.0,
+                metalness: 0,
+                clearcoat: 0.0,
+                envMap: hdrEquirect,
+                envMapIntensity: 0.1,
+            });
+        } 
         if (material != null) {
-            this.draggableMesh.material = material;
+            material.side = THREE.DoubleSide;
+            this.mesh.material = material;
         }
-    }
-
-    updatePaneLocation(camera) {
-        //update the pane of the location every tick 
-
-        let tempV = new THREE.Vector3();
-        // get the position of the center of the cube
-        this.draggableMesh.updateWorldMatrix(true, false);
-        this.draggableMesh.getWorldPosition(tempV);
-            
-        // get the normalized screen coordinate of that position
-        // x and y will be in the -1 to +1 range with x = -1 being
-        // on the left and y = -1 being on the bottom
-        tempV.project(camera);
-        
-        // convert the normalized position to CSS coordinates
-        let x = (tempV.x *  .5 + .5) * window.innerWidth;
-        let y = (tempV.y * -.5 + .5) * window.innerHeight;
-
-        this.div.css({top: y, left: x , position:'absolute'}); 
     }
 
     animate(camera) {
@@ -815,3 +898,124 @@ export class Cube extends Component {
     }
 }
 
+
+//ParticleSphere component class
+export class ParticleSphere extends Component {
+    constructor(componentID) {
+        super(componentID,"particle sphere",250);
+
+        //setup the UI for the cube
+        this.PARAMS = {
+            color: '#000000',
+            position: {x: 0, y: 0, z: 0},
+            radius: 5,
+            count: 100,
+        }
+
+        this.pane = new Tweakpane.Pane({
+            title: this.title,
+            container: this.element, //gets the HTML element of the pane div
+            expanded: true
+        }); //create the pane and parent it to the draggable div
+
+        this.pane.addInput(this.PARAMS, 'position', {
+            x: {step: 1},
+            y: {step: 1},
+            z: {step: 1}
+        });
+
+        this.pane.addInput(this.PARAMS, 'radius', {
+            label: "radius",
+            min: 1.0,
+            max: 10.0,
+        });
+
+        this.pane.addInput(this.PARAMS, 'count', {
+            label: "count",
+            step: 1,
+            min: 0,
+            max: 10000,
+        });
+
+        this.pane.addInput(this.PARAMS,'color', {
+            label: "color"
+        }); 
+
+
+        let instancedGeometry = new THREE.SphereGeometry(.05,64,32);
+        let instancedMaterial = new THREE.MeshBasicMaterial( {color: new THREE.Color(this.PARAMS.color)} );
+        this.instancedMesh = new THREE.InstancedMesh( instancedGeometry, instancedMaterial, 10000 );
+        this.instancedMesh.count =  this.PARAMS.count;
+
+		this.instancedMesh.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); // will be updated every frame
+
+        this.setInstancedMeshPositions(this.instancedMesh);
+
+
+        //setup the bounding box mesh 
+        const geometry = new THREE.BoxGeometry(2,2,2);
+        const edges = new THREE.EdgesGeometry( geometry );
+        this.draggableMesh = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: new THREE.Color('#3682df') } ) );
+        this.draggableMesh.name = (this.id).toString();
+        this.draggableMesh.scale.set(this.PARAMS.radius,this.PARAMS.radius,this.PARAMS.radius);
+        this.draggableMesh.material.transparent = true;
+
+        this.draggableMesh.material.opacity = 0.0;
+
+        //handle events 
+        //pane events - change attributes of mesh 
+
+        this.pane.on('change', (event) => { //if the pane changes
+            //event.presetKey -> key that was changed
+            //event.value -> what it was changed to
+            if (event.presetKey == "radius") {
+                this.draggableMesh.scale.set(event.value, event.value, event.value);
+            } else if (event.presetKey == "count") {
+                this.instancedMesh.count =  event.value;
+            } else if (event.presetKey == "position") {
+                this.draggableMesh.position.set(event.value.x, event.value.y, event.value.z);
+            } else if (event.presetKey == "color" ) {
+                this.instancedMesh.material.color = new THREE.Color(event.value);
+            }
+            this.setInstancedMeshPositions(this.instancedMesh);
+        });		
+    };
+
+
+    add(scene) {
+        scene.add(this.draggableMesh);
+        scene.add(this.instancedMesh);
+    }
+
+    delete(scene) {
+        scene.remove(this.draggableMesh);
+        scene.remove(this.instancedMesh);
+        this.div.remove();
+    }
+
+    setInstancedMeshPositions(mesh) {
+        var dummy = new THREE.Object3D();
+        let radius = this.PARAMS.radius;
+
+        for ( var i = 0; i < mesh.count; i ++ ) {
+            var k = i + 0.5;
+
+            var phi = Math.acos(1 - 2 * k / mesh.count);
+            var theta = Math.PI * (1 + Math.sqrt(5)) * k;
+        
+            var x = Math.cos(theta) * Math.sin(phi);
+            var y = Math.sin(theta) * Math.sin(phi);
+            var z = Math.cos(phi);
+            dummy.position.set((x*radius) + this.PARAMS.position.x,(y*radius) + + this.PARAMS.position.y,(z*radius) + + this.PARAMS.position.z);
+            dummy.updateMatrix();
+            mesh.setMatrixAt( i, dummy.matrix );
+        }
+
+        mesh.instanceMatrix.needsUpdate = true;
+    }
+
+    animate(camera) {
+        this.setInstancedMeshPositions(this.instancedMesh);
+        this.updatePaneLocation(camera)
+    }
+}
