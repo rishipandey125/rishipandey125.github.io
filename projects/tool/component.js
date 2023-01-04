@@ -482,7 +482,6 @@ export class World extends Component {
         
         //scale down scene 
         this.scene.scale.set(0.06,0.06,0.06);
-        this.scene.position.set(0,0,-15);
 
         //disable orbit controls
         this.orbit.enabled = false;
