@@ -8,10 +8,38 @@ import ThreeMeshUI from 'https://cdn.skypack.dev/three-mesh-ui';
 const MAX_GRID_DISTANCE = 30;
 const FONT_URL = "https://raw.githubusercontent.com/shaheelm/shaheelm.github.io/main/fonts/";
 const FONT_DICT = {
-    robotomono: "RobotoMono",
-    vt323: "VT323",
-    timesnewroman: "TimesNewRoman",
+    alegreya: "Alegreya",
+    anek: "Anek",
+    anonymous_pro: "AnonymousPro",
+    archivo: "Archivo",
+    cardo: "Cardo",
+    cormorant: "Cormorant",
+    dmsans: "DMSans",
+    eczar: "Eczar",
+    fira_code: "FiraCode",
     inter: "Inter",
+    lato: "Lato",
+    libre_baskerville: "LibreBaskerville",
+    libre_franklin: "LibreFranklin",
+    lora: "Lora",
+    manrope: "Manrope",
+    old_standard_tt: "OldStandardTT",
+    pt_serif: "PTSerif",
+    playfair_display: "PlayfairDisplay",
+    poppins: "Poppins",
+    quicksand: "Quicksand",
+    roboto_mono: "RobotoMono",
+    rubik: "Rubik",
+    rubik_spray_paint: "RubikSprayPaint",
+    sora: "Sora",
+    space_grotesk: "SpaceGrotesk",
+    space_mono: "SpaceMono",
+    syne: "Syne",
+    times_new_roman: "TimesNewRoman",
+    ubuntu: "Ubuntu",
+    vt323: "VT323",
+    vollkorn: "Vollkorn",
+    work_sans: "WorkSans"
 };
 
 //LOAD THE MATERIAL MAPS
@@ -65,8 +93,7 @@ class Component {
     }
     
     handleDragEnd() {
-        this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
-        this.pane.refresh()
+        // this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
 
         //this is how we differentiate tap vs no tap 
         if (this.trackPosition.equals(this.draggableMesh.position)) {
@@ -77,6 +104,9 @@ class Component {
                 this.div.show();
                 this.draggableMesh.material.opacity = 1.0
             }
+        } else {
+            this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
+            this.pane.refresh();
         }
 
     }
@@ -329,7 +359,8 @@ export class World extends Component {
         duplicateBtn.on('click', () => {
             if (this.hoverComponentIdx > -1 ) {
                 let comp = this.components[this.hoverComponentIdx]; // get the component to delete
-                this.createComponent(comp.title,true,comp.pane.exportPreset()); // drag controsl re-enabled here
+                let preset =  JSON.parse(JSON.stringify(comp.pane.exportPreset())); // this is the fix for the drag copy params bug
+                this.createComponent(comp.title,true,preset); // drag controsl re-enabled here
                 this.hoverComponentIdx = -1;
                 
                 _self.orbit.enabled = true;
@@ -383,7 +414,7 @@ export class World extends Component {
 
         if (component != null) {
             component.add(this.scene);
-            if (usePreset) {
+            if (usePreset && preset != null) {
                 component.pane.importPreset(preset);
             }
             this.components.push(component);
