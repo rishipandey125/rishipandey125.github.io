@@ -660,14 +660,40 @@ export class Typography extends Component {
         //setup the UI for the typography
         this.PARAMS = {
             text: "text",
+            font: "TimesNewRoman",
+            textAlign: "center",
+            state: "start",
             fontColor: '#000000',
             fontSize: 3.0,
             containerWidth: 10.0,
             letterSpacing: 0.03,
             position: {x: 0, y: 0, z: 0},
-            rotation: {x: 0, y: 0, z: 0},
-            textAlign: "center",
-            font: "TimesNewRoman"
+            rotation: {x: 0, y: 0, z: 0}
+        }
+
+        this.STATE_PARAMS = [
+            {
+                fontColor: '#000000',
+                fontSize: 3.0,
+                containerWidth: 10.0,
+                letterSpacing: 0.03,
+                position: {x: 0, y: 0, z: 0},
+                rotation: {x: 0, y: 0, z: 0}
+            },
+            {
+                fontColor: '#000000',
+                fontSize: 3.0,
+                containerWidth: 10.0,
+                letterSpacing: 0.03,
+                position: {x: 0, y: 0, z: 0},
+                rotation: {x: 0, y: 0, z: 0}
+            }
+        ]
+
+        this.MOTION_PARAMS = {
+            trigger: 0,
+            behavior: "easeIn",
+            duration: 3 
         }
 
         this.pane = new Tweakpane.Pane({
@@ -692,40 +718,84 @@ export class Typography extends Component {
             }
         });
 
-        this.pane.addInput(this.PARAMS,'fontColor', {
-            label: "color"
-        }); 
         this.pane.addSeparator();
 
-        this.pane.addInput(this.PARAMS, 'fontSize', {
+        const tab = this.pane.addTab({
+            pages: [
+              {title: 'details'},
+              {title: 'motion'},
+            ],
+          });
+          
+        //info tab
+        tab.pages[0].addInput(this.PARAMS, 'state', {
+            label: 'state',
+            options: {
+                start: "start",
+                end: "end",
+            }
+        });
+
+       tab.pages[0].addInput(this.PARAMS,'fontColor', {
+            label: "color"
+        }); 
+
+        tab.pages[0].addInput(this.PARAMS, 'fontSize', {
             label: "font size",
             min: 0.1,
             max: 10.0,
         });
-        this.pane.addInput(this.PARAMS, 'containerWidth', {
+
+        tab.pages[0].addInput(this.PARAMS, 'containerWidth', {
             label: "container width",
             min: 1.0,
             max: 100.0,
         });
-        this.pane.addInput(this.PARAMS, 'letterSpacing', {
+        tab.pages[0].addInput(this.PARAMS, 'letterSpacing', {
             label: "letter spacing",
             min: 0.01,
             max: 1.0,
         });
 
-        this.pane.addSeparator();
+        tab.pages[0].addSeparator();
 
-        this.pane.addInput(this.PARAMS, 'position', {
+        tab.pages[0].addInput(this.PARAMS, 'position', {
             x: {step: 1},
             y: {step: 1},
             z: {step: 1}
         });
 
-        this.pane.addInput(this.PARAMS, 'rotation', {
+        tab.pages[0].addInput(this.PARAMS, 'rotation', {
             x: {min: 0, max: 360},
             y: {min: 0, max: 360},
             z: {min: 0, max: 360}
         });
+
+        //motion tab 
+        tab.pages[1].addInput(this.MOTION_PARAMS, 'trigger', {
+            options: MOTION_TRIGGERS
+        });
+
+        tab.pages[1].addInput(this.MOTION_PARAMS, 'behavior', {
+            options: MOTION_BEHAVIORS
+        });
+
+        tab.pages[1].addInput(this.MOTION_PARAMS, 'duration', {
+            min: 1.0,
+            max: 10.0,
+            step: 1,
+        });
+
+        //programatically create the field data for the two states and then hide them
+        //this makes sure that import/export works for motion projects
+        for (let i = 0; i < this.STATE_PARAMS.length; i++) {
+            for (const [key, value] of Object.entries(this.STATE_PARAMS[i])) {
+                const field = this.pane.addInput(this.STATE_PARAMS[i], key, {
+                    presetKey: key + i.toString(),
+                });
+                field.hidden = true;
+            }
+        } 
 
     	this.textBox = new ThreeMeshUI.Block({
                 backgroundSide: THREE.DoubleSide,
@@ -772,11 +842,8 @@ export class Typography extends Component {
         this.pane.on('change', (event) => { //if the pane changes
             //event.presetKey -> key that was changed
             //event.value -> what it was changed to
-
-            if (event.value == NaN) {
-                event.value = 1.0;
-            }
-
+            
+            //update fixed params
             if (event.presetKey == "text") {
                 this.textBox.children[1].set({content: event.value});
             } else if (event.presetKey == "font") {
@@ -784,25 +851,59 @@ export class Typography extends Component {
                 this.textBox.set({fontTexture: this.fontURL + event.value + "/" + event.value + ".png"})
             } else if (event.presetKey == "textAlign") {
                 this.textBox.set({textAlign: event.value})
-            } else if (event.presetKey == "fontColor") {
+            }
+
+            //if the state switches then update 
+            if (event.presetKey == 'state') {
+                this.stateChange(event.value);
+                return;
+            }
+
+            let index = 0;
+            if (this.PARAMS.state == "end") {
+                index = 1;
+            }
+            
+            if (event.presetKey == "fontColor") {
                 this.textBox.set({fontColor: new THREE.Color(event.value)});
+                this.STATE_PARAMS[index].fontColor = event.value;
             } else if (event.presetKey == "fontSize") {
                 this.textBox.children[1].set({fontSize: event.value});
+                this.STATE_PARAMS[index].fontSize = event.value;
             } else if (event.presetKey == "containerWidth") {
                 this.textBox.set({width: event.value});
-            } else if (event.presetKey == "letterSpacing") {
+                this.STATE_PARAMS[index].containerWidth = event.value;
+            } else if (event.presetKey == "letterSpacing") { 
                 this.textBox.children[1].set({letterSpacing: event.value});
+                this.STATE_PARAMS[index].letterSpacing = event.value;
             } else if (event.presetKey == 'position') {
                 let position = event.value;
                 this.textBox.position.set(position.x,position.y,position.z);
+                this.STATE_PARAMS[index].position = position;
             } else if (event.presetKey == 'rotation') {
                 let rotation = event.value;
                 this.textBox.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
+                this.STATE_PARAMS[index].position = rotation;
             }
             this.updateBoundingBox() 
         });		
     };
     
+    stateChange(stateString) { //start or end
+        let index = 0;
+        if (stateString == "end") {
+            index = 1;
+        }
+
+        this.PARAMS.fontColor = this.STATE_PARAMS[index].fontColor;
+        this.PARAMS.fontSize = this.STATE_PARAMS[index].fontSize;
+        this.PARAMS.containerWidth = this.STATE_PARAMS[index].containerWidth;
+        this.PARAMS.letterSpacing = this.STATE_PARAMS[index].letterSpacing;
+        this.PARAMS.position = this.STATE_PARAMS[index].position;
+        this.PARAMS.rotation = this.STATE_PARAMS[index].rotation;
+        this.pane.refresh();
+    }
+
     updateBoundingBox() {
         const box = new THREE.Box3().setFromObject(this.textBox);
         const geometry = new THREE.BoxGeometry(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
@@ -820,6 +921,98 @@ export class Typography extends Component {
         scene.remove(this.draggableMesh);
         scene.remove(this.textBox);
         this.div.remove();
+    }
+
+    motion(dt) {        
+        this.totalTime += dt;
+
+        // i goes from 0-1 over 2 phases 
+        let i = (this.totalTime % (this.MOTION_PARAMS.duration))/(this.MOTION_PARAMS.duration);
+
+        if (i > 0.97 && this.clicked) {
+            this.clicked = false;
+        }
+
+        //get i relative to time regarding trigger 
+        i = getTriggerTimeInterpolator(i,this.MOTION_PARAMS.trigger,this.clicked);
+
+        //feed that into the correct easing curve 
+        //reset that as i 
+        i = getEasingInterpolator(i,this.MOTION_PARAMS.behavior);
+
+        //set the attributes 
+        //set fontColor 
+        let fc = new THREE.Color();
+        (fc).lerpColors(new THREE.Color(this.STATE_PARAMS[0].fontColor),new THREE.Color(this.STATE_PARAMS[1].fontColor),i);
+        this.textBox.set({fontColor: fc});
+
+        //set fontSize
+        let fs = mix(this.STATE_PARAMS[0].fontSize,this.STATE_PARAMS[1].fontSize,i);
+        this.textBox.children[1].set({fontSize: fs});
+        
+        //set containerWidth
+        let cw = mix(this.STATE_PARAMS[0].containerWidth,this.STATE_PARAMS[1].containerWidth,i);
+        this.textBox.set({width: cw});
+
+        //set letterSpacing
+        let ls = mix(this.STATE_PARAMS[0].letterSpacing,this.STATE_PARAMS[1].letterSpacing,i);
+        this.textBox.children[1].set({letterSpacing: ls});
+
+        //set pos
+        let pos = mixTweakV3(this.STATE_PARAMS[0].position,this.STATE_PARAMS[1].position,i);
+        this.textBox.position.set(pos.x,pos.y,pos.z);
+        this.draggableMesh.position.set(pos.x,pos.y,pos.z); 
+
+        //set rot
+        let rotation = mixTweakV3(this.STATE_PARAMS[0].rotation,this.STATE_PARAMS[1].rotation,i);
+        this.textBox.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
+
+    }
+
+    animate(deltaTime,motion,camera) {
+        this.updatePaneLocation(camera)
+
+        if (motion) {
+            this.inMotion = true;
+
+            this.pane.hidden = true; 
+            this.draggableMesh.visible = false;
+
+            this.motion(deltaTime);
+            return;
+        }
+
+        if (this.inMotion) { //reset back to state 1 
+            //set the attributes 
+            //set fontColor 
+            this.textBox.set({fontColor: new THREE.Color(this.STATE_PARAMS[0].fontColor)});
+
+            //set fontSize
+            this.textBox.children[1].set({fontSize: this.STATE_PARAMS[0].fontSize});
+            
+            //set containerWidth
+            this.textBox.set({width: this.STATE_PARAMS[0].containerWidth});
+
+            //set letterSpacing
+            this.textBox.children[1].set({letterSpacing: this.STATE_PARAMS[0].letterSpacing});
+
+            //set pos
+            let pos =this.STATE_PARAMS[0].position;
+            this.textBox.position.set(pos.x,pos.y,pos.z);
+            this.draggableMesh.position.set(pos.x,pos.y,pos.z); 
+
+            //set rot
+            let rotation = this.STATE_PARAMS[0].rotation;
+            this.textBox.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
+
+            this.pane.hidden = false; 
+            this.draggableMesh.visible = true;
+
+            this.totalTime = 0;
+        }
+        this.inMotion = false;
+        this.clicked = false;
+        //update the base 
     }
 }
 
