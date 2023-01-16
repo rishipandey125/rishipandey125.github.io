@@ -589,9 +589,9 @@ export class World extends Component {
         this.motion = true;
 
         //turn grid off
-        this.gridXY.visible = off;
-        this.gridXZ.visible = off;
-        this.gridYZ.visible = off;
+        this.gridXY.visible = false;
+        this.gridXZ.visible = false;
+        this.gridYZ.visible = false;
         
         //disable all panes visiblity
         this.pane.hidden = true;
