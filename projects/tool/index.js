@@ -5,6 +5,7 @@ import ThreeMeshUI from 'https://cdn.skypack.dev/three-mesh-ui';
 const containerEl = document.querySelector(".container"); // container for renderer
 
 let world;
+let prevTime; // to track dt
 
 init(); //onStart
 render(); //onUpdate
@@ -16,6 +17,8 @@ function init() {
   let url = new URL(window.location.href); 
   let search_params = url.searchParams;  
   let projectResult = search_params.get('project');
+
+  prevTime = 0; //start with time = 0 
 
   //if the search parameter exists load that project
   if (projectResult != null) {
@@ -57,18 +60,22 @@ function createEvents() {
 }
 
 function render(time) {
-  // requestAnimationFrame(render);
+  let deltaTime = (time - prevTime)/1000; //calculate dt in seconds
+
   world.renderer.setAnimationLoop( render );
   
   if (world.renderer.xr.isPresenting) { //if the user is using AR 
     //handle xr viewing 
     world.handleARViewing();
   }
-
-  world.components.forEach(component => component.animate(world.camera));
+  
+  world.components.forEach(component => component.animate(deltaTime, world.motion, world.camera));
 
   ThreeMeshUI.update();
 
   world.renderer.render(world.scene, world.camera);
+
+  prevTime = time;
+
 }
 

@@ -6,6 +6,8 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader';
 import ThreeMeshUI from 'https://cdn.skypack.dev/three-mesh-ui';
 
 const MAX_GRID_DISTANCE = 30;
+
+//FONT CONSTANTS
 const FONT_URL = "https://raw.githubusercontent.com/shaheelm/shaheelm.github.io/main/fonts/";
 const FONT_DICT = {
     alegreya: "Alegreya",
@@ -42,6 +44,59 @@ const FONT_DICT = {
     work_sans: "WorkSans"
 };
 
+//MOTION CONSTANTS
+const MOTION_TRIGGERS = {
+    none: 0,
+    always: 1,
+    click: 2
+}
+
+function getTriggerTimeInterpolator(i,trigger,clicked) { //i goes from 0 - 1 over 2 periods 
+    if (trigger == 0) { //none 
+        return 0;
+    } else if (trigger == 1) { //always
+        if (i < 0.5) {
+            i = (i % 0.5)/0.5;
+        } else {
+            i = 1 - ((i % 0.5)/0.5);
+        }
+        return i;
+    } else if (trigger == 2) { //click
+        if (clicked) {
+            if (i < 0.5) {
+                i = (i % 0.5)/0.5;
+            } else {
+                i = 1 - ((i % 0.5)/0.5);
+            }
+        } else {
+            i = 0;
+        }
+        return i;
+    } 
+    return 0;
+}
+const MOTION_BEHAVIORS = { 
+    easeIn: "easeIn",
+    easeOut: "easeOut",
+    easeInOut: "easeInOut",
+}
+
+const MOTION_BEHAVIOR_FUNCTIONS = { //quarts for basic ease in/out
+    "easeIn": function(x) {
+        return x * x * x * x;
+    },
+    "easeOut": function(x) {
+        return 1 - Math.pow(1 - x, 4);
+    },
+    "easeInOut": function(x) {
+        return x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2;
+    }
+}
+
+function getEasingInterpolator(i,behavior) {
+    return MOTION_BEHAVIOR_FUNCTIONS[behavior](i);
+}
+
 //LOAD THE MATERIAL MAPS
 const textureLoader = new THREE.TextureLoader();
 //normal map
@@ -57,6 +112,13 @@ const HDR_EQUIRECT = new RGBELoader().load(
   );
 
 
+function mix(a,b,i) {
+    return a + ((b-a) * i);
+}
+
+function mixTweakV3(a3,b3,i) { //mix to match vec3 of tweakpane
+    return {x: mix(a3.x,b3.x,i), y: mix(a3.y,b3.y,i), z: mix(a3.z,b3.z,i)}
+}
 
 //parent component class
 class Component {
@@ -83,7 +145,12 @@ class Component {
 
         this.draggableMesh = new THREE.Object3D(); // the draggable mesh for each component
         this.trackPosition = new THREE.Vector3();  //track the draggable mesh position 
-
+        
+        //variables for motion
+        this.totalTime = 0;
+        this.inMotion = false;
+        this.repeat = false;
+        this.clicked = false;
 
     };
 
@@ -96,6 +163,13 @@ class Component {
         // this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
 
         //this is how we differentiate tap vs no tap 
+        if (this.inMotion) {
+            this.clicked = true;
+            this.totalTime = 0; //reset time 
+            this.draggableMesh.position.set(this.trackPosition.x,this.trackPosition.y,this.trackPosition.z); 
+            return;
+        }
+
         if (this.trackPosition.equals(this.draggableMesh.position)) {
             if (this.div.is(":visible")) {
                 this.div.hide();
@@ -148,9 +222,22 @@ class Component {
         this.div.css({top: y, left: x , position:'absolute'}); 
     }
 
+    motion(dt) {
+        this.inMotion = true;
+        this.pane.hidden = true; 
+        this.draggableMesh.visible = false;
+    }
+
     //animate function for every component
-    animate(camera) {
-        console.log("animate!")
+    animate(deltaTime,motion,camera) {
+        if (motion) {
+            this.motion(deltaTime);
+            return;
+        }
+        this.inMotion = false;
+        this.pane.hidden = false; 
+        this.draggableMesh.visible = true;
+        this.updatePaneLocation(camera);
     }
 }
 
@@ -247,10 +334,15 @@ export class World extends Component {
         });
 
         //create component button
-        const btn = tab.pages[0].addButton({
+        const addCompBtn = tab.pages[0].addButton({
             title: 'add component'
         });
 
+        //create component button
+        const motionBtn = tab.pages[0].addButton({
+            title: 'play'
+        });
+        this.motion = false;
         //create export button
         const importBtn = tab.pages[1].addButton({
             title: 'import'
@@ -269,7 +361,8 @@ export class World extends Component {
         this.gridXY.visible = this.PARAMS.grid;
         this.gridXZ.visible = this.PARAMS.grid;
         this.gridYZ.visible = this.PARAMS.grid;
-
+        
+        
         //handle pane event
         this.pane.on('change', (event) => { //if the pane changes
             //event.presetKey -> key that was changed
@@ -284,9 +377,18 @@ export class World extends Component {
             }
         });	
 
-        btn.on('click', () => {
+        addCompBtn.on('click', () => {
             let comp = this.PARAMS.component;
             this.createComponent(comp,false,null);
+        });
+        
+        motionBtn.on('click', () => {
+            this.motion = !(this.motion)
+            if (this.motion) {
+                motionBtn.title = "stop"
+            } else {
+                motionBtn.title = "play"
+            }
         });
         
         importBtn.on('click', () => {
@@ -441,6 +543,9 @@ export class World extends Component {
         this.dragControls.addEventListener('dragstart', function (event) {
             _self.orbit.enabled = false
             let idx = parseInt(event.object.name); // get the index of the mesh
+
+            // basically say that if this idx is diff than the select idx then disable that previous one
+
             let component = _self.components[idx]; // get the corresponding component
             _self.div.hide();
             if (component != null)
@@ -480,16 +585,16 @@ export class World extends Component {
     }
 
     presentationMode() {
-        //turn grid off
-        this.gridXY.visible = false;
-        this.gridXZ.visible = false;
-        this.gridYZ.visible = false;
+        //enable motion for each object
+        this.motion = true;
 
+        //turn grid off
+        this.gridXY.visible = off;
+        this.gridXZ.visible = off;
+        this.gridYZ.visible = off;
+        
         //disable all panes visiblity
         this.pane.hidden = true;
-
-        //disable all drag controls 
-        this.dragControls.enabled = false;
 
         //fix orbit controls 
         this.orbit.maxDistance = 100;
@@ -562,7 +667,7 @@ export class Typography extends Component {
             position: {x: 0, y: 0, z: 0},
             rotation: {x: 0, y: 0, z: 0},
             textAlign: "center",
-            font: "robotomono"
+            font: "TimesNewRoman"
         }
 
         this.pane = new Tweakpane.Pane({
@@ -577,6 +682,7 @@ export class Typography extends Component {
             label: 'font',
             options: FONT_DICT
         });
+
         this.pane.addInput(this.PARAMS, 'textAlign', {
             label: 'align',
             options: {
@@ -715,11 +821,6 @@ export class Typography extends Component {
         scene.remove(this.textBox);
         this.div.remove();
     }
-
-    animate(camera) {
-        this.updatePaneLocation(camera)
-    }
-
 }
 
 //mesh component class
@@ -729,13 +830,37 @@ export class Mesh extends Component {
 
         //setup the UI for the cube
         this.PARAMS = {
+            geometry: "cube",
+            material: "basic",
+            state: "start",
             position: {x: 0, y: 0, z: 0},
             rotation: {x: 0, y: 0, z: 0},
             scale: {x: 1, y: 1, z: 1},
-            geometry: "cube",
-            material: "basic",
-            color: '#000000'
+            color: '#000000',
         }
+        
+        this.STATE_PARAMS = [
+            {
+                position: {x: 0, y: 0, z: 0},
+                rotation: {x: 0, y: 0, z: 0},
+                scale: {x: 1, y: 1, z: 1},
+                color: '#000000'
+            },
+            {
+                position: {x: 0, y: 0, z: 0},
+                rotation: {x: 0, y: 0, z: 0},
+                scale: {x: 1, y: 1, z: 1},
+                color: '#000000'
+            }
+        ]
+
+        this.MOTION_PARAMS = {
+            trigger: 0,
+            behavior: "easeIn",
+            duration: 3 
+        }
+
+
 
         this.pane = new Tweakpane.Pane({
             title: this.title,
@@ -752,26 +877,6 @@ export class Mesh extends Component {
             }
         });
 
-        this.pane.addInput(this.PARAMS, 'position', {
-            x: {step: 1},
-            y: {step: 1},
-            z: {step: 1}
-        });
-
-        this.pane.addInput(this.PARAMS, 'rotation', {
-            x: {min: 0, max: 360},
-            y: {min: 0, max: 360},
-            z: {min: 0, max: 360}
-        });
-
-        this.pane.addInput(this.PARAMS, 'scale', {
-            x: {step: 0.1},
-            y: {step: 0.1},
-            z: {step: 0.1}
-        });
-
-        this.pane.addSeparator();
-
         this.pane.addInput(this.PARAMS, 'material', {
             label: 'material',
             options: {
@@ -782,7 +887,76 @@ export class Mesh extends Component {
             }
         });
 
-        this.pane.addInput(this.PARAMS, 'color');
+        this.pane.addSeparator();
+
+        const tab = this.pane.addTab({
+            pages: [
+              {title: 'details'},
+              {title: 'motion'},
+            ],
+          });
+          
+        //info tab
+        tab.pages[0].addInput(this.PARAMS, 'state', {
+            label: 'state',
+            options: {
+                start: "start",
+                end: "end",
+            }
+        });
+
+        tab.pages[0].addInput(this.PARAMS, 'position', {
+            x: {step: 1},
+            y: {step: 1},
+            z: {step: 1}
+        });
+
+        tab.pages[0].addInput(this.PARAMS, 'rotation', {
+            x: {min: 0, max: 360},
+            y: {min: 0, max: 360},
+            z: {min: 0, max: 360}
+        });
+
+        tab.pages[0].addInput(this.PARAMS, 'scale', {
+            x: {step: 0.1},
+            y: {step: 0.1},
+            z: {step: 0.1}
+        });
+
+        tab.pages[0].addSeparator();
+
+
+        tab.pages[0].addInput(this.PARAMS, 'color');
+        
+        //motion tab 
+        tab.pages[1].addInput(this.MOTION_PARAMS, 'trigger', {
+            options: MOTION_TRIGGERS
+        });
+
+        tab.pages[1].addInput(this.MOTION_PARAMS, 'behavior', {
+            options: MOTION_BEHAVIORS
+        });
+
+        tab.pages[1].addInput(this.MOTION_PARAMS, 'duration', {
+            min: 1.0,
+            max: 10.0,
+            step: 1,
+        });
+
+
+
+        //programatically create the field data for the two states and then hide them
+        //this makes sure that import/export works for motion projects
+        for (let i = 0; i < this.STATE_PARAMS.length; i++) {
+            for (const [key, value] of Object.entries(this.STATE_PARAMS[i])) {
+                const field = this.pane.addInput(this.STATE_PARAMS[i], key, {
+                    presetKey: key + i.toString(),
+                });
+                field.hidden = true;
+            }
+        } 
+
+
 
         //setup the cube mesh
         const geometry = new THREE.BoxGeometry(1,1,1);
@@ -816,22 +990,41 @@ export class Mesh extends Component {
         this.pane.on('change', (event) => { //if the pane changes
             //event.presetKey -> key that was changed
             //event.value -> what it was changed to
+
+            //update base properites
             if (event.presetKey == 'geometry') {
                 this.geometryChange(event.value);
-            } else if (event.presetKey == 'position') {
+            } else if (event.presetKey == 'material') {
+                this.materialChange(event.value);
+            }
+            
+            //if the state switches then update 
+            if (event.presetKey == 'state') {
+                this.stateChange(event.value);
+                return;
+            }
+            let index = 0;
+            if (this.PARAMS.state == "end") {
+                index = 1;
+            }
+            
+            //check what state it is - and update the corresponding state params 
+            if (event.presetKey == 'position') {
                 this.mesh.position.set(event.value.x, event.value.y, event.value.z);
+                this.STATE_PARAMS[index].position = event.value;
             } else if (event.presetKey == 'rotation') {
                 let rotation = event.value;
                 this.mesh.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
+                this.STATE_PARAMS[index].rotation = rotation;
             } else if (event.presetKey == 'scale') {
                 let scale = event.value;
                 this.mesh.scale.set(scale.x, scale.y, scale.z);
-            } else if (event.presetKey == 'material') {
-                this.materialChange(event.value);
+                this.STATE_PARAMS[index].scale = scale;
             } else if (event.presetKey == 'color') {
                 let color = event.value;
                 this.mesh.material.color = new THREE.Color(color);
-            }
+                this.STATE_PARAMS[index].color = color;
+            } 
             this.updateBoundingBox();
         });		
     };
@@ -914,8 +1107,94 @@ export class Mesh extends Component {
         }
     }
 
-    animate(camera) {
+    stateChange(stateString) { //start or end
+        let index = 0;
+        if (stateString == "end") {
+            index = 1;
+        }
+
+        this.PARAMS.position = this.STATE_PARAMS[index].position;
+        this.PARAMS.rotation = this.STATE_PARAMS[index].rotation;
+        this.PARAMS.scale = this.STATE_PARAMS[index].scale;
+        this.PARAMS.color = this.STATE_PARAMS[index].color;
+        this.pane.refresh();
+    }
+
+    motion(dt) {        
+        this.totalTime += dt;
+
+        // i goes from 0-1 over 2 phases 
+        let i = (this.totalTime % (this.MOTION_PARAMS.duration))/(this.MOTION_PARAMS.duration);
+
+        if (i > 0.97 && this.clicked) {
+            this.clicked = false;
+        }
+
+        //get i relative to time regarding trigger 
+        i = getTriggerTimeInterpolator(i,this.MOTION_PARAMS.trigger,this.clicked);
+
+        //feed that into the correct easing curve 
+        //reset that as i 
+        i = getEasingInterpolator(i,this.MOTION_PARAMS.behavior);
+
+        //set the attributes 
+        //set pos
+        let pos = mixTweakV3(this.STATE_PARAMS[0].position,this.STATE_PARAMS[1].position,i);
+        this.mesh.position.set(pos.x,pos.y,pos.z);
+        this.draggableMesh.position.set(pos.x,pos.y,pos.z); 
+
+        //set rot
+        let rotation = mixTweakV3(this.STATE_PARAMS[0].rotation,this.STATE_PARAMS[1].rotation,i);
+        this.mesh.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
+        
+        //set scale
+        let scale = mixTweakV3(this.STATE_PARAMS[0].scale,this.STATE_PARAMS[1].scale,i);
+        this.mesh.scale.set(scale.x, scale.y, scale.z);
+
+        //set color
+        (this.mesh.material.color).lerpColors(new THREE.Color(this.STATE_PARAMS[0].color),new THREE.Color(this.STATE_PARAMS[1].color),i);
+        
+
+    }
+
+    animate(deltaTime,motion,camera) {
         this.updatePaneLocation(camera)
+
+        if (motion) {
+            this.inMotion = true;
+
+            this.pane.hidden = true; 
+            this.draggableMesh.visible = false;
+
+            this.motion(deltaTime);
+            return;
+        }
+
+        if (this.inMotion) { //reset back to state 1 
+            //set pos
+            let pos = this.STATE_PARAMS[0].position;
+            this.mesh.position.set(pos.x,pos.y,pos.z);
+            this.draggableMesh.position.set(pos.x,pos.y,pos.z); 
+
+            //set rot
+            let rotation = this.STATE_PARAMS[0].rotation;
+            this.mesh.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
+            
+            //set scale
+            let scale = this.STATE_PARAMS[0].scale;
+            this.mesh.scale.set(scale.x, scale.y, scale.z);
+
+            //set color
+            this.mesh.material.color = new THREE.Color(this.STATE_PARAMS[0].color);
+
+            this.pane.hidden = false; 
+            this.draggableMesh.visible = true;
+
+            this.totalTime = 0;
+        }
+        this.inMotion = false;
+        this.clicked = false;
+        //update the base 
     }
 }
 
@@ -1035,7 +1314,15 @@ export class ParticleSphere extends Component {
         mesh.instanceMatrix.needsUpdate = true;
     }
 
-    animate(camera) {
+    animate(deltaTime,motion,camera) {
+        if (motion) {
+            this.motion(deltaTime);
+            return;
+        }
+        this.inMotion = false;
+        this.pane.hidden = false; 
+        this.draggableMesh.visible = true;
+
         this.setInstancedMeshPositions(this.instancedMesh);
         this.updatePaneLocation(camera)
     }
