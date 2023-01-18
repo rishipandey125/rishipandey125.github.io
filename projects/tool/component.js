@@ -878,12 +878,13 @@ export class Typography extends Component {
                 this.STATE_PARAMS[index].letterSpacing = event.value;
             } else if (event.presetKey == 'position') {
                 let position = event.value;
+
                 this.textBox.position.set(position.x,position.y,position.z);
                 this.STATE_PARAMS[index].position = position;
             } else if (event.presetKey == 'rotation') {
                 let rotation = event.value;
                 this.textBox.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
-                this.STATE_PARAMS[index].position = rotation;
+                this.STATE_PARAMS[index].rotation = rotation;
             }
             this.updateBoundingBox() 
         });		
@@ -901,6 +902,7 @@ export class Typography extends Component {
         this.PARAMS.letterSpacing = this.STATE_PARAMS[index].letterSpacing;
         this.PARAMS.position = this.STATE_PARAMS[index].position;
         this.PARAMS.rotation = this.STATE_PARAMS[index].rotation;
+
         this.pane.refresh();
     }
 
