@@ -160,7 +160,6 @@ class Component {
     }
     
     handleDragEnd() {
-        // this.PARAMS.position = {x: this.draggableMesh.position.x, y: this.draggableMesh.position.y, z: this.draggableMesh.position.z}
 
         //this is how we differentiate tap vs no tap 
         if (this.inMotion) {
@@ -283,6 +282,7 @@ export class World extends Component {
         //create drag controls 
         this.dragControls = new DragControls([], this.camera, this.renderer.domElement);
         this.hoverComponentIdx = -1; //no component is selected
+        this.selectComponentIdx = -1; //no component is selected
 
         this.components = []
 
@@ -546,7 +546,12 @@ export class World extends Component {
             _self.orbit.enabled = false
             let idx = parseInt(event.object.name); // get the index of the mesh
 
-            // basically say that if this idx is diff than the select idx then disable that previous one
+            if (_self.selectComponentIdx > -1 && _self.selectComponentIdx != idx) {
+                //turn the prev component off 
+                let component = _self.components[_self.selectComponentIdx];
+                component.div.hide();
+                component.draggableMesh.material.opacity = 0.0
+            }
 
             let component = _self.components[idx]; // get the corresponding component
             _self.div.hide();
@@ -561,6 +566,7 @@ export class World extends Component {
             // _self.div.hide();
             if (component != null)
                 component.handleDragEnd();
+            _self.selectComponentIdx = idx;
         })
     
         this.dragControls.addEventListener('hoveron', function (event) {
