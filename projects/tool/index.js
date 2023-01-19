@@ -16,23 +16,29 @@ function init() {
   let url = new URL(window.location.href); 
   let search_params = url.searchParams;  
   let projectResult = search_params.get('project');
+  let viewResult = search_params.get('view');
+
+  function Get(yourUrl){
+    var Httpreq = new XMLHttpRequest(); // a new request
+    Httpreq.open("GET",yourUrl,false);
+    Httpreq.send(null);     
+    return Httpreq.responseText;          
+  }
 
   //if the search parameter exists load that project
   if (projectResult != null) {
-    function Get(yourUrl){
-      var Httpreq = new XMLHttpRequest(); // a new request
-      Httpreq.open("GET",yourUrl,false);
-      Httpreq.send(null);     
-      return Httpreq.responseText;          
-    }
-
     // the path where we are hosting spatial files
     var githubPath = 'https://raw.githubusercontent.com/rishipandey125/rishipandey125.github.io/master/projects/spatial/';
     let worldDict = JSON.parse(Get(githubPath + projectResult));
     world.import(worldDict);
     world.presentationMode();
     world.enableAR();
-  }
+  } else if (viewResult != null) {
+    // the path where we are hosting spatial files
+    var githubPath = 'https://raw.githubusercontent.com/rishipandey125/rishipandey125.github.io/master/projects/spatial/';
+    let worldDict = JSON.parse(Get(githubPath + viewResult));
+    world.import(worldDict);
+}
 
   
   containerEl.appendChild(world.renderer.domElement);
