@@ -248,7 +248,9 @@ export class World extends Component {
 
         this.worldDict = {}
         this.ARController; 
-        
+
+        this.clock = new THREE.Clock();
+
         // create objects for the overall scene
         this.camera = new THREE.PerspectiveCamera( //create the camera
             45,
@@ -362,7 +364,7 @@ export class World extends Component {
         this.gridXZ.visible = this.PARAMS.grid;
         this.gridYZ.visible = this.PARAMS.grid;
         
-        
+
         //handle pane event
         this.pane.on('change', (event) => { //if the pane changes
             //event.presetKey -> key that was changed
@@ -505,7 +507,6 @@ export class World extends Component {
 
     createComponent(comp, usePreset, preset) {
         let component = null; 
-
         if (comp == "mesh") {
             component = new Mesh(this.components.length);
         } else if (comp == "typography") {
@@ -534,6 +535,7 @@ export class World extends Component {
             component.draggableMesh.name = i;
             meshes.push(component.draggableMesh);
         }
+
 
         this.dragControls.dispose(); //dispose the prev drag controls and create a new one 
         this.dragControls = new DragControls(meshes, this.camera, this.renderer.domElement);
@@ -604,7 +606,6 @@ export class World extends Component {
     enableAR() {
         this.renderer.xr.enabled = true;
         document.body.appendChild( ARButton.createButton( this.renderer ) );
-        console.log(this.renderer.xr)
         this.ARController = this.renderer.xr.getController(0);
         // controller.addEventListener( 'selectstart', onSelectStart );
         // controllexr.addEventListener( 'selectend', onSelectEnd );
@@ -631,7 +632,6 @@ export class World extends Component {
     }
 
     import(worldDict) {  
-        console.log(worldDict)
         for (const [key, value] of Object.entries(worldDict)) { //iterate through the dictionary
             if (key == "world") { // import world settings
                 this.pane.importPreset(value); 
@@ -650,12 +650,12 @@ export class World extends Component {
             this.worldDict[component.title + "_" + component.id] = component.pane.exportPreset()
         );
     }
+    
 }
 
 export class Typography extends Component {
     constructor(componentID) {
         super(componentID,"typography",250);
-
         this.fontURL = "https://raw.githubusercontent.com/shaheelm/shaheelm.github.io/main/fonts/"
         //setup the UI for the typography
         this.PARAMS = {
@@ -815,7 +815,7 @@ export class Typography extends Component {
             fontSize: this.PARAMS.fontSize,
             letterSpacing: this.PARAMS.letterSpacing
         });
-        
+
         this.textBox.add(t);
 
         //text box event
@@ -842,7 +842,7 @@ export class Typography extends Component {
         this.pane.on('change', (event) => { //if the pane changes
             //event.presetKey -> key that was changed
             //event.value -> what it was changed to
-            
+
             //update fixed params
             if (event.presetKey == "text") {
                 this.textBox.children[1].set({content: event.value});
@@ -904,6 +904,7 @@ export class Typography extends Component {
         this.PARAMS.rotation = this.STATE_PARAMS[index].rotation;
 
         this.pane.refresh();
+
     }
 
     updateBoundingBox() {
@@ -917,6 +918,7 @@ export class Typography extends Component {
     add(scene) {
         scene.add(this.draggableMesh);
         scene.add(this.textBox);
+        
     }
 
     delete(scene) {
@@ -925,9 +927,8 @@ export class Typography extends Component {
         this.div.remove();
     }
 
-    motion(dt) {        
+    motion(dt) {     
         this.totalTime += dt;
-
         // i goes from 0-1 over 2 phases 
         let i = (this.totalTime % (this.MOTION_PARAMS.duration))/(this.MOTION_PARAMS.duration);
 
@@ -948,30 +949,30 @@ export class Typography extends Component {
         (fc).lerpColors(new THREE.Color(this.STATE_PARAMS[0].fontColor),new THREE.Color(this.STATE_PARAMS[1].fontColor),i);
         this.textBox.set({fontColor: fc});
 
-        //set fontSize
+        // //set fontSize
         let fs = mix(this.STATE_PARAMS[0].fontSize,this.STATE_PARAMS[1].fontSize,i);
         this.textBox.children[1].set({fontSize: fs});
         
-        //set containerWidth
+        // // //set containerWidth
         let cw = mix(this.STATE_PARAMS[0].containerWidth,this.STATE_PARAMS[1].containerWidth,i);
         this.textBox.set({width: cw});
 
-        //set letterSpacing
+        // // //set letterSpacing
         let ls = mix(this.STATE_PARAMS[0].letterSpacing,this.STATE_PARAMS[1].letterSpacing,i);
         this.textBox.children[1].set({letterSpacing: ls});
 
-        //set pos
+        // // // //set pos
         let pos = mixTweakV3(this.STATE_PARAMS[0].position,this.STATE_PARAMS[1].position,i);
         this.textBox.position.set(pos.x,pos.y,pos.z);
         this.draggableMesh.position.set(pos.x,pos.y,pos.z); 
 
-        //set rot
+        // // //set rot
         let rotation = mixTweakV3(this.STATE_PARAMS[0].rotation,this.STATE_PARAMS[1].rotation,i);
         this.textBox.rotation.set(THREE.MathUtils.degToRad(rotation.x),THREE.MathUtils.degToRad(rotation.y),THREE.MathUtils.degToRad(rotation.z));
 
     }
 
-    animate(deltaTime,motion,camera) {
+    animate(deltaTime,motion,camera) {        
         this.updatePaneLocation(camera)
 
         if (motion) {

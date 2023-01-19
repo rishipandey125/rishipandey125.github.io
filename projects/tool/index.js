@@ -5,7 +5,6 @@ import ThreeMeshUI from 'https://cdn.skypack.dev/three-mesh-ui';
 const containerEl = document.querySelector(".container"); // container for renderer
 
 let world;
-let prevTime; // to track dt
 
 init(); //onStart
 render(); //onUpdate
@@ -18,12 +17,8 @@ function init() {
   let search_params = url.searchParams;  
   let projectResult = search_params.get('project');
 
-  prevTime = 0; //start with time = 0 
-
   //if the search parameter exists load that project
   if (projectResult != null) {
-
-    // load the corresponding json file url  
     function Get(yourUrl){
       var Httpreq = new XMLHttpRequest(); // a new request
       Httpreq.open("GET",yourUrl,false);
@@ -33,14 +28,9 @@ function init() {
 
     // the path where we are hosting spatial files
     var githubPath = 'https://raw.githubusercontent.com/rishipandey125/rishipandey125.github.io/master/projects/spatial/';
-
-    //load the spatial file 
-    var spatialFile = JSON.parse(Get(githubPath + projectResult));
-
-    world.import(spatialFile);
-
+    let worldDict = JSON.parse(Get(githubPath + projectResult));
+    world.import(worldDict);
     world.presentationMode();
-
     world.enableAR();
   }
 
@@ -49,6 +39,9 @@ function init() {
 
   createEvents();
 } 
+
+
+
 
 function createEvents() {
   //updates and scales everything in the site when things are resized
@@ -60,8 +53,6 @@ function createEvents() {
 }
 
 function render(time) {
-  let deltaTime = (time - prevTime)/1000; //calculate dt in seconds
-
   world.renderer.setAnimationLoop( render );
   
   if (world.renderer.xr.isPresenting) { //if the user is using AR 
@@ -69,13 +60,12 @@ function render(time) {
     world.handleARViewing();
   }
   
+  let deltaTime = world.clock.getDelta();
+
   world.components.forEach(component => component.animate(deltaTime, world.motion, world.camera));
 
   ThreeMeshUI.update();
 
   world.renderer.render(world.scene, world.camera);
-
-  prevTime = time;
-
 }
 
