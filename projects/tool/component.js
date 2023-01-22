@@ -593,6 +593,10 @@ export class World extends Component {
     }
 
     presentationMode() {
+        //fix orbit controls 
+        this.orbit.maxDistance = 100;
+        this.orbit.minDistance = 100;
+
         //enable motion for each object
         this.motion = true;
 
@@ -600,13 +604,11 @@ export class World extends Component {
         this.gridXY.visible = false;
         this.gridXZ.visible = false;
         this.gridYZ.visible = false;
+
+        this.dragControls.enabled = false ; //turn off the drag controls 
         
         //disable all panes visiblity
         this.pane.hidden = true;
-
-        //fix orbit controls 
-        this.orbit.maxDistance = 100;
-        this.orbit.minDistance = 100;
     }
 
     enableAR() {
@@ -624,7 +626,9 @@ export class World extends Component {
         this.renderer.setClearColor( new THREE.Color(this.PARAMS.background), 0 );
         
         //scale down scene 
-        this.scene.scale.set(0.06,0.06,0.06);
+        this.scene.scale.set(0.06,0.06,0.06); //scale the scene down significantly
+
+        this.scene.position.set(0,0,-15); // set the scene position 15 units back 
 
         //disable orbit controls
         this.orbit.enabled = false;
