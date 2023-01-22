@@ -302,6 +302,8 @@ export class World extends Component {
 
         this.scene.add(ambientLight);
 
+        this.offsetXR = true; 
+
         //create the pane 
         this.PARAMS = {
             background: '#ffffff',
@@ -619,15 +621,16 @@ export class World extends Component {
         // controllexr.addEventListener( 'selectend', onSelectEnd );
         this.ARController.userData.skipFrames = 0;
         this.scene.add(this.ARController);
-
-                
-        //scale down scene 
-        this.scene.scale.set(0.06,0.06,0.06); //scale the scene down significantly
-
-        this.scene.position.set(0,0,-15); // set the scene position 15 units back 
     }
 
     handleARViewing() {
+        if (this.offsetXR) {
+            //scale down scene 
+            this.scene.scale.set(0.06,0.06,0.06); //scale the scene down significantly
+
+            this.scene.position.set(0,0,-15); // set the scene position 15 units back 
+            this.offsetXR = false;
+        }
         //make renderer transparent for camera passthrough
         this.renderer.setClearColor( new THREE.Color(this.PARAMS.background), 0 );
 
