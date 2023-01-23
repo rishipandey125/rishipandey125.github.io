@@ -597,7 +597,7 @@ export class World extends Component {
     presentationMode() {
         //fix orbit controls 
         this.orbit.maxDistance = 100;
-        this.orbit.minDistance = 100;
+        this.orbit.minDistance = 40;
 
         //enable motion for each object
         this.motion = true;
