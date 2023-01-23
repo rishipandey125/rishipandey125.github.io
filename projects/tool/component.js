@@ -257,9 +257,9 @@ export class World extends Component {
             0.1,
             1000
          );
-        this.camera.position.x = -10;
+        this.camera.position.x = -70.7106781187;
         this.camera.position.y = 5;
-        this.camera.position.z = 30;
+        this.camera.position.z = 70.7106781187;
 
         this.scene = new THREE.Scene(); //create the scene
 
