@@ -632,7 +632,7 @@ export class World extends Component {
             this.group.translateZ(-17); //translate the scene back 17 units so it is in front of the user 
             this.offsetXR = false;
         }
-        this.group.scale.set(0.02,0.02,0.02); //scale the scene down significantly
+        this.scene.scale.set(0.02,0.02,0.02); //scale the scene down significantly
         //make renderer transparent for camera passthrough
         this.renderer.setClearColor( new THREE.Color(this.PARAMS.background), 0 );
 
