@@ -262,6 +262,9 @@ export class World extends Component {
         this.camera.position.z = 70.7106781187;
 
         this.scene = new THREE.Scene(); //create the scene
+        this.group = new THREE.Group();
+
+        this.scene.add(this.group);
 
         this.renderer = new THREE.WebGLRenderer({  //create the renderer
             antialias: true,
@@ -449,7 +452,7 @@ export class World extends Component {
         deleteBtn.on('click', () => {
             if (this.hoverComponentIdx > -1 ) {
                 let comp = this.components[this.hoverComponentIdx]; // get the component to delete
-                comp.delete(this.scene);
+                comp.delete(this.group);
     
                 this.components.splice(this.hoverComponentIdx,1); // remove the component from the component list 
                 this.orbit.enabled = true;
@@ -518,7 +521,7 @@ export class World extends Component {
         }
 
         if (component != null) {
-            component.add(this.scene);
+            component.add(this.group);
             if (usePreset && preset != null) {
                 component.pane.importPreset(preset);
             }
@@ -625,10 +628,11 @@ export class World extends Component {
 
     handleARViewing() {
         if (this.offsetXR) {
-            this.scene.translateZ(-17); //translate the scene back 17 units so it is in front of the user 
+            console.log("this is happening")
+            this.group.translateZ(-17); //translate the scene back 17 units so it is in front of the user 
             this.offsetXR = false;
         }
-        this.scene.scale.set(0.01,0.01,0.01); //scale the scene down significantly
+        this.group.scale.set(0.02,0.02,0.02); //scale the scene down significantly
         //make renderer transparent for camera passthrough
         this.renderer.setClearColor( new THREE.Color(this.PARAMS.background), 0 );
 
