@@ -628,7 +628,7 @@ export class World extends Component {
             //scale down scene 
             this.scene.scale.set(0.06,0.06,0.06); //scale the scene down significantly
 
-            this.scene.position.set(0,0,-15); // set the scene position 15 units back 
+            // this.scene.position.set(0,0,-15); // set the scene position 15 units back 
             this.offsetXR = false;
         }
         //make renderer transparent for camera passthrough
