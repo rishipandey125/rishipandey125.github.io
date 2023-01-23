@@ -624,7 +624,7 @@ export class World extends Component {
     }
 
     handleARViewing() {
-        this.scene.scale.set(0.1,0.1,0.1); //scale the scene down significantly
+        this.scene.scale.set(0.3,0.3,0.3); //scale the scene down significantly
         //make renderer transparent for camera passthrough
         this.renderer.setClearColor( new THREE.Color(this.PARAMS.background), 0 );
 
