@@ -628,8 +628,7 @@ export class World extends Component {
 
     handleARViewing() {
         if (this.offsetXR) {
-            console.log("this is happening")
-            this.group.translateZ(-17); //translate the scene back 17 units so it is in front of the user 
+            this.group.translateZ(-20); //translate the scene back 17 units so it is in front of the user 
             this.offsetXR = false;
         }
         this.scene.scale.set(0.02,0.02,0.02); //scale the scene down significantly
