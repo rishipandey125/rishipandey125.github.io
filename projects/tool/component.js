@@ -853,6 +853,8 @@ export class Typography extends Component {
         //track the draggable mesh position 
         this.trackPosition = new THREE.Vector3();
 
+        this.initialBBUpdate = 0;
+
         //pane events 
         this.pane.on('change', (event) => { //if the pane changes
             //event.presetKey -> key that was changed
@@ -933,7 +935,6 @@ export class Typography extends Component {
     add(scene) {
         scene.add(this.draggableMesh);
         scene.add(this.textBox);
-        
     }
 
     delete(scene) {
@@ -988,7 +989,14 @@ export class Typography extends Component {
     }
 
     animate(deltaTime,motion,camera) {        
+
+        if (this.initialBBUpdate < 100) {
+            this.updateBoundingBox();        
+            this.initialBBUpdate += 1;
+        }
+
         this.updatePaneLocation(camera)
+        
 
         if (motion) {
             this.inMotion = true;
