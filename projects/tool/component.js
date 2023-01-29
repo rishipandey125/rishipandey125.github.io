@@ -990,7 +990,7 @@ export class Typography extends Component {
 
     animate(deltaTime,motion,camera) {        
 
-        if (this.initialBBUpdate < 100) {
+        if (this.initialBBUpdate < 100 && !motion) {
             this.updateBoundingBox();        
             this.initialBBUpdate += 1;
         }
