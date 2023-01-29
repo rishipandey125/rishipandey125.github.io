@@ -6,6 +6,8 @@ const containerEl = document.querySelector(".container"); // container for rende
 
 let world;
 
+let handleAR;
+
 init(); //onStart
 render(); //onUpdate
 
@@ -23,7 +25,9 @@ function init() {
     Httpreq.open("GET",yourUrl,false);
     Httpreq.send(null);     
     return Httpreq.responseText;          
-  }
+  } 
+
+  handleAR = false;
 
   //if the search parameter exists load that project
   if (projectResult != null) {
@@ -63,7 +67,10 @@ function render(time) {
   
   if (world.renderer.xr.isPresenting) { //if the user is using AR 
     //handle xr viewing 
-    world.handleARViewing();
+    if (!handleAR) {
+      world.handleARViewing();
+      handleAR = true;
+    }
   }
   
   let deltaTime = world.clock.getDelta();
