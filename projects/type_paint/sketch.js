@@ -89,7 +89,7 @@ function touchMoved() {
     textSize(slider.value());
     text(inputText, mouseX, mouseY);
   }
-  return false;
+  // return false;
 }
 
 //easter egg -> clear sketch if you shake your device 
