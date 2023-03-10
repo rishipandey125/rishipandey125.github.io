@@ -81,7 +81,7 @@ function setInputText() {
 }
 
 //when you drag your mouse -> paint!
-function mouseDragged() {
+function touchMoved() {
   if (paint && inputText.length > 0) {
     divIntro.hide()
     divInstruct.hide()
