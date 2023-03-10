@@ -21,7 +21,7 @@ function setup() {
   divIntro.style('font-style', 'bold');
   divIntro.position(windowWidth*0.1, windowHeight*0.05);
   
-  divInstruct = createDiv('type something in box below and click/tap the canvas to paint');
+  divInstruct = createDiv('type something in box below and click/drag on the canvas to paint (best on desktop)');
   divInstruct.style('font-size', '15px');
   divInstruct.style('font-style', 'bold');
   divInstruct.position(windowWidth*0.1, windowHeight*0.12);
