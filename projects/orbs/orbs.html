@@ -8,16 +8,20 @@
 
     <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
 
-    <title>The Beauty of Accessible Light Simulation</title>
+    <title>orbs 🔮</title>
 
     <style>
       html {
-        background-color: #ffffff;
+        background-color: #004021;
       }
 
       body {
-        background-color: #ffffff;
+        background-color: #004021;
         font-family: 'Roboto Mono', monospace;
+        color: white;
+      }
+      a {
+        color: #9f8af1;
       }
 
       .error {
@@ -52,44 +56,25 @@
         <div class="container mb-3">
         <div class ="row intro">
             <div class="col-md-10" align="left">
-                <h1>The Beauty of Accessible Light Simulation </h1>
-                <p>&nbsp;</p> 
-                <p class="">published 10/16/22</p>
-                <p class="">by <a href="https://twitter.com/wookiepandey25" target="_blank">Rishi Pandey 🌺</a></p>
-                <p>&nbsp;</p> 
+                <h1>orbs 🔮...</h1>
+            </div>
+        </div>
+
+        <p>&nbsp;</p> 
+        <div class="row intro">
+            <div class="col-md-10" align="left">
+                <p class="">is a generative art piece designed and engineered in a fragment shader via GLSL.</p>
+                <p class="">The piece you see is unique to you!</p>
+                <p class="">Reloading this page will generate a new piece.</p>
             </div>
         </div>
 
         <div class="row intro">
             <div class="col-md-10" align="left">
-                <h4>Light Simulation is Beautfiul</h4>
-                <p class="">I’ve always been fascinated by <a href="https://en.wikipedia.org/wiki/Path_tracing" target="_blank">path tracing</a> and physically based lighting models. It stems from my early admiration of films by <a href="http://www.ilm.com" target="_blank">ILM</a> and <a href="https://graphics.pixar.com/library/" target="_blank">Pixar</a>. Only when I was older did I start diving into learning about the years of R&D that went into production rendering.</p>
-                <p class="">Light scattering in a scene is something that you can feel. You know what is right and wrong, there is a ground truth that we are all familiar with.</p>
-                <p class="">That ground truth is rooted in complex mathematics that simulate the transport of light to create imagery. It feels quite magical to witness how computation can be used to create something so physically authentic. That is what I find truly beautiful about it.</p>
-                <p class="">However, production rendering tools are expensive ($$$ hardware and computation) and therefore often inaccessible for independent artists.</p>
-            </div>
-        </div>
-        <p>&nbsp;</p> 
-        <div class="row intro">
-            <div class="col-md-10" align="left">
-                <h4>The Artistic Acessibility of the Internet</h4>
-                <p class="">A lot of my artistic and technical exploration lately has been focused on mobile and the web. The accessibility of the internet as a medium has let me rapidly design, prototype, and publish my work using simple tools, no “high-end” equipment necessary.</p>
-                <p class="">Web/mobile is becoming an increasingly interactive space for computational artists. I feel like path tracing tools would perfectly empower web-artists to explore what interactions, art, and algorithms may look like when exactly simulated.</p>
-                <p class="">This idea of combining the perfectly calculated beauty of path tracing along with the rapid prototyping culture of web exploration inspired my first exploration into web based light simulation.</p>
-            </div>
-        </div>
-        <p>&nbsp;</p> 
-        <div class="row intro">
-            <div class="col-md-5" align="left">
-                <h4>Orbs</h4>
-                <p class="">is a generative art piece designed and engineered in a fragment shader via GLSL.</p>
-                <p class="">The piece you see is unique to you!</p>
-                <p class="">Refreshing/Reloading this blog will generate a new piece.</p>
-            </div>
-            <div class="col-md-5" align="center">
                 <div id="container"></div>
             </div>
         </div>
+        
         <p>&nbsp;</p> 
         <div class="row intro">
             <div class="col-md-10" align="left">
@@ -100,22 +85,6 @@
                 <p class="">It allows for the accumulation of noisy (low quality) renders to then be averaged to make a high quality image. A new noisy render is calculated every frame, which means that every frame the quality of the piece improves.</p>
                 <p class="">You can tell when you refresh the page that the piece starts noisy, and quickly improves in quality from there.</p>
                 <p class="">I find it really cool that you can accumulate many low quality simulations that are very easy to compute to average and create a high quality result.</p>
-            </div>
-        </div>
-        <p>&nbsp;</p> 
-        <div class="row intro">
-            <div class="col-md-10" align="left">
-                <h4>What's Next?!</h4>
-                <p class="">This piece was just a simple first step in exploring light simulation for interactive experiences and art on the web! I am really excited to continue to advance the renderer and elevate it from a shader based art piece to a bespoke light simulation web design tool.</p>
-                <p class="">As mentioned earlier, path tracing can get computationally expensive quickly. To create nimble path tracing powered interactive design tools acceleration structures and optimization features are vital.</p>
-                <p class="">Progressive rendering is a great example of a feature that enables a path tracer to be used as a tool or an experience.</p>
-                <p class="">It allows you to iterate in the design process on your scene at an interactive framerate using low-quality render settings, but still output a high-quality result via accumulation.</p>
-                <p class="">There are a lot of amazing artists and engineers exploring internet tools for physically based rendering. We are all working hard to empower internet artists/designers with tools to explore algorithmic and artistic expression with light simulation.</p>
-            </div>
-        </div>
-        <div class="row intro">
-            <div class="col-md-10" align="left">
-                <a href="http://www.rishi-pandey.com/" target="_blank">home</a></p>
             </div>
         </div>
         <p>&nbsp;</p> 
