@@ -9,8 +9,7 @@ let shapeStyle;
 
 
 function preload() {
-  // img = loadImage('https://pbs.twimg.com/profile_images/1693113169349328896/8BXI-Gue_400x400.jpg');
-  img = loadImage("img/faqir.jpg")
+  img = loadImage('https://pbs.twimg.com/media/F357UiTWoAAsEUv?format=jpg&name=large');
 }
 
 //setup the canvas for rendering
@@ -24,7 +23,7 @@ function setup() {
   canvas.position(newCanvasX,newCanvasY);
   image(img,0,0)
   noStroke();
-  mult = random() * 0.03
+  mult = random() * 0.003
   dotSize = 5 * random();
   for (let i = 0; i < img.width; i += dotSize) {
     for (let j = 0; j < img.height; j += dotSize) {
