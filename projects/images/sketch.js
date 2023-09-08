@@ -9,7 +9,7 @@ let shapeStyle;
 
 
 function preload() {
-  img = loadImage('https://pbs.twimg.com/media/F357UiTWoAAsEUv?format=jpg&name=large');
+  img = loadImage('img/faqir.jpg');
 }
 
 //setup the canvas for rendering
@@ -34,24 +34,26 @@ function setup() {
       colors.push(color(c)) //add colors to array
     }
   }
+
+  
 }
 
 
 function draw() {
   
-  for (var i = 0; i < points.length; i++) { //loop through every point
-    // noStroke() //fill inside
-    fill(colors[i]) //use assigned local color to fill 
+  // for (var i = 0; i < points.length; i++) { //loop through every point
+  //   // noStroke() //fill inside
+  //   fill(colors[i]) //use assigned local color to fill 
     
-    var currPoint = points[i] //get the current Point
+  //   var currPoint = points[i] //get the current Point
     
-    var angle = map(noise(currPoint.x * mult,currPoint.y * mult),0,1,0,720) //map perlin noise to an angle (degrees)
+  //   var angle = map(noise(currPoint.x * mult,currPoint.y * mult),0,1,0,720) //map perlin noise to an angle (degrees)
 
-    //use the angle to find the change in x and change in y
-    // set that to be the new points location
-    points[i].add(createVector(dotSize/2*cos(angle),dotSize/2*sin(angle))) //update direction w/ vector field
-    circle(points[i].x,points[i].y,random()*dotSize);
-  }
+  //   //use the angle to find the change in x and change in y
+  //   // set that to be the new points location
+  //   points[i].add(createVector(dotSize/2*cos(angle),dotSize/2*sin(angle))) //update direction w/ vector field
+  //   circle(points[i].x,points[i].y,random()*dotSize);
+  // }
   
   
 }
