@@ -12,7 +12,7 @@ function setup() {
 
   colorMode(RGB) //use hsb color space so I can saturate things
 
-  background(color(240))
+  background(color(0))
   
   angleMode(DEGREES) //trig mode degrees
   // var density = int(random(20,50)) //density of points
@@ -44,7 +44,7 @@ function draw() {
       var currPoint = points[i] //get the current Point
      
       noStroke() //fill inside
-      fill(color((currPoint.y/height)*255,0,0))
+      fill(color((1.0-(currPoint.y/height))*255,100,200))
 
       var angle = map(noise((currPoint.x/width)*noiseScale,(currPoint.y/height)*noiseScale),0,1,0,360) //map perlin noise to an angle (degrees)
       
