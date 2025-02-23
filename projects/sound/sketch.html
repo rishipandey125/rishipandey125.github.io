@@ -1,14 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="./sketch.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="sketch.css">
-    <meta charset="utf-8" />
+    <title>day 2</title>
+    <style>
+     
+      body, canvas {
+        margin:0px;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+        touch-action: none; 
+    }   
+    canvas{
+        position: absolute;
+        z-index:-1;
+    }
 
+    #instructions{
+        position: absolute; 
+        font-family:monospace;
+        margin:20px;
+        font-size:20px;
+        
+    }
+      </style>
   </head>
   <body>
-    <script src="sketch.js"></script>
+    <main>
+        <!-- <div id="instructions">
+            <p><strong>Prompt: Arpeggiator.</strong> vertical from the center controls the length of the notes, 
+              horizontal from the center controls the echo. 
+            </p>
+            <p> Tap the screen to start.</p>
+            
+        </div> -->
+    </main>
   </body>
 </html>
